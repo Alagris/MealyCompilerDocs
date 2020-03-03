@@ -1,0 +1,241 @@
+body {
+    padding: 0 30px;
+    font-size: 14px;
+    line-height: 22px;
+    font-family: "Georgia", serif;
+    color: #222222;
+    background: url(img/bg.png);
+    
+  }
+header{
+    position:relative;
+    width: auto;
+    height: 200px;
+    margin: auto;
+    background-color: rgba(61, 130, 175, 0.418);
+    margin-bottom: 10px;
+    background-image: url(images/i8.png);
+}
+
+h1{
+      font-size: 300%;
+      padding-left: 180px;
+      padding-top: 3px;
+      font-family: 'Trebuchet MS', 'Lucida Sans Unicode', 'Lucida Grande', 'Lucida Sans', Arial, sans-serif;
+  }
+  
+  .pp{
+    font-size: large;
+    padding-left: 30px;
+    padding-top: 20px;
+    font-family: 'Trebuchet MS';
+  }
+
+  .im{
+    border-radius: 50%;
+    padding-left: 20px;
+    
+
+  }
+  .leftimg {
+    float:left; /* Выравнивание по левому краю */
+    margin: 7px 7px 7px 10; /* Отступы вокруг картинки */
+    padding-left: 15px;
+    padding-right: 15px;
+    border-radius: 50%;
+   }
+
+aside {
+    width: 250px; margin: auto;
+    height: 1000px;
+    position: relative;
+    float: right;
+    background: rgba(119, 115, 115, 0.58);
+}
+
+
+.bog{
+    background:  rgba(24, 23, 24, 0.103);
+}
+.sq{
+    background:  rgba(24, 23, 24, 0.103);
+    padding-left: 300pz;
+    width: auto;
+    height: 150px;
+}
+
+
+@import url('https://fonts.googleapis.com/css?family=Ubuntu+Condensed');
+.menu-main {
+  list-style: none;
+  margin: 40px 0 5px;
+  padding: 25px 0 5px;
+  text-align: center;
+  background: white;
+}
+.menu-main li {display: inline-block;}
+.menu-main li:after {
+  content: "|";
+  color: #606060;
+  display: inline-block;
+  vertical-align:top;
+}
+.menu-main li:last-child:after {content: none;}
+.menu-main a {
+  text-decoration: none;
+  font-family: 'Ubuntu Condensed', sans-serif;
+  letter-spacing: 2px;
+  position: relative;
+  padding-bottom: 20px;
+  margin: 0 34px 0 30px;
+  font-size: 17px;
+  text-transform: uppercase;
+  display: inline-block;
+  transition: color .2s;
+}
+.menu-main a, .menu-main a:visited {color: #9d999d;}
+.menu-main a.current, .menu-main a:hover{color: #feb386;}
+.menu-main a:before,
+.menu-main a:after {
+  content: "";
+  position: absolute;
+  height: 4px;
+  top: auto;
+  right: 50%;
+  bottom: -5px;
+  left: 50%;
+  background: #feb386;
+  transition: .8s;
+}
+.menu-main a:hover:before, .menu-main .current:before {left: 0;}
+.menu-main a:hover:after, .menu-main .current:after {right: 0;}   
+@media (max-width: 550px) {
+.menu-main {padding-top: 0;}
+.menu-main li {display: block;}
+.menu-main li:after {content: none;}
+.menu-main a {
+  padding: 25px 0 20px; 
+  margin: 0 30px;
+}
+}
+.w3-sidebar{
+    height:100%;
+    width:200px;
+    background-color:#fff;
+    position:fixed!important;
+    z-index:1;
+    overflow:auto
+   
+    
+}
+.w3-bar-item{
+    padding:8px 16px;
+    float:left;
+    width:auto;
+    border:none;
+    display:block;
+    outline:0
+}
+.w3-button{
+    border:none;
+    display:inline-block;
+    padding:8px 16px;
+    vertical-align:middle;
+    overflow:hidden;
+    text-decoration:none;
+    color:inherit;
+    background-color:inherit;
+    text-align:center;
+    cursor:pointer;
+    white-space:nowrap
+}
+.w3-bar-block .w3-dropdown-hover,.w3-bar-block{width:100%}
+.w3-bar-block .w3-dropdown-hover .w3-dropdown-content,.w3-bar-block .w3-dropdown-click .w3-dropdown-content{min-width:100%}
+.w3-bar-block .w3-button,.w3-bar-block .w3-button{width:100%;text-align:left;padding:8px 16px}
+.w3-bar .w3-bar-item{padding:8px 16px;float:left;width:auto;border:none;display:block;outline:0}
+.w3-bar .w3-dropdown-hover,.w3-bar .w3-dropdown-click{position:static;float:left}
+.w3-bar .w3-button{white-space:normal}
+.w3-bar-block .w3-bar-item{width:100%;display:block;padding:8px 16px;text-align:left;border:none;white-space:normal;float:none;outline:0}
+.w3-bar-block.w3-center .w3-bar-item{text-align:center}.w3-block{display:block;width:100%}
+.w3-bar-item{
+    font-size: 130%;
+    margin-top: 20px;
+    
+}
+.lbar{
+    margin-right: 38px;
+}
+
+.topic{
+  /*width: 40%;  Ширина слоя */ 
+  padding-right: 20px;
+  position: relative;
+  left: 15%;
+  padding: 10px; /* Внутренние поля вокруг содержимого */ 
+  /*background: #e0e0e0bb;  Цвет заднего фона */
+  background-color: #e0e0e0bb;
+  border: 1px solid #a5a5a5;
+  
+
+}
+
+.topic_v2{
+
+  width: 40%;	height: 30%; /* Размеры */
+  background: rgba(194, 192, 183, 0.637); /* Цвет фона */
+  outline: 2px solid #000; /* Чёрная рамка */
+  border: 3px solid #fff; /* Белая рамка */
+  border-radius: 10px; /* Радиус скругления */
+  margin-left: 15%;
+
+
+
+}
+
+
+.linedwrap {
+	border: 1px solid #c0c0c0;
+	padding: 3px;
+}
+
+.linedtextarea {
+	padding: 0px;
+	margin: 0px;
+}
+
+.linedtextarea textarea, .linedwrap .codelines .lineno {
+	font-size: 10pt;
+	font-family: monospace;
+	line-height: normal !important;
+}
+
+.linedtextarea textarea {
+	padding-right:0.3em;
+	padding-top:0.3em;
+	border: 0;
+}
+
+.linedwrap .lines {
+	margin-top: 0px;
+	width: 50px;
+	float: left;
+	overflow: hidden;
+	border-right: 1px solid #c0c0c0;
+	margin-right: 10px;
+}
+
+.linedwrap .codelines {
+	padding-top: 5px;
+}
+
+.linedwrap .codelines .lineno {
+	color:#AAAAAA;
+	padding-right: 0.5em;
+	padding-top: 0.0em;
+	text-align: right;
+	white-space: nowrap;
+}
+
+.linedwrap .codelines .lineselect {
+	color: red;
+}
