@@ -209,6 +209,155 @@ Consider homogeneous class of deterministic relations $X = \Sigma^* \rightarrow 
 \subparagraph{Composition} Given two relations of the form $M_0,M_1 \subset \Sigma^* \rightarrow \Gamma^*$, the composition is defined as $(M_0 \circ M_1)(x) = M_0(M_1(x))$. Because $M_1$ is a \underline{partial} function (it's deterministic), we get only one possible output. That output is the processes by $M_0$ which in turn can give only one output again. Therefore you can clearly see that the operation of composition should preserve determinism. The situation gets slightly complicated in case of $M_{\#0},M_{\#1} \in M_{\#\rightarrow}$. \\
 Let $\#$ be a mealy machine that appends $\#$ to the end (just as explained previously in the section about end-of-string markers). Then  $M_0 \circ \# = M_{\#0}$ and $M_1 \circ \# = M_{\#1}$. You need to be careful and remember that composition of automata with $\#$ marker becomes $M_{\#0} \circ M_{\#1} = M_0 \circ \# \circ M_1 \circ \#$ instead of  $M_{\#0} \circ M_{\#1} = M_0 \circ M_1 \circ \#$.
 
+\subparagraph{Normalization in $\mathbb{M}_\infty$} 
+ Correspondence between relations on formal languages and Mealy machines is not 1-to-1. The same holds for finite state automata and formal languages. You can however choose one unique representative automaton for each language. Such process of normalize is equivalent to minimization for FSA (the minimal automaton is unique up to isomorphism). The same is true in case of single-output Mealy machines. However for multi-output machines we can express minimial automaton in many different ways and each of them differs only in outputs of edges. 
+
+\begin{center}
+	\begin{tikzpicture}[scale=0.2]
+	\tikzstyle{every node}+=[inner sep=0pt]
+	\draw [black] (13.5,-8) circle (3);
+	\draw (13.5,-8) node {$q_0$};
+	\draw [black] (29.6,-8) circle (3);
+	\draw (29.6,-8) node {$q_1$};
+	\draw [black] (45,-8) circle (3);
+	\draw (45,-8) node {$q_2$};
+	\draw [black] (45,-8) circle (2.4);
+	\draw [black] (16.5,-8) -- (26.6,-8);
+	\fill [black] (26.6,-8) -- (25.8,-7.5) -- (25.8,-8.5);
+	\draw (21.55,-7.5) node [above] {$0:\epsilon$};
+	\draw [black] (32.6,-8) -- (42,-8);
+	\fill [black] (42,-8) -- (41.2,-7.5) -- (41.2,-8.5);
+	\draw (37.3,-7.5) node [above] {$0:11$};
+	\end{tikzpicture}
+\end{center}
+
+\begin{center}
+	\begin{tikzpicture}[scale=0.2]
+	\tikzstyle{every node}+=[inner sep=0pt]
+	\draw [black] (13.5,-8) circle (3);
+	\draw (13.5,-8) node {$q_0$};
+	\draw [black] (29.6,-8) circle (3);
+	\draw (29.6,-8) node {$q_1$};
+	\draw [black] (45,-8) circle (3);
+	\draw (45,-8) node {$q_2$};
+	\draw [black] (45,-8) circle (2.4);
+	\draw [black] (16.5,-8) -- (26.6,-8);
+	\fill [black] (26.6,-8) -- (25.8,-7.5) -- (25.8,-8.5);
+	\draw (21.55,-7.5) node [above] {$0:11$};
+	\draw [black] (32.6,-8) -- (42,-8);
+	\fill [black] (42,-8) -- (41.2,-7.5) -- (41.2,-8.5);
+	\draw (37.3,-7.5) node [above] {$0:\epsilon$};
+	\end{tikzpicture}
+\end{center}
+
+\begin{center}
+	\begin{tikzpicture}[scale=0.2]
+	\tikzstyle{every node}+=[inner sep=0pt]
+	\draw [black] (13.5,-8) circle (3);
+	\draw (13.5,-8) node {$q_0$};
+	\draw [black] (29.6,-8) circle (3);
+	\draw (29.6,-8) node {$q_1$};
+	\draw [black] (45,-8) circle (3);
+	\draw (45,-8) node {$q_2$};
+	\draw [black] (45,-8) circle (2.4);
+	\draw [black] (16.5,-8) -- (26.6,-8);
+	\fill [black] (26.6,-8) -- (25.8,-7.5) -- (25.8,-8.5);
+	\draw (21.55,-7.5) node [above] {$0:1$};
+	\draw [black] (32.6,-8) -- (42,-8);
+	\fill [black] (42,-8) -- (41.2,-7.5) -- (41.2,-8.5);
+	\draw (37.3,-7.5) node [above] {$0:1$};
+	\end{tikzpicture}
+\end{center}
+
+All three of those automata are minimal, however only the first one is normalized. The way normalization should work is by pushing all the output as far as possible in the depth of graph. Notice however, that we cannot change this:
+\begin{center}
+	\begin{tikzpicture}[scale=0.2]
+	\tikzstyle{every node}+=[inner sep=0pt]
+	\draw [black] (13.5,-9.5) circle (3);
+	\draw (13.5,-9.5) node {$q_x$};
+	\draw [black] (29.7,-15) circle (3);
+	\draw (29.7,-15) node {$q_y$};
+	\draw [black] (46.4,-15) circle (3);
+	\draw (46.4,-15) node {$q_z$};
+	\draw [black] (13.5,-19.8) circle (3);
+	\draw (13.5,-19.8) node {$q_w$};
+	\draw [black] (16.34,-10.46) -- (26.86,-14.04);
+	\fill [black] (26.86,-14.04) -- (26.26,-13.3) -- (25.94,-14.25);
+	\draw (22.5,-11.72) node [above] {$0:1$};
+	\draw [black] (32.7,-15) -- (43.4,-15);
+	\fill [black] (43.4,-15) -- (42.6,-14.5) -- (42.6,-15.5);
+	\draw (38.05,-14.5) node [above] {$0:3$};
+	\draw [black] (16.38,-18.95) -- (26.82,-15.85);
+	\fill [black] (26.82,-15.85) -- (25.91,-15.6) -- (26.2,-16.56);
+	\draw (20.82,-16.85) node [above] {$0:2$};
+	\end{tikzpicture}
+\end{center}
+into this:
+\begin{center}
+	\begin{tikzpicture}[scale=0.2]
+	\tikzstyle{every node}+=[inner sep=0pt]
+	\draw [black] (13.5,-9.5) circle (3);
+	\draw (13.5,-9.5) node {$q_x$};
+	\draw [black] (29.7,-15) circle (3);
+	\draw (29.7,-15) node {$q_y$};
+	\draw [black] (46.4,-15) circle (3);
+	\draw (46.4,-15) node {$q_z$};
+	\draw [black] (13.5,-19.8) circle (3);
+	\draw (13.5,-19.8) node {$q_w$};
+	\draw [black] (16.34,-10.46) -- (26.86,-14.04);
+	\fill [black] (26.86,-14.04) -- (26.26,-13.3) -- (25.94,-14.25);
+	\draw (22.5,-11.72) node [above] {$0:\epsilon$};
+	\draw [black] (32.7,-15) -- (43.4,-15);
+	\fill [black] (43.4,-15) -- (42.6,-14.5) -- (42.6,-15.5);
+	\draw (38.05,-14.5) node [above] {$0:13$};
+	\draw [black] (16.38,-18.95) -- (26.82,-15.85);
+	\fill [black] (26.82,-15.85) -- (25.91,-15.6) -- (26.2,-16.56);
+	\draw (20.82,-16.85) node [above] {$0:2$};
+	\end{tikzpicture}
+\end{center}
+Such operation doesn't preserve functionality of automaton. Similarly the following two pieces of automata are not equivalent:
+\begin{center}
+	\begin{tikzpicture}[scale=0.2]
+	\tikzstyle{every node}+=[inner sep=0pt]
+	\draw [black] (13.5,-9.5) circle (3);
+	\draw (13.5,-9.5) node {$q_x$};
+	\draw [black] (29.3,-9.5) circle (3);
+	\draw (29.3,-9.5) node {$q_y$};
+	\draw [black] (29.3,-9.5) circle (2.4);
+	\draw [black] (44,-9.5) circle (3);
+	\draw (44,-9.5) node {$q_z$};
+	\draw [black] (16.5,-9.5) -- (26.3,-9.5);
+	\fill [black] (26.3,-9.5) -- (25.5,-9) -- (25.5,-10);
+	\draw (21.4,-9) node [above] {$0:1$};
+	\draw [black] (32.3,-9.5) -- (41,-9.5);
+	\fill [black] (41,-9.5) -- (40.2,-9) -- (40.2,-10);
+	\draw (36.65,-9) node [above] {$0:1$};
+	\end{tikzpicture}
+\end{center}
+\begin{center}
+	\begin{tikzpicture}[scale=0.2]
+	\tikzstyle{every node}+=[inner sep=0pt]
+	\draw [black] (13.5,-9.5) circle (3);
+	\draw (13.5,-9.5) node {$q_x$};
+	\draw [black] (29.3,-9.5) circle (3);
+	\draw (29.3,-9.5) node {$q_y$};
+	\draw [black] (29.3,-9.5) circle (2.4);
+	\draw [black] (44,-9.5) circle (3);
+	\draw (44,-9.5) node {$q_z$};
+	\draw [black] (16.5,-9.5) -- (26.3,-9.5);
+	\fill [black] (26.3,-9.5) -- (25.5,-9) -- (25.5,-10);
+	\draw (21.4,-9) node [above] {$0:\epsilon$};
+	\draw [black] (32.3,-9.5) -- (41,-9.5);
+	\fill [black] (41,-9.5) -- (40.2,-9) -- (40.2,-10);
+	\draw (36.65,-9) node [above] {$0:11$};
+	\end{tikzpicture}
+\end{center}
+Formally we should say that an automaton $M$ is in normalized form iff there does not exist a pair of edges $(q_1,x_1,y_1),(q_2,x_2,y_2)\in G_M$ such that $\delta_M(q_1,x_1)=q_2$ and $M$ is equivalent to $N$ where $N$ is given by $\delta_m=\delta_N$, $F_M$=$F_N$, $q_{0M}=q_0{N}$, $Q_M=Q_n$, $\Sigma_N=\Sigma_N$, $\Gamma_M=\Gamma_N$ and \\
+$G_N(q,x)=\begin{cases}
+\epsilon& \mbox{if } q=q_1 \wedge x=x_1 \\
+y_1y_2& \mbox{if } q=q_2 \wedge x=x_2 \\
+G_M(q,x) & \mbox{otherwise}
+\end{cases}$
 
 
 \paragraph{Naive algorithms}
@@ -293,6 +442,11 @@ Accepting states are given by $F_{M_2}((q_{M_0},q_{M_1})) = F_{M_0}(q_{M_0})$ an
 \subparagraph{Composition in $\mathbb{M}_\rightarrow$} Given automata $M_0,M_1 \subset \Sigma^* \rightarrow \Gamma^*$ composition $M_2=M_0 \circ M_1$ (read it as $M_2(x) = M_0(M_1(x))$ ) can be computed by first performing tape projections of $M_0$ for each tape in $T_{M_0}$, then performing composition for them separately and in the end taking union. It can be written as: \\
 $M_2 = \bigcup_{t\in T_{M_1}} M_0 \circ \pi_t(M_1)$ \\
 Composition is guaranteed to preserve determinism so there is no need to worry about determinism of union operation.
+
+
+
+
+
 
 
 \subparagraph{Minimization in $\mathbb{M}_\rightarrow$} 
