@@ -36,6 +36,12 @@ $\delta: Q \times (\Sigma \cup \{\epsilon\})\rightarrow Q$ and $G: Q \times (\Si
 	\item input projection $\pi_0(M) = P$ such that $\forall_{x\in\Sigma^*} (\exists_{y\in\Gamma^*}M(x,y) ) \iff P(x) $
 	\item output projection  $\pi_1(M) = P$ such that $\forall_{y\in\Gamma^*} (\exists_{x\in\Sigma^*}M(x,y) ) \iff P(y) $
 \end{itemize} 
+We also define $\hat{\delta} : Q \times \Sigma^* \rightarrow Q$ to be extended transition function: \\
+$\hat{\delta}(q,\epsilon) = q$ \\
+$\hat{\delta}(q,s's) = \hat{\delta}(\delta(q,s'),s)$ where $s' \in \Sigma$\\
+And similarly $\hat{G}:Q\times\Sigma^*\rightarrow\Gamma^*$ is the extended output function: \\
+$\hat{G}(q,\epsilon) = \epsilon$ \\
+$\hat{G}(q,s's) = G(q,s')\hat{G}(\delta(q,s'),s)$ where $s' \in \Sigma$\\
 Deterministic and non-deterministic automata are equivalent in their power to recognise formal languages, however non-deterministic Mealy machines have more expressive power to relate two formal languages with each other. Let's consider several cases with help of pumping lemma. 
 
 \paragraph{Pumping lemma for regular languages}
@@ -70,10 +76,44 @@ $\forall_{x,y\in \Sigma^*} \exists_{a \in \Gamma^* } M(xy)=M(x)a$ \\
 
 
 \paragraph{Functional Mealy machines} They are defined in a very different way. They can write to multiple   tapes. Output function becomes $G: Q \times \Sigma \times T \rightarrow \Gamma^*$ where $T$ is a finite set of tapes. $F$ is no longer a set but a function $F: Q \rightarrow T \cup \{\emptyset\}$. This model works by reading consecutive input characters $s \in \Sigma$ , and transitioning from state $q\in Q$ to $\delta(q,s)$. On each transition automaton writes  $G(q,s,t)$ to every tape $t \in T$. When input reaches end and automaton halts in state $q$, the returned output should be taken from $F(q)$. In cases when $F(q) = \emptyset$ , the automaton rejects. This model is still deterministic but multiple tapes allow it to break the rule of matching prefixes.
+Also, the projections $\pi_0$ and $\pi_1$ still apply but additionally we define projection $\pi_t$ for every tape $t$. More formally:\\
+$\pi_t(M) = P$ such that $\forall_{y\in\Gamma^*} (\exists_{x\in\Sigma^*} M(x,y) \wedge F(\hat{\delta}_M(q_{0M},x))=t) \iff P(y)$
+
 
 
 \paragraph{Non-deterministic Mealy machines} This model allows for greatest flexibility. $M \subset \Sigma^* \times \Gamma^*$ does not have any restrictions apart from the requirement that both input and output language must be regular. Furthermore, we can use epsilons to associate one input with multiple outputs. In fact, there could be infinitely many of them if epsilons create a loop at some point. 
 
+
+\paragraph{Moore machines}
+This model is largely equivalent to Mealy machines. The only difference is that output function has form of $G:Q\rightarrow\Gamma$ so it depends solely on state. You can convert every variant of Mealy machine to corresponding Moore machine. Here is a quick comparison:
+\begin{center}
+	\begin{table}[!htbp]
+		\begin{tabular}{|l|l|l|}
+			\hline
+			variant          & Mealy & \multicolumn{1}{c|}{Moore} \\ \hline
+			single-output    & $G:Q\times\Sigma\rightarrow\Gamma$     & $G:Q\rightarrow\Gamma$                           \\ \hline
+			multi-output     & $G:Q\times\Sigma\rightarrow\Gamma^*$      & $G:Q\rightarrow\Gamma^*$                           \\ \hline
+			functional       & $G:Q\times\Sigma\times T\rightarrow\Gamma$      & $G:Q\times T\rightarrow\Gamma$                             \\ \hline
+			nondeterministic &  $G:Q\times(\Sigma\cup\{\epsilon\})\rightarrow(\Gamma\cup\{\epsilon\})$     & $G:Q\rightarrow(\Gamma\cup\{\epsilon\})$                     \\ \hline
+		\end{tabular}
+	\end{table}
+\end{center}
+Conversion from  Mealy to Moore comes at the expense of adding a lot of new states (therefore Mealy machines are generally more compact). 
+Let $M$ be a Mealy machine, and $N$ be Moore machine. General pattern for conversion algorithm looks like this:
+
+For every $q\in Q_M$ and $s\in\Sigma$, put $q_s\in Q_N$ and simulate $\delta_M(q,s)=q'$ as $\forall_{t\in\Sigma}\delta_N(q_t,s)=q'_s$ along with $G_M(q,s)=s'$ as $G_N(q_s) = s'$. Depending on variant of machine, this might need some slight modifications.
+
+You can also perform conversion the other way around but unfortunately not for every variant. In case of deterministic Mealy machines, it's impossible to express mappings for $\epsilon$, while deterministic Moore machines can do it easily (the initial state can be marked as accepting state and we can associate arbitrary output with it even without reading any input).
+
+Another advantage of Moore machines is that we can look at their output in two ways. We can accumulate output printed by every state and therefore the functionality resembles Mealy machines very much. However, the second approach is to ignore what is printed at all intermediate outputs and only focus on the output of final state. Therefore we can define two variants of extended output functions. \\
+First is Mealy-style output: \\
+$\hat{G}(q,\epsilon) = G(q)$ \\
+$\hat{G}(q,s's) = G(q)\cdot\hat{G}(\delta(q,s'),s)$ where $s' \in \Sigma$, $s\in\Sigma^*$ and $\cdot$ is string concatenation \\
+Second is $\hat{\delta}$-style output: \\
+$\check{G}(q,s) = G(\hat{\delta}(q,s))$\\
+
+
+Unfortunately Moore machines are not the topic of this paper so we won't delve  into details. We only need them to present certain property of functional Mealy machines. 
 
 
 \section{Classes of language relations} As mentioned above, Mealy machines represent some class of relations on languages. A relation $R \subset \Sigma^* \times \Gamma^*$ is decidable if there exists some Turing machine that works on alphabet $\Sigma \cup \Gamma$ and accepts all strings in $R$ while also rejects all strings from $\overline{R}$ (we can use arbitrary way to encode pairs of strings). Of course not all relations are decidable. The most trivial example of undecidable relation is $(x,y)  \in \Sigma^* \times \{0,1\}$ where  $x$ encodes some Turing machine, and $y$ is in relation with $x$ iff $x$ halts on $y$. While Turing machines are capable of "recognizing" pairs of strings, Mealy automata can be used to "generate" the right-side element of pair for any given left-side element of pair. However, in principle both "generation" and "recognition" are just different ways to see the same phenomenon. Anything that can be generated with mealy machines can be recognized by some Turing machine. 
@@ -125,6 +165,30 @@ After settling precise definition of classes of formal languages we can go back 
 \end{itemize} 
  Notice that for any two characters $a,b \notin \Sigma \cup \Gamma$ the languages $\mathbb{S}_a(R)$ and $\mathbb{S}_b(R)$ are isomorphic (the only difference is substitution of separator $a$ for separator $b$ or vice versa). 
  
+ 
+ 
+ \paragraph{$\mathbb{M}_\rightarrow$ as Mealy-Moore union}
+ Every machine in $M\in\mathbb{M}_\rightarrow$ can be treated as union  of its projections $\pi_t(M) \in \mathbb{M}_\infty$. But writing it as \\
+ $M = \bigcup_{t\in T_M} \pi_t(M)$ \\
+ is abuse of notation, because the union operation is not defined (as we will show below) for $\mathbb{M}_\infty$. What we actually mean by this notation is something like this: \\
+ $M = \bigcup_{t\in T_M} \phi(\pi_t(M))$ \\
+ where $\phi$ represents conversion $\mathbb{M}_\infty \rightarrow \mathbb{M}$. Let us remind the definition of tape projection: \\
+ $\pi_t(M) = P$ such that $\forall_{y\in\Gamma^*} (\exists_{x\in\Sigma^*} M(x,y) \wedge F_M(\hat{\delta}_M(q_{0M},x))=t) \iff P(y)$ \\
+ This guarantees us that no two projections intersect (because $F_M$ is a function). More formally let $t_0, t_1 \in T_M$ and $M_0 = \pi_{t_0}(M), M_1=\pi_{t_1}(M)$ then $\forall_{s\in\Sigma^*,t,t'\in\Gamma^*} M_0(s,t) \wedge M_1(s,t') \implies t=t' \wedge t_0 = t_1$. For this reason we have guarantee that the union $ \bigcup_{t\in T_M} \phi(\pi_t(M))$ is deterministic.
+ 
+ We can also introduce Moore projection of $M$ as function $\pi_T $ that takes some functional Mealy machine and converts it to Moore automaton. Formally: \\
+ $\pi_T(M) = N$ such that $\forall_{x\in\Sigma^*} \check{G}_N(q_{0N},x) = F_M(\hat{\delta}_M(q_{0M},x))$ \\
+ You can see that the alphabets of such Moore machine are $N \subset \Sigma^* \rightarrow (T_M \cup \{\emptyset\})^*$.
+ 
+We can make good use of such projection. The problem of  $\bigcup_{t\in T_M} \phi(\pi_t(M))$ is that it produces $\mathbb{M}$ as a result. Even though the relation is deterministic as $\bigcup_{t\in T_M} \phi(\pi_t(M)) \subset \Sigma^* \rightarrow \Gamma^*$, the underlying structure of automaton still uses non-determinism to function. There is however an alternative, purely deterministic mechanism. You just need to treat every functional Mealy machine as tuple $M = (M_T,M_0,M_1,M_2,...M_n)$ such that $M_T = \pi_T(M)$, $M_0 = \pi_{t_0}(M)$ ,..., $M_n = \pi_{t_n}(M)$. Then the following holds: \\
+$M(x,y) \iff M_T(x,t_i) \wedge M_i(x,y)$ \\
+Which can be used to deterministically compute $M$ as: \\
+$M(x) = M_{M_T(x)}(x)$ \\
+Such approach requires us to read $x$ twice, but it's still much better than exhaustively searching computation tree of some non-deterministic machine produced by $\bigcup_{t\in T_M} \phi(\pi_t(M))$. And it's also much better than evaluating $M$ directly as functional automaton, which would require storing all $n$ tapes in memory just to later pick one of them (which is a terrible waste of memory resources). Treating $\mathbb{M}_\rightarrow$ as Mealy-Moore tuple gives most efficient algorithm, when you seek a good trade-off between memory and time complexity.
+
+Moreover you can use this mechanism to introduce something like generalised functional machine. Notice that in $(M_T,M_0,M_1,M_2,...M_n)$, all the automata have isomorphic graph structure (or at least could have, if you don't decide to minimise them). However, it doesn't always have to be like this. We could store there any automata. They might even overlap in a sense that for two of them $M_i$ and $M_j$ there exists $x\in\Sigma^*$ accepted by both $M_i(x,y)$ and $M_j(x,z)$ and the outputs might even be different $z\ne y$. It doesn't bother us because $M_T$ will always decide which one to pick. In fact, power of generalised functional machines is equivalent to power of functional Mealy machines. There is always a way to convert one into the other.
+ 
+ 
 \section{Hierarchy of classes} Obviously $\mathbb{M}_0 \subsetneq \mathbb{M}_{\infty}  \subsetneq \mathbb{M}_{\rightarrow}  \subsetneq \mathbb{M} $, but now when we have all the necessary tools and definitions we  can show further the correlations between Mealy machine models and classes of relations and their encodings:
  \begin{enumerate}
 
@@ -174,7 +238,6 @@ Notice that given $M \in \mathbb{M}_\rightarrow$ and $M_\# \in \mathbb{M}_{\#\ri
 
 
 \subparagraph{$\#$-regular automata}Up to this point we introduced $\#$ as end markers and as pair separators. We also used $\#$-states in several proofs. Now it's time to show what really connects all three of them together in one handy model. This model will create exact 1-to-1 correspondence between $\mathbb{S}_\#$ encoding and $\mathbb{M}_{\#\rightarrow}$. WORK IN PROGRESS
-
 
 
 
@@ -495,7 +558,7 @@ if $q_{0m} \notin F_m$
               $\delta_m(q,s)$ := $q''$
    insert $q_{0m}$ to $F_m$
 \end{lstlisting}
-The last part that replaces initial state with $q''$ and adds original initial state to accepting states, is only necessary to express $(\epsilon,\epsilon) \in M^*$. However it's not necessary in case of computing $M^+$. The algorithm for $M^*$ can therefore be largely reused when computing $M^+$, with just the tiny modification that we remove the last 'if' checking for $q_{0m} \notin F_m$ .
+The last part that replaces initial state with $q''$ and adds original initial state to accepting states, is only necessary to express $(\epsilon,\epsilon) \in M^*$. However it's not necessary in case of computing $M^+$. The algorithm for $M^*$ can therefore be largely reused when computing $M^+$, with just the tiny modification that we remove the last 'if' checking for $q_{0m} \notin F_m$ and all the code under that 'if' .
   
 
 \subparagraph{Tape projection $\mathbb{M}_\rightarrow$} This operation is very specific to class $\mathbb{M}_\rightarrow$ but it's required to facilitate other operations. Given automaton $M \in \mathbb{M}_\rightarrow$ with tapes $T_M$, we can take projection $\pi_t$ for any $t\in T_M$ where you can treat $\pi$ as function $T \times (\Sigma^* \rightarrow \Gamma^*) \rightarrow (\Sigma^* \rightarrow \Gamma^*)$. You can compute $M' = \pi_t(M)$ as \\
