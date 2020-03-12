@@ -4,12 +4,12 @@ Autor: ...
 
 Data: ...
 
-###1. Wprowadzenie
+### 1. Wprowadzenie/Introduction
 >Dokument dotyczy projektu realizowanego w ramach  Niniejszy dokument służy przedstawieniu przeznaczenia tworzonego systemu, jego głównych cech i przyjętych założeń.
 
 The foundation of modern technology lies in computability theory. There've been proposed dozens of various computation models. The most popular of them being Turing machines, unrestricted register machines, recursive functions, lambda calculus, cellular automata, circuit systems, algorithmic state machines etc. There are also many less powerful and specialized models such as primitive recursive functions, memory-restricted Turing machines, simply-typed lambda calculus, context-free grammars, determinisitc pushdown automata, finite state automata, regular expressions and many more. All of them (and many variantsof them) found extensive applications in industry. One of the models, called Mealy machines is especially heavily used in natural language processing, machine learning and formal specification of systems.
 
-###2. Cel
+### 2. Cel/Goal
 >Należy opisać, jaki problem zostanie rozwiązany dzięki projektowi, po co właśnie taki temat podejmujemy.
 Na przykład:
 Celem projektu jest stworzenie nowego serwisu społecznościowego “RetroCar”, umożliwiającego zawieranie znajomości i wymianę informacji osobom z Polski, zainteresowanym starymi samochodami.
@@ -22,7 +22,7 @@ Our compiler of Mealy machines addresses two practical problems:
 
 
 
-###3. Rynek
+### 3. Rynek/Market
 >Należy odnieść się do dostępnych rozwiązań realizujących podobny cel. Powinno być jasne, w jakim zakresie tworzony system się od nich odróżnia.
 Na przykład:
 Serwis “RetroCar”, w odróżnieniu od istniejących serwisów poświęconych wybranym markom samochodów (np. http://www.syrena.nekla.pl/), umożliwi zrzeszanie wielbicieli dowolnych marek samochodów. Jednocześnie będzie pozwalał, w miarę możliwości technicznych, na import danych z innych serwisów, na przykład poprzez mechanizm RSS.
@@ -37,7 +37,7 @@ For better support of formal verification we might add temporal logic SAT-solver
 
 
 
-###4. Użytkownicy
+### 4. Użytkownicy/Audiences
 >Należy opisać, do jakich użytkowników będzie skierowany serwis—określić zarówno ich potrzeby jak i stopień zaawansowania w obsłudze systemów informatycznych.
 Na przykład:
 Serwis “RetroCar” jest kierowany do użytkowników, którzy chcą pochwalić się swoim samochodem, zasięgnąć porady innych użytkowników oraz zawierać znajomości. Użytkownicy potrafią posługiwać się systemami typu forum dyskusyjne, galeria zdjęć czy blog.
@@ -46,7 +46,7 @@ Our target audience includes researchers, linguists and machine-learning experts
 
 
 
-###5. Opis produktu
+### 5. Opis produktu/Description
 >Należy wymienić (można w punktach) główne funkcjonalności oferowane przez tworzony system. Należy zaznaczyć, które z nich wyróżniają się na rynku dostępnych rozwiązań.
 Na przykład:
 zakładanie profilu użytkownika z możliwością wgrania avatara, określenia zakresu widoczności poszczególnych danych osobowych
@@ -65,7 +65,7 @@ branżowa książka adresowa warsztatów mechanicznych, lakierników, wulkanizat
 
 A simple and efficient library written in C will be the main and primary component of our product. On top of that, it will have command-line interface equipped with compiler. For easy and quick access, we should support online repl for all curious people who want to give our library a try. The compiler should support parallelism, warn user about non-determinism and allow for possibly some extent of generic programming (by defining functions working on regular expressions or bulk-generation of rules according to some regularities). We should ,however pay extra attention, to not making this language turing complete/undecidable by accident (otherwise compilation might never end).
 
-###6. Zakres i ograniczenia
+### 6. Zakres i ograniczenia/scope and limitations
 >Należy przedstawić zakres projektu obowiązujący przy pierwszej wersji systemu (na zaliczenie). Jeśli przewidujemy istotne ograniczenia, również powinny się tu znaleźć.
 Na przykład:
 W pierwszej wersji systemu możliwa będzie edycja profilu użytkownika, dyskusje na forum, tworzenie galerii i edycja branżowej książki adresowej. System będzie wprowadzał ograniczenia na ilość wgrywanych multimediów.
