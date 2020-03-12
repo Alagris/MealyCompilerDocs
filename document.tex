@@ -28,9 +28,10 @@
 	mathescape
 }
 
-\section{Introduction}
+\part{Foundations}
+\section{Definitions}
 Standard definition of Mealy machine is provided as $(Q,q_0,\Sigma,\Gamma,\delta,G,F)$ where $Q$ is set of states, $q_0 \in Q$ is the initial state, $\Sigma$ and $\Gamma$ are respectively input and output alphabets, $\delta: Q \times \Sigma \rightarrow Q$ is the transition function , $G: Q \times \Sigma \rightarrow \Gamma$ it specifies output associated with each transition and $F$ is the set of accepting states. Finite state automaton is defined similarly as $(Q,q_0,\Sigma,\delta, F)$ but it doesn't have any output. It's possible to extend both machines to non-deterministic models by adding $\epsilon$ to transition and/or output functions as in 
-$\delta: Q \times (\Sigma \cup \{\epsilon\})\rightarrow Q$ and $G: Q \times (\Sigma \cup \{\epsilon\})\rightarrow (\Gamma \cup \{\epsilon\})$.  We can show that introducing non-determinism this way is equivalent to defining it as $\delta: Q \times (\Sigma \cup \{\epsilon\})\rightarrow P(Q)$ for finite state automata (and $\delta: Q \times (\Sigma \cup \{\epsilon\}) \rightarrow P(Q \times \Gamma)$ for Mealy machines) but in our case, just adding epsilon is enough and will make things simpler later.  \textcolor{red}{Dowód dodam potem.} You can treat finite state machines as predicates on formal languages. For instance if $P$ is an automaton, then $\forall_{x\in \Sigma^*} P(x) \iff P \textrm{ accepts }x$. Mealy machines on the other hand, can be interpreted as relations on languages. Let's say $M$ is a Mealy machine, then $\forall_{x\in\Sigma^*, y \in \Gamma^*} M(x,y) \iff M \textrm{ produces } y \textrm{ as one of it's outputs, on input } x$. So in a sense, $P$ is equivalent to some subset of $\Sigma^*$, while $M$ is equivalent to some subset of $\Sigma^* \times \Gamma^*$. If additionally $M$ is a function ( it holds that $\forall_{x\in\Sigma^* , y,z \in \Gamma^* } M(x,y) \wedge M(x,z) \implies y=z$ ), then we can write $M(x)=y$ instead of $M(x,y)$. It's important to remember that there  might exist many different automata inducing the same language or relation on languages. Therefore we shall write $P_0 = P_1$ to mean $\forall_{x\in\Sigma^*} P_0(x) \iff P_1(x)$ even when $P_0$ and $P_1$ have different structures. Similarly $M_0 = M_1$ when $\forall_{x \in \Sigma^* , y\in\Gamma^*}M_0(x,y) \iff M_1(x,y)$.  We define two projections for Mealy machines: 
+$\delta: Q \times (\Sigma \cup \{\epsilon\})\rightarrow Q$ and $G: Q \times (\Sigma \cup \{\epsilon\})\rightarrow (\Gamma \cup \{\epsilon\})$.  We can show that introducing non-determinism this way is equivalent to defining it as $\delta: Q \times (\Sigma \cup \{\epsilon\})\rightarrow P(Q)$ for finite state automata (and $\delta: Q \times (\Sigma \cup \{\epsilon\}) \rightarrow P(Q \times \Gamma)$ for Mealy machines) but in our case, just adding epsilon is enough and will make things simpler later. You can treat finite state machines as predicates on formal languages. For instance if $P$ is an automaton, then $\forall_{x\in \Sigma^*} P(x) \iff P \textrm{ accepts }x$. Mealy machines on the other hand, can be interpreted as relations on languages. Let's say $M$ is a Mealy machine, then $\forall_{x\in\Sigma^*, y \in \Gamma^*} M(x,y) \iff M \textrm{ produces } y \textrm{ as one of it's outputs, on input } x$. So in a sense, $P$ is equivalent to some subset of $\Sigma^*$, while $M$ is equivalent to some subset of $\Sigma^* \times \Gamma^*$. If additionally $M$ is a function ( it holds that $\forall_{x\in\Sigma^* , y,z \in \Gamma^* } M(x,y) \wedge M(x,z) \implies y=z$ ), then we can write $M(x)=y$ instead of $M(x,y)$. It's important to remember that there  might exist many different automata inducing the same language or relation on languages. Therefore we shall write $P_0 = P_1$ to mean $\forall_{x\in\Sigma^*} P_0(x) \iff P_1(x)$ even when $P_0$ and $P_1$ have different structures. Similarly $M_0 = M_1$ when $\forall_{x \in \Sigma^* , y\in\Gamma^*}M_0(x,y) \iff M_1(x,y)$.  We define two projections for Mealy machines: 
 \begin{itemize}
 	\item input projection $\pi_0(M) = P$ such that $\forall_{x\in\Sigma^*} (\exists_{y\in\Gamma^*}M(x,y) ) \iff P(x) $
 	\item output projection  $\pi_1(M) = P$ such that $\forall_{y\in\Gamma^*} (\exists_{x\in\Sigma^*}M(x,y) ) \iff P(y) $
@@ -75,13 +76,13 @@ $\forall_{x,y\in \Sigma^*} \exists_{a \in \Gamma^* } M(xy)=M(x)a$ \\
 
 
 
-\paragraph{Classes of language relations} As mentioned above, Mealy machines represent some class of relations on languages. A relation $R \subset \Sigma^* \times \Gamma^*$ is decidable if there exists some Turing machine that works on alphabet $\Sigma \cup \Gamma$ and accepts all strings in $R$ while also rejects all strings from $\overline{R}$ (we can use arbitrary way to encode pairs of strings). Of course not all relations are decidable. The most trivial example of undecidable relation is $(x,y)  \in \Sigma^* \times \{0,1\}$ where  $x$ encodes some Turing machine, and $y$ is in relation with $x$ iff $x$ halts on $y$. While Turing machines are capable of "recognizing" pairs of strings, Mealy automata can be used to "generate" the right-side element of pair for any given left-side element of pair. However, in principle both "generation" and "recognition" are just different ways to see the same phenomenon. Anything that can be generated with mealy machines can be recognized by some Turing machine. 
+\section{Classes of language relations} As mentioned above, Mealy machines represent some class of relations on languages. A relation $R \subset \Sigma^* \times \Gamma^*$ is decidable if there exists some Turing machine that works on alphabet $\Sigma \cup \Gamma$ and accepts all strings in $R$ while also rejects all strings from $\overline{R}$ (we can use arbitrary way to encode pairs of strings). Of course not all relations are decidable. The most trivial example of undecidable relation is $(x,y)  \in \Sigma^* \times \{0,1\}$ where  $x$ encodes some Turing machine, and $y$ is in relation with $x$ iff $x$ halts on $y$. While Turing machines are capable of "recognizing" pairs of strings, Mealy automata can be used to "generate" the right-side element of pair for any given left-side element of pair. However, in principle both "generation" and "recognition" are just different ways to see the same phenomenon. Anything that can be generated with mealy machines can be recognized by some Turing machine. 
 
-\paragraph{} Let's say that we are given non-deterministic Mealy machine $M$ and input $(x,y) \in \Sigma^* \times \Gamma^*$ . The problem whether $(x,y) \in M$ is decidable, because we can simulate all non-deterministic branches of computation and reject them as soon as the length of total accumulated output equals or exceeds length of $y$. There are only finitely many strings in $\Gamma^*$ shorter or equal $y$, so we can visit all of them in finite time. Also, at any step the computation of Mealy automaton can split into only finite number of new non-deterministic branches. 
+Let's say that we are given non-deterministic Mealy machine $M$ and input $(x,y) \in \Sigma^* \times \Gamma^*$ . The problem whether $(x,y) \in M$ is decidable, because we can simulate all non-deterministic branches of computation and reject them as soon as the length of total accumulated output equals or exceeds length of $y$. There are only finitely many strings in $\Gamma^*$ shorter or equal $y$, so we can visit all of them in finite time. Also, at any step the computation of Mealy automaton can split into only finite number of new non-deterministic branches. 
 
-\paragraph{} This proves that simulation of non-deterministic Mealy machines is computable. For all deterministic models the proof is even simpler. Unfortunately is doesn't work the other way around. It's not possible in general case to build Mealy machine equivalent to given Turing machine. The proof is very simple - languages accepted and generated by Mealy machines are regular. 
+This proves that simulation of non-deterministic Mealy machines is computable. For all deterministic models the proof is even simpler. Unfortunately is doesn't work the other way around. It's not possible in general case to build Mealy machine equivalent to given Turing machine. The proof is very simple - languages accepted and generated by Mealy machines are regular. 
 
-\paragraph{} Apart from input and output languages being regular themselves, there are also limitations to how the relation on those languages can be structured. There exists a relation $ R \subset \Sigma^* \times \Gamma^*$
+Apart from input and output languages being regular themselves, there are also limitations to how the relation on those languages can be structured. There exists a relation $ R \subset \Sigma^* \times \Gamma^*$
 such that both $\pi_0(R)$ and $\pi_1(R)$ are regular, but despite this there is no non-deterministic Mealy automaton capable of deciding it. Proof is simple. Let $s,t\in \Gamma^*$ such that $s\ne t$ and let $R:\Sigma^* \rightarrow \Gamma^*$ such that: \\
 $R(x) = \begin{cases}
 t & \mbox{if }  x  \mbox{ is a valid description of Turing machine that halts on } x   \\
@@ -98,7 +99,7 @@ Notice that $\pi_0(R) = \Sigma^*$ and $\pi_1(R) = \{s,t\}$ and both are regular.
 	You can see that every pair does not have a single encoding but rather an entire class of strings becomes a valid encoding. We will say that for given encoding $\mathbb{I}(R) \subset (\Sigma \cup \Gamma)^*$ a pair $(x,y)$ belongs to $R \subset \Sigma^* \times \Gamma^*$ iff there exists at least string $\mathbb{I}(R)$ that encodes $(x,y)$. Formally $(x,y) \in R \iff \exists_{w\in\mathbb{I}(R)} w - \Sigma = y \wedge w - \Gamma = x$ where $w-X$ denotes operation of removing from string $w$ all characters from set $X$. Notice that for given $R$ there might exist multiple equivalent sets $\mathbb{I}(R)$ that encode it. Analogically to separated encoding, $R$ is regular if there exists regular $\mathbb{I}(R)$, and it is context-free if there exists context-free $\mathbb{I}(R)$. Also, it's worth pointing out that class of interleaved relations is exactly equal to class of all formal languages, because for any given formal language over alphabet $\Sigma$ you can always split $\Sigma$ into two disjoint subsets $\Sigma_0$ and $\Sigma_1$, and then interpret every string in $\Sigma^*$ as some pair in $\Sigma_0^* \times \Sigma_1^*$.
 \end{itemize}
  
- \subparagraph{} From now on, we will use $\mathbb{M}_1$ to refer to class of relations decidable by single-output, $\mathbb{M}_\infty$ for multi-output , $\mathbb{M}_\rightarrow$ for functional and $\mathbb{M}$ for non-deterministic Mealy machines. $\mathbb{REG}$ will be used to describe class of regular languages  and $\mathbb{CFG}$ for context-free languages. For given class of relations X, we will write $\mathbb{I}(X)$ to denote class of formal languages that encode relations from $X$. Formally $L  \in X \iff \mathbb{I}(L)  \in \mathbb{I}(X)$ where $L \subset \Sigma^* \times \Gamma^*$ and $\mathbb{I}(L) \subset (\Sigma \cup \Gamma)^*$. 
+From now on, we will use $\mathbb{M}_1$ to refer to class of relations decidable by single-output, $\mathbb{M}_\infty$ for multi-output , $\mathbb{M}_\rightarrow$ for functional and $\mathbb{M}$ for non-deterministic Mealy machines. $\mathbb{REG}$ will be used to describe class of regular languages  and $\mathbb{CFG}$ for context-free languages. For given class of relations X, we will write $\mathbb{I}(X)$ to denote class of formal languages that encode relations from $X$. Formally $L  \in X \iff \mathbb{I}(L)  \in \mathbb{I}(X)$ where $L \subset \Sigma^* \times \Gamma^*$ and $\mathbb{I}(L) \subset (\Sigma \cup \Gamma)^*$. 
  
 For encoding  $\mathbb{S}_\#$ it works analogically, except there is one important detail. We need to make it precise what "class of languages" stands for. A formal language is just a set of strings over some alphabet. A class of formal languages therefore is a set of sets of strings over some alphabet. There is no restriction that forces all the languages in one class to share common alphabet. In many books and papers this detail is overlooked or left implicit. Here, however, the separator character $\#$ requires us to be explicit about the alphabets and for this reason we need clear distinction between homogeneous and heterogeneous classes. 
 
@@ -106,7 +107,7 @@ For encoding  $\mathbb{S}_\#$ it works analogically, except there is one importa
  \begin{enumerate}
 	\item every homogeneous class is also a heterogeneous class
 	\item if $Y$ is set (of any cardinality) of  heterogeneous classes then union	\[
-	\mathop{\bigcup} Y  
+	\mathop{\bigcup_{X\in Y}} X
 	\] is a heterogeneous class
  \end{enumerate} 
 An important thing worth noticing is that many heterogeneous classes can be seen as homogeneous classes. Suppose there are two homogeneous formal languages $X_\Sigma \subset \Sigma^*$ and  $X_\Gamma \subset \Gamma^*$. However obviously if $\Sigma$ and $\Gamma$ are finite sets then $\Sigma \cup \Gamma$ is a finite set too. Therefore the union $X_\Sigma \cup X_\Gamma$ could be a heterogeneous class derived from second rule of formation or it could be a  homogeneous class $X_\Sigma \cup X_\Gamma \subset (\Sigma \cup \Gamma)^*$. Unfortunately not all heterogeneous classes can be treated this way. The problem lies in the requirement that alphabet is finite, while the second rule of formation would allow us to have in total infinitely many disjoint alphabets (so the union of alphabets would be infinite as a result).  We can go even further and define universum $\mathcal{U}$ as the set of all finite sets, and treat it as set of all possible alphabets. Then we can define formal language universum $\top$ which is the heterogeneous class of all formal languages given by \[
@@ -124,7 +125,7 @@ After settling precise definition of classes of formal languages we can go back 
 \end{itemize} 
  Notice that for any two characters $a,b \notin \Sigma \cup \Gamma$ the languages $\mathbb{S}_a(R)$ and $\mathbb{S}_b(R)$ are isomorphic (the only difference is substitution of separator $a$ for separator $b$ or vice versa). 
  
-\subparagraph{Hierarchy of classes} Obviously $\mathbb{M}_0 \subsetneq \mathbb{M}_{\infty}  \subsetneq \mathbb{M}_{\rightarrow}  \subsetneq \mathbb{M} $, but now when we have all the necessary tools and definitions we  can show further the correlations between Mealy machine models and classes of relations and their encodings:
+\section{Hierarchy of classes} Obviously $\mathbb{M}_0 \subsetneq \mathbb{M}_{\infty}  \subsetneq \mathbb{M}_{\rightarrow}  \subsetneq \mathbb{M} $, but now when we have all the necessary tools and definitions we  can show further the correlations between Mealy machine models and classes of relations and their encodings:
  \begin{enumerate}
 
 
@@ -134,7 +135,7 @@ Unfortunately it's not true that any context-free relation can be generated by M
 
 \item $\mathbb{REG} \cap \mathbb{S}(\mathbb{M}) \subsetneq \mathbb{S}(\mathbb{M})$ Class of relations generated by non-deterministic Mealy machines is a proper superclass of regular separated relations. We need to prove that $\mathbb{REG} \cap \mathbb{S}(\mathbb{M}) \subset \mathbb{S}(\mathbb{M})$ and $\mathbb{S}(\mathbb{M}) \not\subset \mathbb{REG} \cap \mathbb{S}(\mathbb{M})$. The first case is trivial. The second is much more tedious. Here is its proof: \\
 Assume to the contrary that for any $M \in \mathbb{M}$, we can find finite state automaton $P$ that recognizes  $\mathbb{S}(M)$. Let's take the first projection of $\mathbb{S}(M)$ given by 
-$\Pi_0 = \{s \in \Sigma^* : \exists_{t\in\Gamma^*} s\#t \in M\}$. We can always find such automaton $P'$ that is a sub-automaton of $P$ (has some states and edges removed, no new edges or states are added, and additionally accepting states are changed) and accepts $\Pi_0$. Because every string $s \in  \mathbb{S}(M)$ must contain exactly one $\#$, we can deduce that once $P'$ accepts, some transition labeled with $\#$ must take you to some new state that is in $P$ but not in $P'$ and it's not possible to ever go back to any state in $P'$. In other words, accepting states of $P'$ mark the states in $P$ with outgoing $\#$-edges. There can only by finitely many such $\#$-states and each of them has exactly one (for deterministic FSA) $\#$-edge. We can divide $\Pi_0$ into congruence classes based on which accepting state in $P'$ they end up in. The most important implication that follows from it is that we can also divide $ \mathbb{S}(M)$ based on this criterion - given $(s_0,t_0),(s_1,t_1) \in \mathbb{S}(M)$ the two relations are congruent iff $s_0$ and $s_1$ are congruent too. Because $P'$ has only finitely many accepting states, there can be only finitely many congruence classes. The property of such congruence is that if $(s_0,t_0)$ is congruent with $(s_1,t_1)$ then $(s_0,t_1),(s_1,t_0)\in M$ (because both $s_0$ and $s_1$ reached the same $\#$-state and both $s_0\#$ and $s_1\#$ transitioned over the same $\#$-edge, so at that point the automaton lost all memory about whether the left-side element of pair was $s_0$ or $s_1$ and it will have to behave the same way in both cases and accept the same right-side elements of pair). Obviously this property does not hold for all non-deterministic Mealy automata in general. They might require infinitely many congruence classes to make such property hold.
+$\Pi_0 = \{s \in \Sigma^* : \exists_{t\in\Gamma^*} s\#t \in M\}$. We can always find such automaton $P'$ that is a sub-automaton of $P$ (has some states and edges removed, no new edges or states are added, and additionally accepting states can be changed) and accepts $\Pi_0$. Because every string $s \in  \mathbb{S}(M)$ must contain exactly one $\#$, we can deduce that once $P'$ accepts, some transition labeled with $\#$ must take you to some new state such that: 1. it is in $P$ , 2. it is not in $P'$ , 3. it's not possible to ever go back to any state in $P'$, 4. it is possible to  reach accepting state of $P$. We will call such states the $\#$-states, and their edges that connect $P$ with $P'$ are the $\#$-edges (those edges don't belong to $P'$). Notice that there can only be finitely many such $\#$-states and each of them has exactly one $\#$-edge. We can divide $\Pi_0$ into congruence classes based on which accepting state in $P'$ they end up in (and which $\#$-edge they transition through). The most important implication that follows from it is that we can also divide $ \mathbb{S}(M)$ based on this criterion - given $(s_0,t_0),(s_1,t_1) \in \mathbb{S}(M)$ the two relations are congruent iff $s_0$ and $s_1$ are congruent too. Because $P'$ has only finitely many accepting states, there can be only finitely many congruence classes. The property of such congruence is that if $(s_0,t_0)$ is congruent with $(s_1,t_1)$ then $(s_0,t_1),(s_1,t_0)\in M$ (because both $s_0$ and $s_1$ reached the same $\#$-state and both $s_0\#$ and $s_1\#$ transitioned over the same $\#$-edge, so at that point the automaton lost all memory about whether the left-side element of pair was $s_0$ or $s_1$ and it will have to behave the same way in both cases and accept the same right-side elements of pair). Obviously this property does not hold for all non-deterministic Mealy automata in general. They might require infinitely many congruence classes to make such property hold.
 
 \item $\mathbb{REG} \cap \mathbb{S}(\mathbb{M}) \not\subset \mathbb{S}(\mathbb{M}_\rightarrow)$  This one is quite obvious. $\mathbb{S}(\mathbb{M}_\rightarrow)$ only contains relations that are  functions while $\mathbb{REG} \cap \mathbb{S}(\mathbb{M})$ contains any relations.  
 
@@ -155,7 +156,7 @@ First we prove $\mathbb{I}(\mathbb{M})  \subset \mathbb{REG} $. The proof is con
 	\item if $s \in \Sigma_0$ then put $(m_{p'},\epsilon) \in \delta_M(m_p,s) $ 
 	\item if $s \in \Sigma_1$ then put $(m_{p'},s) \in \delta_M(m_p,\epsilon) $ 
 \end{enumerate}
-For every state $p \in F_P$ put $m_p \in F_M$. Finally let $m_{p_0}$ be the accepting state. This ends construction of $M$ such that exactly simulates $\mathbb{I}(M) = P$.
+For every state $p \in F_P$ put $m_p \in F_M$. Finally let $m_{p_0}$ be the accepting state. This ends construction of such $M$  that exactly simulates $\mathbb{I}(M) = P$.
 
 \item $\mathbb{I}(\mathbb{M}_\rightarrow) \subset \mathbb{REG}$ This one is very simple to show and proof is analogous to the proof of $\mathbb{I}(\mathbb{M}) \subset \mathbb{REG}$. First you need to consider that any $M \in \mathbb{M}_\rightarrow$ is equivalent to union of several $M_t \in\mathbb{M}_\infty$ (one for each tape $t \in T$). Any automaton in $\mathbb{M}_\infty$ can be treated as a specific case of non-deterministic automaton $\mathbb{M}$, that just happens to lack non-determinism. Therefore we already know that for each $t\in T$ we have $\mathbb{I}(M_t) \subset \mathbb{REG}$. We can also be sure that regular languages are closed under union which gives us $\mathbb{I}(M_{t_0}) \cup \mathbb{I}(M_{t_1}) \cup ... = \mathbb{I}(M) \subset \mathbb{REG}$ (we simulate very tape separately but we also have guarantee that only one of them accepts at the time therefore this equality holds). Unfortunately the opposite is not true $\mathbb{REG} \not\subset \mathbb{I}(\mathbb{M}_\rightarrow) $ because $\mathbb{M}_\rightarrow$ require determinism.
 
@@ -178,7 +179,7 @@ Notice that given $M \in \mathbb{M}_\rightarrow$ and $M_\# \in \mathbb{M}_{\#\ri
 
 
 
-\paragraph{Operations} Only non-deterministic machines are closed under union, composition, concatenation and inverse. Intersection and complement are less intuitive. Kleene closure can work in deterministic case but there is a catch.
+\section{Operations} Only non-deterministic machines are closed under union, composition, concatenation and inverse. Intersection and complement are less intuitive. Kleene closure can work in deterministic case but there is a catch.
 \subparagraph{} If you define complement as $M(x,y) \iff \neg \overline{M}(x,y)$ then only non-deterministic machines are closed under it. On top of that, it's very impractical. Imagine a singleton language $M(x_0,y_0)$. Complement of it becomes infinite $\forall_{x\ne x_0,y\ne y_0} \overline{M}(x,y)$. If $M$ is a function then $\overline{M} $ cannot be a function. Let's consider for a moment a weaker form of complement that only negates input language but leaves output language intact. It simply works by flipping the accepting states of automaton. This introduces a new problem. Because it's possible to express the same relation $\Sigma^* \times \Gamma^*$ with many different Mealy automata, some of them might return the same output but at different stages. For instance automaton that accepts string $x_0x_1$ and prints $y_0$ could print it after $x_0$ and then print nothing, or it might print nothing after $x_0$ and then print $y_0$ after reading $x_1$. When you perform complement operation by flipping accepting states, the relation on languages might be different depending on structure of machine: $M_0 = M_1 \centernot \implies \overline{M_0} = \overline{M_1}$ and $M_0 = M_1  \implies \pi_0(\overline{M_0}) = \pi_0(\overline{M_1})$. For those reasons, complement operation is not covered here.
 
 \subparagraph{Intersection}  operation suffers from similar problems. If $M_0(x,y)$ and $M_1(x,z)$ then should $(M_0 \cap M_1)(x,y)$ or $(M_0 \cap M_1)(x,z)$? In case of non-deterministic machines the answer is simple: $(M_0 \cap M_1)(x,y) \iff M_0(x,y) \wedge M_1(x,y)$. In cases when $M_0$ and $M_1$ are both deterministic, such definition might often be too restrictive. A good alternative is to perform intersection only on input languages and ignore the output: $(M_0 \cap M_1)(x,y) \iff M_0(x,y) \wedge \pi_0(M_1)(x)$. This operation is no longer commutative. 
@@ -188,7 +189,7 @@ Notice that given $M \in \mathbb{M}_\rightarrow$ and $M_\# \in \mathbb{M}_{\#\ri
 \subparagraph{Concatenation}  introduces some serious problems for deterministic machines. For given language relations $M_0,M_1 \subset \Sigma^* \rightarrow \Gamma^* $ , whenever we match $M_0$ how can we be sure that it's time to start $M_1$ or whether we should continue reading $M_0$ further. The problem becomes even greater when both options are valid and lead to accepting states but with different outputs. As an instance consider languages $M_0(x) =  0^{\vert x \vert} $ and $M_1(x) =  1^{\vert x \vert} $ where $\Sigma=\Gamma=\{0,1\}$. Then $(M_0M_1)(00)$ could be any of $00$, $01$, $11$. 
 
 
-A good way to fix this problem is to define concatenation only on cases where the problem of "matching further or moving to next language" can be decided after reading only one alphabet character. To make it more precise let's define base of language $X \subset \Sigma^*$ as set $\{s\in\Sigma : \exists_{t\in\Sigma^*}st\in X\}$. Now assume that $P_0,P_1 \subset \Sigma^*$ and $B$ is base of $P_1$. Concatenation $P_0P_1$ is possible iff $\forall_{x\in P_0} \neg \exists_{s\in B} \exists_{t\in\Sigma^*} P_0(xst)$. Therefore if we matched $x$ and next character is $s$ from $B$ we can be sure it's time to match $P_1$. Concatenation of $M_0$ and $M_1$ is possible iff $\pi_0(M_0)\pi_0(M_1)$ is possible too. 
+A good way to fix this problem is to define concatenation only on cases where the problem of "matching further or moving to next language" can be decided after reading only one alphabet character. To make it more precise let's define base of language $X \subset \Sigma^*$ as set $\{s\in\Sigma : \exists_{t\in\Sigma^*}st\in X\}$ and co-base as set  $\{s\in\Sigma : \exists_{r,t\in\Sigma^*}r\in X \wedge rst\in X\}$. Base is just a set of characters that can be found at the beginning of any string in $X$, and co-base is set of characters that can be found right after the end of some string in $X$ and at the beginning of some longer superstring that is still in $X$. Now assume that $P_0,P_1 \subset \Sigma^*$ and $B$ is base of $P_1$, while $B_c$ is the co-base of $P_0$. Concatenation $P_0P_1$ is possible iff $B\cap B_c = \emptyset$. Alternatively this can be also written as $\forall_{x\in P_0} \neg \exists_{s\in B} \exists_{t\in\Sigma^*} P_0(xst)$ . Therefore if we matched $x$ and next character is $s$ from $B$ we can be sure it's time to match $P_1$. Concatenation of $M_0$ and $M_1$ is possible iff $\pi_0(M_0)\pi_0(M_1)$ is possible too. 
 
 Notice that such weak concatenation is undefined even in cases that could potentially work - that is all of $M_0,M_1,M_0M_1 \subset \Sigma^* \rightarrow \Gamma^*$ are deterministic and yet $M_0M_1$ is not defined for weak concatenation . Consider the counter-example of $M_1,M_2 \subset \{0,1\}\rightarrow\{0,1\}$ defined with \\
 $M_0(0,0)$,  $M_0(010,010)$, $M_1(11,11)$ \\
@@ -197,20 +198,20 @@ $(M_0M_1)(011,011)$,  $(M_0M_1)(01011,01011)$ \\
 However for weak concatenation it's not defined, because base of $M_1$ is $\{1\}$ and  $\forall_{x\in \pi_0(M_0)} \neg \exists_{s\in\{1\}} \exists_{t\in\Sigma^*} \pi_0(M_0)(xst)$ is violated by $x=0$, $s=1$ and $t=0$.
 
 
-There is one more important detail in weak concatenation. Notice that in definition of base, there is no room for epsilon. But what if relation $M_1 \subset \Sigma^* \rightarrow \Gamma^*$ has some mapping for $M(\epsilon)$? The answer to this problem is simple - in deterministic Mealy machines, there are no epsilons on egdes and therefore it's not possible to express such mapping. Instead you can use $\mathbb{M}_{\#\rightarrow}$ automata with  $\#$ as end-of-string marker, which could then become part of base. However it introduces further problems. Both $M_0 \in \mathbb{M}_{\#\rightarrow}$ and $M_1 \in \mathbb{M}_{\#\rightarrow}$ could theoretically have their own mapping for empty string, but $\#$ appears only once. Suddenly the either $M_0$ or $M_1$ has to lose it's mapping for $\#$. Consider an example of machine $M_0(x)=x0$ that adds 0 as suffix. In order to make $M_0M_1$ work we would actually need to put $\#$ somewhere in the middle of string. Otherwise $M_0$ forever loses its ability to append suffixes correctly. In fact, it makes very little sense to concatenate $\mathbb{M}_{\#\rightarrow}$ automata. And not only that. In general concatenation of any kind of automata that express mappings for empty strings $M(\epsilon)$, is the backbone of non-determinism. Here is a simple proof that if you can concatenate such automata then you get power equivalent to non-deterministic Mealy automata:
+There is one more important detail in weak concatenation. Notice that in definition of base, there is no room for epsilon. But what if relation $M_1 \subset \Sigma^* \rightarrow \Gamma^*$ has some mapping for $M(\epsilon)$? The answer to this problem is simple - in deterministic Mealy machines, there are no epsilons on input side of egdes and therefore it's not possible to express such mapping. The only feasible mapping for $\epsilon$ is $M(\epsilon,\epsilon)$, which happens only when initial state is also accepting state. However, concatenation of $M(\epsilon,\epsilon)$ doesn't actually make any difference. The pair $(\epsilon,\epsilon)$ might as well not be in the language, and we can safely ignore it in case of concatenation.  But if you really need to express some mapping $M(\epsilon,a)$ for $a\ne\epsilon$, then what you can use instead is $\mathbb{M}_{\#\rightarrow}$ automata . The $\#$ as end-of-string marker,  could then become part of base. However it introduces further problems. Both $M_0 \in \mathbb{M}_{\#\rightarrow}$ and $M_1 \in \mathbb{M}_{\#\rightarrow}$ could theoretically have their own mapping for empty string, but $\#$ appears only once. Suddenly the either $M_0$ or $M_1$ has to lose it's mapping for $\#$. Consider an example of machine $M_0(x)=x0$ that adds 0 as suffix. In order to make $M_0M_1$ work we would actually need to put $\#$ somewhere in the middle of string. Otherwise $M_0$ forever loses its ability to append suffixes correctly. In fact, it makes very little sense to concatenate $\mathbb{M}_{\#\rightarrow}$ automata. And not only that. In general concatenation of any kind of automata that express mappings for empty strings $M(\epsilon)$, is the backbone of non-determinism. Here is a simple proof that if you can concatenate such automata then you get power equivalent to non-deterministic Mealy automata:
 
 
 Consider homogeneous class of deterministic relations $X = \Sigma^* \rightarrow \Gamma^*$ and class of singleton mappings $N = \epsilon \rightarrow (\Gamma\cup\{\epsilon\})$ such that $\forall_{\gamma\in\Gamma\cup\{\epsilon\}}N_\gamma(\epsilon,\gamma) \wedge N_\gamma  \in N$. Now let $\circ$ be some miraculous concatenation operation that can take as it's operands automata from both $X$ and $N$. In the class $X$ you can of course find singleton relations of the form $X_{x\rightarrow y}(x,y)$ for all $x\in \Sigma$ and $y \in \Gamma$. WORK IN PROGRESS
 
 
 
-\subparagraph{Kleene closure}  works in deterministic case as long as you keep in mind that $x^* = \epsilon \cup x \cup xx \cup xxx ...$ and that $xx$ is concatenation as defined above! This implies that $\forall_{x\in \Sigma^*} P(x) \implies \neg \exists_{s\in B} \exists_{t\in\Sigma^*} P(xst)$ where $B = \{s\in\Sigma : \exists_{t\in\Sigma^*}st\in P\}$ can be written as  $\forall_{x\in \Sigma^*} P(x) \implies \neg \exists_{s\in \Sigma} \exists_{t\in\Sigma^*} P(xst) \wedge P(st)$ 
+\subparagraph{Weak Kleene closure}  works in deterministic case as long as you keep in mind that $x^* = \{(\epsilon,\epsilon) \} \cup x \cup xx \cup xxx ...$ and that $xx$ is concatenation as defined above! This implies that weak Kleene closure of automaton $P$ is possible only when $\forall_{x\in \Sigma^*} P(x) \implies \neg \exists_{s\in B} \exists_{t\in\Sigma^*} P(xst)$ where $B = \{s\in\Sigma : \exists_{t\in\Sigma^*}st\in P\}$ which can be rewritten in this case as  $\forall_{x\in \Sigma^*} P(x) \implies \neg \exists_{s\in \Sigma} \exists_{t\in\Sigma^*} P(xst) \wedge P(st)$. 
 
-\subparagraph{Composition} Given two relations of the form $M_0,M_1 \subset \Sigma^* \rightarrow \Gamma^*$, the composition is defined as $(M_0 \circ M_1)(x) = M_0(M_1(x))$. Because $M_1$ is a \underline{partial} function (it's deterministic), we get only one possible output. That output is the processes by $M_0$ which in turn can give only one output again. Therefore you can clearly see that the operation of composition should preserve determinism. The situation gets slightly complicated in case of $M_{\#0},M_{\#1} \in M_{\#\rightarrow}$. \\
+\subparagraph{Composition} Given two relations of the form $M_0 \subset \Sigma_1^* \rightarrow \Sigma_2^*$ and $M_1 \subset \Sigma_0^* \rightarrow \Sigma_1^*$ , the composition is defined as $(M_0 \circ M_1)(x) = M_0(M_1(x))$. Because $M_1$ is a \underline{partial} function (it's deterministic), we get only one possible output. That output is the processes by $M_0$ which in turn can give only one output again. Therefore you can clearly see that the operation of composition should preserve determinism. The situation gets slightly complicated in case of $M_{\#0},M_{\#1} \in M_{\#\rightarrow}$. \\
 Let $\#$ be a mealy machine that appends $\#$ to the end (just as explained previously in the section about end-of-string markers). Then  $M_0 \circ \# = M_{\#0}$ and $M_1 \circ \# = M_{\#1}$. You need to be careful and remember that composition of automata with $\#$ marker becomes $M_{\#0} \circ M_{\#1} = M_0 \circ \# \circ M_1 \circ \#$ instead of  $M_{\#0} \circ M_{\#1} = M_0 \circ M_1 \circ \#$.
 
-\subparagraph{Normalization in $\mathbb{M}_\infty$} 
- Correspondence between relations on formal languages and Mealy machines is not 1-to-1. The same holds for finite state automata and formal languages. You can however choose one unique representative automaton for each language. Such process of normalize is equivalent to minimization for FSA (the minimal automaton is unique up to isomorphism). The same is true in case of single-output Mealy machines. However for multi-output machines we can express minimial automaton in many different ways and each of them differs only in outputs of edges. 
+\subparagraph{Normalization} 
+ Correspondence between relations on formal languages and Mealy machines is not 1-to-1. The same holds for finite state automata and formal languages. You can however choose one unique representative automaton for each language. Such process of normalization is equivalent to minimization for FSA (the minimal automaton is unique up to isomorphism). The same is true in case of single-output Mealy machines. However for multi-output machines we can express minimial automaton in many different ways and each of them differs only in outputs of edges. 
 
 \begin{center}
 	\begin{tikzpicture}[scale=0.2]
@@ -269,7 +270,7 @@ Let $\#$ be a mealy machine that appends $\#$ to the end (just as explained prev
 	\end{tikzpicture}
 \end{center}
 
-All three of those automata are minimal, however only the first one is normalized. The way normalization should work is by pushing all the output as far as possible in the depth of graph. Notice however, that we cannot change this:
+All three of those automata are minimal, but only the first one is normalized. The way normalization should work is by pushing all the output as far as possible in the depth of graph. Notice however, that we cannot change this:
 \begin{center}
 	\begin{tikzpicture}[scale=0.2]
 	\tikzstyle{every node}+=[inner sep=0pt]
@@ -352,15 +353,79 @@ Such operation doesn't preserve functionality of automaton. Similarly the follow
 	\draw (36.65,-9) node [above] {$0:11$};
 	\end{tikzpicture}
 \end{center}
-Formally we should say that an automaton $M$ is in normalized form iff there does not exist a pair of edges $(q_1,x_1,y_1),(q_2,x_2,y_2)\in G_M$ such that $\delta_M(q_1,x_1)=q_2$ and $M$ is equivalent to $N$ where $N$ is given by $\delta_m=\delta_N$, $F_M$=$F_N$, $q_{0M}=q_0{N}$, $Q_M=Q_n$, $\Sigma_N=\Sigma_N$, $\Gamma_M=\Gamma_N$ and \\
-$G_N(q,x)=\begin{cases}
-\epsilon& \mbox{if } q=q_1 \wedge x=x_1 \\
-y_1y_2& \mbox{if } q=q_2 \wedge x=x_2 \\
-G_M(q,x) & \mbox{otherwise}
-\end{cases}$
+We can specify it more formally. We seek such automaton that produces all its output as late as possible. Given Mealy automaton $M\in M_\infty$,  we define $\lambda : Q_M \times \Sigma^* \rightarrow \mathbb{ N}$ as:\\
+$\lambda_M(q,\epsilon) = 1$ \\ 
+$\lambda_M(q,x'x) = (2^{\vert G_M(q,x') \vert+1} - 1)*2^{\lfloor log \lambda_M(\delta_M(q,x'),x) \rfloor }  + \lambda_M(\delta_M(q,x'),x)$ where $x'\in\Sigma$ , $x\in\Sigma^*$ \\
+What $\lambda$ does is performing a binary encoding of positions at which automaton printed or read output. For instance given $M(x_0x_1x_2x_3x_4,y_0y_1y_2)$, the output might look like $\lambda(q_0,x_0x_1x_2x_3x_4)=52=00110100_2$ which should be read as:\\
+$\underline{0}0110100_2$ - $M$ read $x_0$ (and didn't print anything) \\
+$0\underline{0}110100_2$ - next it read $x_1$ and then \\
+$00\underline{1}10100_2$ - it printed $y_0$ \\
+$001\underline{1}0100_2$ - and $y_1$ (both $y_0$ and $y_1$ were printed on the same edge transitioning over $x_1$)\\
+$0011\underline{0}100_2$ - next it read $x_2$\\
+$00110\underline{1}00_2$ - and printed $y_2$ \\
+$001101\underline{0}0_2$ - then it read $x_3$ \\
+$0011010\underline{0}_2$ - and $x_4$ without printing anything more \\
+Notice that it actually doesn't matter whether $x_0x_1x_2x_3x_4$ is accepted or rejected. 
+
+Having $\lambda$ we can now define partial order on automata as: \\ 
+$M_0 \le_{\lambda} M_1 \iff \forall_{x\in\Sigma^*} \lambda_{M_0}(q_{0M_0},x) \le \lambda_{M_1}(q_{0M_1},x)$ . We will say that an automaton $M\in\mathbb{M}_\infty$ is in normalized form iff there is no smaller (according to $\lambda$) \underline{equivalent} automaton. In other words, we can split $\mathbb{ M}_\infty$ into equivalence classes, introduce on it $\le_\lambda$-order and then all minimal elements within each class are the normalized automata. Obviously there are infinitely many minimal elements (normalized automata) in each class, however there is always  only one automaton that is both minimal (having smallest number of states) and normalized.
+
+It's possible to extend this definition to $\mathbb{ M}_\rightarrow$ by specifying \\ $M_0 \le_{\lambda} M_1  \iff \forall_{t\in T} \pi_t(M_0) \le_{\lambda} \pi_t(M_1)$ where $M_0,M_1\in \mathbb{ M}_\rightarrow$.
 
 
-\paragraph{Naive algorithms}
+
+\subparagraph{Minimization} For finite state automata the process of minimization is simple thanks to Myhill-Nerode theorem. For non-deterministic FSA minimization becomes PSPACE (and probably NP-hard) problem and on top of that the minimal NFA is not unique. For deterministic single-output Mealy machines there also applies a special version of Myhill-Nerode theorem and minimization procedure is similar to that for deterministic FSA. In case of multi-output deterministic Mealy machines minimization suffers from similar problem to non-deterministic FSA - the minimal automaton is not unique. Any attempt at constructing algorithm that just returns minimal $M_\infty$ is destined to fail if we don't take normalization into account. 
+
+Given automaton $M\in\mathbb{ M}_\infty$ and strings $x,y\in\Sigma^*$, let's define distinguishing extension as pair $(z,w)\in\Sigma^* \times \Gamma^*$ such that exactly one of $(xz,M(x)w)$ or $(yz,M(y)w)$ belongs to $M$. We can then introduce equivalence relation $=_M$ that relates two string only when there doesn't exist any distinguishing extension for them. Formally: \\
+$\forall_{x,y\in\Sigma^*} x=_M y \iff \forall_{z:\Sigma^*,w\in\Gamma^*} ((xz,\hat{G}_M(x)w) \in M \iff (yz,\hat{G}_M(y)w) \in M)$ \\
+where $\hat{G}_M : \Sigma^* \times Q_M \rightarrow \Gamma^*$ is extended output function (and second argument is by default assumed to be initial state unless explicitly specified otherwise). \\
+Notice that $=_M$ will work the same no matter whether $M$ is normalized or not! The only thing that counts is whether $\hat{G}_M(x)w$ and $\hat{G}_M(y)w$ are produced at the moment when $xz$ and $yz$ accept. The output produced by intermediate non-accepting states don't matter because if somewhere at later point there is accepting state, then all normalized and non-normalized (but equivalent) versions should produce the same output. The $\forall$ quantifier is the key!\\
+Now, we can use $=_M$ to divide $\Sigma^*$ into equivalence classes. We will show that  iff there are only finitely many such classes then the language is in $\mathbb{ M}_\infty$.  Each class corresponds to one state in minimal version of $M$. Let's say that $[s_0],[s_1],...,[s_{n-1}]$ are the equivalence classes and $[s_i]$ corresponds to state $q_i$ for any $0\le i < n$. Then we can build minimal automaton $N$ using \\
+$\delta_N(q_i,s)=q_j \wedge G_N(q_i,s)=s' \iff s_is =_M s_j \wedge \hat{G}_M(s_i)s' = \hat{G}_M(s_is)$ \\
+ However, there is one important detail! In order for the $\iff$ equivalence to hold, $M$ must be normalized. Otherwise $ \hat{G}_M$ will introduce ambiguities. If $M$ is not normalized then only one-way implication holds: \\
+ $\delta_N(q_i,s)=q_j \wedge G_N(q_i,s)=s' \implies s_is =_M s_j \wedge \hat{G}_M(s_i)s' = \hat{G}_M(s_is)$ \\
+ That's because without normalization there might exist two equivalent states of this form:
+ \begin{center}
+ 	\begin{tikzpicture}[scale=0.2]
+ 	\tikzstyle{every node}+=[inner sep=0pt]
+ 	\draw [black] (13.5,-9.5) circle (3);
+ 	\draw (13.5,-9.5) node {$q_1$};
+ 	\draw [black] (29.3,-9.5) circle (3);
+ 	\draw (29.3,-9.5) node {$q_2$};
+ 	\draw [black] (13.5,-17.1) circle (3);
+ 	\draw (13.5,-17.1) node {$q_4$};
+ 	\draw [black] (29.3,-17.1) circle (3);
+ 	\draw (29.3,-17.1) node {$q_5$};
+ 	\draw [black] (45.1,-9.5) circle (3);
+ 	\draw (45.1,-9.5) node {$q_3$};
+ 	\draw [black] (45.1,-17.1) circle (3);
+ 	\draw (45.1,-17.1) node {$q_6$};
+ 	\draw [black] (16.5,-17.1) -- (26.3,-17.1);
+ 	\fill [black] (26.3,-17.1) -- (25.5,-16.6) -- (25.5,-17.6);
+ 	\draw (21.4,-17.6) node [below] {$a:0$};
+ 	\draw [black] (32.3,-17.1) -- (42.1,-17.1);
+ 	\fill [black] (42.1,-17.1) -- (41.3,-16.6) -- (41.3,-17.6);
+ 	\draw (37.2,-17.6) node [below] {$a:\epsilon$};
+ 	\draw [black] (32.3,-9.5) -- (42.1,-9.5);
+ 	\fill [black] (42.1,-9.5) -- (41.3,-9) -- (41.3,-10);
+ 	\draw (37.2,-10) node [below] {$a:0$};
+ 	\draw [black] (16.5,-9.5) -- (26.3,-9.5);
+ 	\fill [black] (26.3,-9.5) -- (25.5,-9) -- (25.5,-10);
+ 	\draw [black] (45.1,-9.5) circle (2.4);
+ 	\draw [black] (45.1,-17.1) circle (2.4);
+ 	\draw (21.4,-10) node [below] {$a:\epsilon$};
+ 	\end{tikzpicture}
+ \end{center}
+Let's say $s_1,s_4 \in \Sigma^*$ are some strings such that $\hat{\delta}_M(s_1) = q_1$ and $\hat{\delta}_M(s_4) = q_4$ . Of course in this example you can clearly see that $s_1 =_M s_4$. So in $N$ we could safely assume $q_1=q_4$. However it's not true that $s_1a =_M s_4$ and neither is $ \hat{G}_M(s_4)0 = \hat{G}_M(s_1a) $.
+
+
+Also, notice that $s'\in\Gamma^*$ when $M\in\mathbb{ M}_\infty$ but in case of  $M\in\mathbb{ M}_1$ we can narrow it down to $s'\in\Gamma$. \\
+This  should conclude the implication that if $=_M$ induced finite number of equivalence classes then $M\in M_\infty$. The opposite implication is trivial. Therefore we obtain a special version of Myhill-Nerode theorem for Mealy machines.\\
+The version of this theorem for $\mathbb{ M}_\rightarrow$ is similar but you additionally need to take tapes into account: \\
+$\forall_{x,y\in\Sigma^*} x=_M y \iff \forall_{z:\Sigma^*,w\in\Gamma^*} ((xz,\hat{G}_M(x,\hat{F}_M(xz))w) \in M \iff (yz,\hat{G}_M(y,\hat{F}_M(yz))w) \in M)$ \\
+
+
+\subsection{Naive algorithms}
 \subparagraph{Weak concatenation in $\mathbb{REG}$}
 Given finite state automata $P_0,P_1 \subset \Sigma^*$ the weak concatenation $P_0P_1 $ can be implemented as:
 \begin{lstlisting}
@@ -378,9 +443,13 @@ for q $\in$ $F_{P_m}$
             $\delta_{P_m}$(q,s) := $\delta_{P_n}$($q_{0P_n}$,s) 
         else if s $\in$ B
             error
-$F_{P_m}$ := $F_{P_n}$
+if $q_{0P_n} \in F_{P_n}$            
+    $F_{P_m}$ := $F_{P_n} \cup F_{P_m}$
+else 
+    $F_{P_m}$ := $F_{P_n}$
 \end{lstlisting}
 $P_m$ and $P_n$ are minimized versions of $P_0$ and $P_1$. We have to minimize them in order to find sink states.  If there is any sink state at all, the it must be unique after performing minimization. The find\_sink procedure tests every state for being the sink (it can be recognized easily because for every character from $\Sigma$ is transitions back to itself). However in case there is no sink the procedure shall return $\emptyset$. If $P_0$ has no such sink then it's obvious that no matter what B is, the weak concatenation will be invalid (unless  $P_1$ has empty base. Empty base occurs only in one scenario - that is when $P_1$ rejects all input and $P_1 = \emptyset$ ). $q_{0P_n}$ is the initial state of $P_n$ and $F_{P_m}$ is the set of final states of $P_m$. For every state from $F_{P_m}$ and character from $\Sigma$ we test if transition leads us to sink state. If that's the case then $\forall_{x\in P_0} \neg \exists_{s\in B} \exists_{t\in\Sigma^*} P_0(xst)$ must hold, because $xs$ leads to sink and for sink there does not exist any $t$ such that $ P_0(xst)$. However, if for a given  character $s$ the final state doesn't transition to sink, it means that there exists some $t$ that accepts (if there was no such $t$ then minimization procedure would merge $\delta_{P_m}(q,s)$ with $\square$). So if there exists such $t$ then we must check if $s$ is in $B$. If the algorithm doesn't fall into error at any point, at the end of execution $P_m$ should hold the structure of $P_0P_1$, because we performed in-place assignment to its transition function $\delta_{P_m}(q,s) := q_{0P_n}$ and effectively merged it with $P_n$.
+Also, notice that at the end we must check for one special case - that is when $P_1(\epsilon)=\epsilon$. In such scenario $P_0$ can match too and we should retain its accepting states.
 \subparagraph{Weak concatenation in $\mathbb{M}_\infty$} Given $M_0,M_1 \in \mathbb{M}_\rightarrow$, the concatenation $M_0M_1$ can be computed analogically to procedure for $\mathbb{ REG}$. You just need to mutate the output function $G_{P_m}$ at the same time when you mutate $\delta_{P_m}$ . 
 
 \subparagraph{Weak concatenation in $\mathbb{M}_\rightarrow$} This works just the same way as for $\mathbb{M}_\infty$ except you need to handle multiple tapes now. It's more complicated because the tapes of $M_0$ are not the same tapes as those of $M_1$. The naive approach is to first create cartesian product of tapes $T_{M_0} \times T_{M_1}$. Then you change $G_{M_0}$ from $G_{M_0} : Q_{M_0} \times \Sigma \times T_{M_0} \rightarrow \Gamma$, to $G_{M_0} : Q_{M_0} \times \Sigma \times T_{M_0 \times M_1} \rightarrow \Gamma$ where $T_{M_0 \times M_1}$ is isomorphic to $T_{M_0} \times T_{M_1}$. The same must be done for $M_1$ too. Only when both automata use the same tapes you can perform concatenation. However, this approach creates many additional tapes that are in fact redundant. In minimization procedure we  will show how to remove all of the unnecessary tapes.
@@ -399,24 +468,35 @@ F_{M_1}(q_{M_1})  & \mbox{otherwise}
 \end{cases} $ \\
 Of course the initial state becomes $q_{0M_2}=(q_{0M_0},q_{0M_1})$.
 
-\subparagraph{Kleene closure in $\mathbb{M}_\rightarrow$} Just like concatenation but we don't need to create Cartesian product of tapes. Given $M \in \mathbb{M}_\rightarrow$, kleene closure can be implemented as
+\subparagraph{Weak Kleene closure in $\mathbb{M}_\rightarrow$} Just like concatenation but we don't need to create Cartesian product of tapes. Given $M \in \mathbb{M}_\rightarrow$, kleene closure can be implemented as
 
 \begin{lstlisting}
 $m$ := minimize($M$)
 $\square$ := find_sink($m$)
-B := { s $\in \Sigma$ : $\delta_m$($q_{0m}$,s) $\ne$ $\square$ }
-if $\square$ = $\emptyset$ $\wedge$ B $\ne$ $\emptyset$
+$B$ := { s $\in \Sigma$ : $\delta_m$($q_{0m}$,s) $\ne$ $\square$ }
+if $\square= \emptyset\wedge B \ne \emptyset$
     error
-for q $\in$ $Q_m$ where $F_m(q) \ne \emptyset$ 
-    for s $\in$ $\Sigma$
-        q' := $\delta_m$(q,s)
-        if q' = $\square$ 
+for $q\in Q_m$ where $F_m(q) \ne \emptyset$ 
+    for $s \in \Sigma$
+        $q'$ := $\delta_m$(q,s)
+        if $q'$ = $\square$ 
             $\delta_m$(q,s) := $\delta_m$($q_{0m}$,s)
-            for t $in$ T
+            for $t \in T_m$
                 $G_m$(q,s,t) := $G_m$($q_{0m}$,s,t)
         else if s $\in$ B
             error
+if $q_{0m} \notin F_m$
+   insert new state $q''$ to $Q_m$
+   for $s \in \Sigma$
+       $\delta_m(q'',s) $ := $\delta_m(q_{0m},s) $
+   for $q\in Q_m$
+      for $s \in \Sigma$
+          if $\delta_m(q,s) = q_{0m} $
+              $\delta_m(q,s)$ := $q''$
+   insert $q_{0m}$ to $F_m$
 \end{lstlisting}
+The last part that replaces initial state with $q''$ and adds original initial state to accepting states, is only necessary to express $(\epsilon,\epsilon) \in M^*$. However it's not necessary in case of computing $M^+$. The algorithm for $M^*$ can therefore be largely reused when computing $M^+$, with just the tiny modification that we remove the last 'if' checking for $q_{0m} \notin F_m$ .
+  
 
 \subparagraph{Tape projection $\mathbb{M}_\rightarrow$} This operation is very specific to class $\mathbb{M}_\rightarrow$ but it's required to facilitate other operations. Given automaton $M \in \mathbb{M}_\rightarrow$ with tapes $T_M$, we can take projection $\pi_t$ for any $t\in T_M$ where you can treat $\pi$ as function $T \times (\Sigma^* \rightarrow \Gamma^*) \rightarrow (\Sigma^* \rightarrow \Gamma^*)$. You can compute $M' = \pi_t(M)$ as \\
  $T_{M'} = \{t\}$ \\
@@ -430,7 +510,7 @@ for q $\in$ $Q_m$ where $F_m(q) \ne \emptyset$
  $G_{M'}(q,s) = G_M(q,s,t)$ \\
  $q \in F_{M'} \iff F_M(q) = t$ \\
 
-\subparagraph{Composition of $\mathbb{M}_\infty$ with $\mathbb{M}_\rightarrow$} Given automata $M_0,M_1 \subset \Sigma^* \rightarrow \Gamma^*$ such that  $M_0 \in \mathbb{M}_\rightarrow$ and $M_1 \in \mathbb{M}_\infty$ the composition $M_2=M_0 \circ M_1$ (read it as $M_2(x) = M_0(M_1(x))$ ) can be computed by performing product of states $Q_{M_2} = Q_{M_0} \times Q_{M_1}$. Tapes stay the same as in $T_{M_2} = T_{M_0}$. Then the construction of transition function is as follows:\\
+\subparagraph{Composition of $\mathbb{M}_\infty$ with $\mathbb{M}_\rightarrow$} Given automata $M_0 \subset \Gamma^* \rightarrow \Theta^* $ and $M_1 \subset \Sigma^* \rightarrow \Gamma^*$ such that  $M_0 \in \mathbb{M}_\rightarrow$ and $M_1 \in \mathbb{M}_\infty$ the composition $M_2=M_0 \circ M_1 \subset \Sigma^* \rightarrow \Theta^*$ (read it as $M_2(x) = M_0(M_1(x))$ ) can be computed by performing product of states $Q_{M_2} = Q_{M_0} \times Q_{M_1}$. Tapes stay the same as in $T_{M_2} = T_{M_0}$. Then the construction of transition function is as follows:\\
 $\delta_{M_2}((q_{M_0},q_{M_1}),s) = 
 ( \hat{\delta}_{M_0}(q_{M_0},G_{M_1}(q_{M_1},s) ) , \delta_{M_1}(q_{M_1},s) )
 $\\
@@ -439,33 +519,218 @@ $\\
 Accepting states are given by $F_{M_2}((q_{M_0},q_{M_1})) = F_{M_0}(q_{M_0})$ and initial state is $q_{0M_2} = (q_{0M_0},q_{0M_1})$
 
 
-\subparagraph{Composition in $\mathbb{M}_\rightarrow$} Given automata $M_0,M_1 \subset \Sigma^* \rightarrow \Gamma^*$ composition $M_2=M_0 \circ M_1$ (read it as $M_2(x) = M_0(M_1(x))$ ) can be computed by first performing tape projections of $M_0$ for each tape in $T_{M_0}$, then performing composition for them separately and in the end taking union. It can be written as: \\
+\subparagraph{Composition in $\mathbb{M}_\rightarrow$} Given automata $M_0 \subset \Gamma^* \rightarrow \Theta^* $ and $M_1 \subset \Sigma^* \rightarrow \Gamma^*$ composition $M_2=M_0 \circ M_1 \subset \Sigma^* \rightarrow \Theta^*$ (read it as $M_2(x) = M_0(M_1(x))$ ) can be computed by first performing tape projections of $M_0$ for each tape in $T_{M_0}$, then performing composition for them separately and in the end taking union. It can be written as: \\
 $M_2 = \bigcup_{t\in T_{M_1}} M_0 \circ \pi_t(M_1)$ \\
 Composition is guaranteed to preserve determinism so there is no need to worry about determinism of union operation.
 
 
+\subparagraph{Normalization in $\mathbb{M}_\infty$} 
+The idea behind algorithm is simple. You start with accepting states gradually traverse automaton deeper edge by edge until you hit a vertex that has multiple incoming edges. Then you add  such vertex to queue and repeat algorithm for them. You also need to mark already visited states to prevent algorithm from diverging infinitely. Every time you find a sequence of states $q_1 q_2 q_3 q_4...q_n$ such that every $q_i$ has edge pointing at $q_{i+1}$ and there are no other edges incoming to $q_{i+1}$,  you collect total output accumulated by the sequence of edges between $q_1...q_n$ and replace all of them with epsilons, except for the final edge between $q_{n-1} $ and $q_n$. That last edge should be assigned all the combined output. Once all such sequences are found and all possible outputs are relocated, then you need to go to second phase of algorithm. Now you need to look for nodes that have the same output assigned to all incoming edges. Those are special cases where the output can be further propagated even though there is more than one path to generate such output.
+A much less efficient but simpler version of this algorithm is given by:
+\begin{lstlisting}
+found_change := true
+while found_change
+   found_change := false
+   for $q$ in $Q_M$
+      s := longest common suffix of outputs
+           on all incoming edges of $q$
+      if $s \ne \epsilon$
+          remove suffix $s$ from all incoming edges of $q$
+          prepend $s$ to output of all outgoing edges
+          found_change := true
+\end{lstlisting}
 
 
 
+\subparagraph{Minimization in $\mathbb{M}_\infty$} 
+The main prerequisite for minimization is to normalize first. Then everything becomes easier. Even though theoretically there might exist minimal but not normalized automaton, the algorithm becomes easier when we assume that prior normalization. Then the idea behind algorithm fro minimization becomes simple:
+
+Let's say that $q_1$ and $q_3$ are some arbitrary states in given automaton. 
+
+\begin{center}
+	\begin{tikzpicture}[scale=0.2]
+	\tikzstyle{every node}+=[inner sep=0pt]
+	\draw [black] (13.5,-9.5) circle (3);
+	\draw (13.5,-9.5) node {$q_1$};
+	\draw [black] (29.3,-9.5) circle (3);
+	\draw (29.3,-9.5) node {$q_2$};
+	\draw [black] (13.5,-17.1) circle (3);
+	\draw (13.5,-17.1) node {$q_3$};
+	\draw [black] (29.3,-17.1) circle (3);
+	\draw (29.3,-17.1) node {$q_4$};
+	\draw [black] (16.5,-9.5) -- (26.3,-9.5);
+	\fill [black] (26.3,-9.5) -- (25.5,-9) -- (25.5,-10);
+	\draw (21.4,-9) node [above] {$a:b$};
+	\draw [black] (16.5,-17.1) -- (26.3,-17.1);
+	\fill [black] (26.3,-17.1) -- (25.5,-16.6) -- (25.5,-17.6);
+	\draw (21.4,-17.6) node [below] {$a:b'$};
+	\end{tikzpicture}
+\end{center}
+
+They are equivalent iff they are either equal $q_1=q_3$ or for all inputs $a\in\Sigma$, they produce the same output $b=b'$ and transition  to equivalent states $q_2$ and $q_4$. We can merge all equivalent states that are not equal yet. In order to find equivalent states we can use iterative process. 
+Start by finding all states that are equivalent after reading input of length 0. Obviously this yields 2 sets: one containing all accepting states, and the other containing non-accepting states. Then given sets of states that are equivalent after reading input of length $n-1$, we can find states that are equivalent after reading input of lenght $n$, using the condition specified above. We repeat the process until the set of equivalent states becomes constant.
+Full algorithm can be written as:
+\begin{lstlisting}
+M := normalize(M)
+equivalent_states := {$F_M$, $Q_M \backslash F_M$}
+new_equivalent_states := {} 
+while equivalent_states $\ne$ new_equivalent_states
+    for equivalent_set in equivalent_states
+        for q in equivalent_set
+            partition := empty hash map 
+            for s in $\Sigma$
+                $e$ := $e \in$equivalent_states such that $\delta_M(q,s) \in e$
+                if $(e,G_M(q,s))$ not in partition 
+                    partition[$(e,G_M(q,s))$] = {}
+                insert q to partition[$(e,G_M(q,s))$]
+            for $s$ in values of partition
+                insert $s$ to new_equivalent_states
+     swap new_equivalent_states and equivalent_states 
+
+for eq_class in equivalent_states
+    merge all states of $M$ that belong to eq_class
+\end{lstlisting}
 
 
-\subparagraph{Minimization in $\mathbb{M}_\rightarrow$} 
+\subparagraph{Redundant tape elimination in $\mathbb{M}_\rightarrow$} 
+WORK IN PROGRESS
+
+\section{Regular expressions}
+For FSA, all the standard operations of concatenation, union and kleene closure form a certain kind of algebra that is often referred to as regular expressions. 
+Let $a,b \subset  \Sigma^*$ , then
+\begin{itemize}
+	\item every $x \in \Sigma$ denotes atomic character. We implicitly treat it as singleton subset of $\Sigma^*$.
+	\item $a+b\subset \Sigma^*$ denotes union: $x\in a+b \iff x\in a \vee x\in b$
+	\item $ab\subset \Sigma^*$ is concatenation: $x \in ab \iff x=x_0x_1...x_i...x_n \wedge x_0...x_i \in a \wedge x_{i+1}...x_n \in b$
+	\item $a^* \subset \Sigma^*$ is Kleene closure: $x\in a^* \iff x=\epsilon \vee x\in a \vee x\in aa \vee x \in aaa \vee ...$
+\end{itemize}  
+We can easily do the same for non-deterministic Mealy automata. Let $A,B \subset \Sigma^* \times \Gamma^*$, then:
+\begin{itemize}
+	\item every $x:y \in \Sigma\cup\{\epsilon\} \times \Gamma\cup\{\epsilon\}$ denotes atomic pair. We implicitly treat it as singleton subset of $\Sigma^* \times \Gamma^*$.
+	\item $A + B$ is union: $x \in A + B  \iff x \in A \vee x \in B$
+\item $AB$ is concatenation: $(x,y)\in AB \iff x=x'x'' \wedge y=y'y'' \wedge (x',y') \in A \wedge (x'',y'') \in B$
+\item $A^*$ is Kleene closure: $(x,y)\in A^* \iff (x,y) = (\epsilon,\epsilon) \vee (x,y) \in A \vee (x,y) \in AA \vee ...$
+\item given $X\subset \Theta^*\times\Gamma^*$, $Y\subset \Sigma^*\times\Theta^*$ you define composition $X \circ Y \subset \Sigma^* \times \Gamma^*$ as : $(x,y)\in X \circ Y \iff \exists_{z\in\Theta^*} (x,z)\in Y \wedge (z,y) \in X$
+\end{itemize}  
+There are also 3 more operations that blend finite state automata and Mealy machines together. Let $a\in\Sigma^*$,$c\subset \Gamma^*$ and $A \in \Sigma^* \times \Gamma^*$, then:
+\begin{itemize}
+	\item $a:c \subset \Sigma^* \times \Gamma^*$ is product relation $(x,y)\in a:c \iff x\in a\wedge y\in c $
+	\item $\pi_0(A)$ is left (input) projection: $x \in \pi_0(A) \iff \exists_{y\in\Gamma^*} (x,y) \in A$
+	\item $\pi_1(A)$ is right (output) projection: $y \in \pi_1(A) \iff \exists_{x\in\Sigma^*} (x,y) \in A$
+\end{itemize}
+However, there is also alternative way to think about those operations. Let $A,B \subset \Sigma^* \times \Gamma^*$, then:
+ \begin{itemize}
+ 	\item $\pi_0(A) \subset \Sigma^* \times \Gamma^*$ is left (input) projection: $\forall_{y\in\Gamma^*} (x,y) \in \pi_0(A) \iff \exists_{y\in\Gamma^*} (x,y) \in A$
+ 	\item $\pi_1(A) \subset \Sigma^* \times \Gamma^*$ is right (output) projection: $\forall_{x\in\Sigma^*} (x,y) \in \pi_1(A) \iff \exists_{x\in\Sigma^*} (x,y) \in A$
+ 	\item $A:B \subset \Sigma^* \times \Gamma^*$ is product relation $(x,y)\in A:B \iff (x,y)\in \pi_0(A)\wedge (x,y)\in \pi_1(B)$
+ \end{itemize}
+Those definitions are equivalent but allow us to operate only on Mealy machines and plain FSA are not necessary. You can easily convert between them. To show this, let's distinguish FSA and Mealy operations by adding subscripts: \\
+$+_F$, $\cdot_F$, $^{*F}$,$:_F$,$\pi_{0F}$,$\pi_{1F}$ for union, concatenation and Kleene closure, relation product, left and right projection with FSA operands/outputs.\\ 
+$+_M$,$\cdot_M$,$^{*M}$, $\circ$,$:_M$,$\pi_{0M}$,$\pi_{1M}$ for Mealy machines. \\
+Then given any formula that uses mix of FSA and Mealy operations, we can define $\phi$ translation that yields formula operating only on Mealy machines:
+\begin{itemize}
+	\item every atomic character $x\in\Sigma$ becomes atomic pair $\phi(x) = (x,\epsilon)$
+	\item every atomic character $y\in\Gamma$ becomes atomic pair $\phi(y) = (\epsilon,y)$
+	\item $\phi(a+_Fb) = \phi(a)+_M\phi(b)$ where $a,b\subset \Sigma^*$ or $a,b\subset \Gamma^*$
+	\item $\phi(a\cdot_Fb) = \phi(a)\cdot_M\phi(b)$ where $a,b\subset \Sigma^*$ or $a,b\subset \Gamma^*$
+	\item $\phi(a^{*F}) = \phi(a)^{*M}$ where $a\subset \Sigma^*$ or $a\subset \Gamma^*$
+	\item $\phi(a:_Fb) = \phi(a):_M\phi(b)$ where $a\subset \Sigma^*,b\subset\Gamma^*$
+    \item $\phi(\pi_{0F}(a)) = \pi_{0M}(a)$ where $a\subset \Sigma^* \times \Gamma^*$
+    \item $\phi(\pi_{1F}(a)) = \pi_{1M}(a)$ where $a\subset \Sigma^* \times \Gamma^*$
+    \item $\phi(a\circ b) = a\circ b$ where $a,b\subset \Sigma^* \times \Gamma^*$
+\end{itemize} 
 
 
+In case of deterministic Mealy machines, the language of regular expressions becomes a bit more limited. For $\mathbb{M}_\infty$ we don't have union, while  concatenation and Kleene closure are weakened. Only $\mathbb{M}_\rightarrow$ can use union. On top of that, the syntactic correctness of formulas doesn't correspond to semantic correctness. For instance the formula $(a:\epsilon)^*$ is correct both syntactically and semantically, but formula $((a:\epsilon)^*)^*$ is only valid in syntactic sense. Weak Kleene closure and concatenation make many cases invalid semantically. The most obvious way to validate formula is of course by attempting to build corresponding automaton. However, this might be an expensive operation. We could propose a more efficient way that validates formula without evaluating it.
 
-\paragraph{Summary} We could specify the following hierarchy of Mealy machines: \\
+The idea is quite simple. Start with atomic pairs/characters and gradually traverse syntax tree while keeping track of base and co-base of each subformula. Let's denote base alphabet of formula $a$ as $\alpha(a)$ and co-base alphabet as $\omega(a)$. Then:
+\begin{itemize}
+	\item For any atomic $x\in\Sigma$ or $x:y\in\Sigma\times(\Gamma\cup\{\epsilon\})$, $\alpha(x) = \{x\}$ and $ \omega(a) = \emptyset$. Notice that $x\ne\epsilon$ because we deal with only deterministic automata.
+	\item For subformula $a+b$ we get $\alpha(a+b) = \alpha(a) \cup \alpha(b) $ and $\omega(a+b) = \omega(a) \cup \omega(b) $
+	\item For subformula $ab$ we get $\alpha(ab) = \alpha(a) $ and $\omega(ab) = \omega(b) $
+	\item For subformula $a^*$ we get $\alpha(a^*) = \alpha(a)$ and $\omega(a^*) =   \alpha(a) \cup \omega(a) $. Notice again that $\epsilon \notin a^*$ because of determinism restrictions.
+	\item For subformula $a\circ b$ we get $\alpha(a\circ b) = \alpha(b) $ and $\omega(a\circ b) = \omega(b) $
+\end{itemize}
+Every time you encounter subformula $ab$ you can check if $\alpha(b)\cap\omega(a)=\emptyset$ and for subformula $a^*$ just check $\alpha(a)\cap\omega(a)=\emptyset$. 
+
+Apart from addressing problems with weak concatenation we also should find some way to express $\epsilon$ mappings. We can integrate $\mathbb{ M}_{\#\rightarrow}$  with $\mathbb{ M}_\rightarrow$ by adding a very minimalistic "type system". WORK IN PROGRESS
+
+\section{Further extensions WORK IN PROGRESS}
+
+\paragraph{Multitape} automata can be expressed in a variety of creative ways. The most obvious way is to use more complicated version of $\delta$ that looks more or less like this: $Q \rightarrow [ (\Sigma_1 ,  \Sigma_2 ,  \Sigma_3 , ... , Q , [ \Gamma ])]$. However, it greatly complicates all algorithms. On top of that, even though we might have total order on each alphabet $\Sigma_i$ by itself, there is no good total order for tuples $(\Sigma_1 ,  \Sigma_2 ,  \Sigma_3 , ... )$ . We could use lexicographic ordering but it actually makes matters worse. (Previously we could express ranges $s ... s'$ for $s\le s':\Sigma$ as list of form $[ ...,(s-1,\square),(s',q), ...]$, but now there is no way to express ranges $s_1...s_1' \times s_2...s_2'$ with constant asymptotic complexity of memory). It is possible cantor's pairing function to compress tuples $(\Sigma_1 ,  \Sigma_2 ,  \Sigma_3 , ...) $ into a new alphabet $\Sigma$ but it only delays problems instead of solving them. A far better approach is to forget about reading all tapes simultaneously, and instead combine all tapes into a single tape by interleaving all of them. Automaton that alternates between two tapes (and possibly two different alphabets) must keep track of currently used tape. For this reason there need to be  states of different kinds. We will illustrate it with example: \\
+\\
+Let's say there are two tapes, first with alphabet $\Sigma_0=\{ a , b\}$ and second with  $\Sigma_1=\{A,B\}$ . States that read from first tape will be marked red. Those that read from second are blue.
+
+\begin{center}
+	\begin{tikzpicture}[scale=0.2]
+	\tikzstyle{every node}+=[inner sep=0pt]
+	\draw [red] (13.5,-8) circle (3);
+	\draw (13.5,-8) node {$q_0$};
+	\draw [blue] (29.6,-8) circle (3);
+	\draw (29.6,-8) node {$q_1$};
+	\draw [red] (45,-8) circle (3);
+	\draw (45,-8) node {$q_2$};
+	\draw [blue] (58.5,-8) circle (3);
+	\draw (58.5,-8) node {$q_3$};
+	\draw [red] (16.29,-6.907) arc (106.6952:73.3048:18.309);
+	\fill [black] (26.81,-6.91) -- (26.19,-6.2) -- (25.9,-7.16);
+	\draw (21.55,-5.64) node [above] {$a,b$};
+	\draw [blue] (32.245,-6.596) arc (111.67997:68.32003:13.685);
+	\fill [black] (42.36,-6.6) -- (41.8,-5.84) -- (41.43,-6.77);
+	\draw (37.3,-5.13) node [above] {$B$};
+	\draw [blue] (26.802,-9.073) arc (-73.63011:-106.36989:18.635);
+	\fill [black] (16.3,-9.07) -- (16.92,-9.78) -- (17.21,-8.82);
+	\draw (21.55,-10.33) node [below] {$A$};
+	\draw [red] (42.423,-9.522) arc (-66.20209:-113.79791:12.696);
+	\fill [black] (32.18,-9.52) -- (32.71,-10.3) -- (33.11,-9.39);
+	\draw (37.3,-11.1) node [below] {$a$};
+	\draw [red] (47.469,-6.317) arc (115.60241:64.39759:9.906);
+	\fill [black] (56.03,-6.32) -- (55.53,-5.52) -- (55.09,-6.42);
+	\draw (51.75,-4.84) node [above] {$b$};
+	\draw [blue] (55.755,-9.195) arc (-72.81583:-107.18417:13.556);
+	\fill [black] (47.75,-9.19) -- (48.36,-9.91) -- (48.66,-8.95);
+	\draw (51.75,-10.3) node [below] {$A,B$};
+	\end{tikzpicture}
+\end{center}
+
+We say that states $q_0$ and $q_2$ are of kind $\Sigma_0 $, while $q_1$ and $q_3$ are of $\Sigma_1$. All edges coloured blue are of kind  $\Sigma_1 \rightarrow \Sigma_0$, and the red ones are $\Sigma_0 \rightarrow \Sigma_1$. 
+Notice that formally, all states $q_0, q_1, q_2, q_3$ are of course of type $Q$. It's important to keep the distinction between kinds of states and types of mathematical objects. However, when you focus solely on kinds, you could think of a certain algebraic abstraction that forms a semigroup:
+\begin{itemize}
+	\item associate signs in alphabet with functions
+	\item associate transitions/edges of automaton with members of those functions (keep in mind that a function could be defined as  set of pairs, so edges represent those exactly pairs)
+	\item let function composition to be the semigroup operation
+	\item then strings could be associated with compositions of those functions
+	\item kinds of transitions in automaton become associated with types of those functions
+\end{itemize}
+
+Notice that after erasing kinds, you are left with just 'plain' automaton that will work just fine as long as you don't feed it with invalid input (in the above example, input 'aAbBbBa' is valid, while  'aa', 'B' or 'aBB' are invalid). This is good news because we can reuse most of the algorithms for single-tape automaton and don't worry too much about generalising to multiple tapes. 
+
+\paragraph{Multitape output} could be just as a useful feature as multitape input. However, this time we need a different approach. It makes little sense to have separate kind of states/edges for each output tape. We should be able to write to any tape, whenever we want. That's why cantor's pairing function is a way to go this time. 
+
+\paragraph{Temporal logic}
+Automata can be interpreted as semantic models for temporal logic formulas. This could allow for formal specification and automated verification of wide variety of their properties.  
+We use standard temporal operators: \\
+$\mathbf{G}\phi$ - $\phi$ holds globally \\
+$\mathbf{X}\phi$ - $\phi$ holds in next step \\
+$\mathbf{F}\phi$ - $\phi$ holds at some point in future \\
+$\phi \mathbf{U}\psi$ - $\phi$ holds until $\psi$ \\
+$\phi \mathbf{W}\psi$ - $\phi$ holds until $\psi$ or holds forever \\
+$\phi \mathbf{R}x \psi$ - $\phi$ releases $\psi$ \\
+WORK IN PROGRESS
+
+\section{Summary} We could specify the following hierarchy of Mealy machines: \\
 $\mathbb{M}_1 \subsetneq \mathbb{M}_\infty \subsetneq \mathbb{M}_\rightarrow \subsetneq \mathbb{M}$ \\
 $\mathbb{I}(\mathbb{M}) = \mathbb{REG}$ \\
 $\mathbb{S}(\mathbb{M}_{\#\rightarrow}) = \mathbb{REG}^\#$ \\
 Some open problems to investigate: 
 \begin{enumerate}
 	\item does the set of all singleton automata  (take single character and return single character or empty string) generate the class $\mathbb{ M}_\rightarrow$ with operations of union, weak concatenation, composition, weak Kleene closure. Maybe  we should add some new operation to make it possible?
-	\item how to add strong typing to facilitate use of $M_{\#\rightarrow}$ and mixing it with $M_{\rightarrow}$.
-	\item how to add strong typing to verify applicability of weak concatenation and weak Kleene closure.
+	\item how to add strong typing to regular expressions to facilitate mixing $M_{\#\rightarrow}$ with $M_{\rightarrow}$.
+	\item how to add strong typing to regular expressions to verify applicability of weak concatenation and weak Kleene closure.
 	\item find better ways to optimise union, composition and minimization.
 \end{enumerate}
 We will focus on $\mathbb{M}_\rightarrow$ class from now on.
-\section{Prerequisites}
+\part{Optimisations WORK IN PROGRESS}
 \subsection{Important sets}
 Several sets that are used here extensively are:
 \begin{itemize}
@@ -508,12 +773,6 @@ Our pseudocode is procedural has the following structure:
 	ith_element := $\pi_i$(x)
 	\end{lstlisting}
 \end{itemize}
-
-\subsection{Axiomatization}
-Every statement/expression specified above has their own axiomatization in Hoare logic:
- \textcolor{red}{Tutaj podam axiomaty które potem wykorzystam do dowodów.}
- We also assume that every function used by us is a computable function and every first-order-logic predicate is equivalent to functions returning boolean values $\mathbb{ B}$ (and therefore they can be used in if-statements).
-\subsection{Convenience short-hands}
 We will use
 \begin{lstlisting}
 for x in $\phi \in [X]$ do $\psi$ 
@@ -524,17 +783,7 @@ i := 0
 while i < $\vert \phi \vert $ do { x := $\phi$[i] ; $\psi$ ; i := i+1}
 \end{lstlisting}
 where 'i' is some new variable name not used before.
-\subsection{Temporal logic}
-We use standard temporal operators: \\
-$\mathbf{G}\phi$ - $\phi$ holds globally \\
-$\mathbf{X}\phi$ - $\phi$ holds in next step \\
-$\mathbf{F}\phi$ - $\phi$ holds at some point in future \\
-$\phi \mathbf{U}\psi$ - $\phi$ holds until $\psi$ \\
-$\phi \mathbf{W}\psi$ - $\phi$ holds until $\psi$ or holds forever \\
-$\phi \mathbf{R}x \psi$ - $\phi$ releases $\psi$ \\
-Throughout this paper automata will work as semantic models for interpreting temporal formulas. We will use $\mathcal{S}$ as self-reference to current state so that we can use predicates on states. For example formula "globally in the future there is a state that belongs to X" would be written as:
-$GF\mathcal{S}\in X$
-\textcolor{red}{Jeżeli mi nie starczy czasu by to rozwinąć, to usunę ten cały paragraf}
+
 
 \section{Optimized Definition}
 \paragraph{Functional finite state Mealy automaton} will be defined from now on, as tuple $(\Sigma ,\Gamma ,  Q , q_0 , \delta , a , F , \square , \le )$ where 
@@ -569,7 +818,7 @@ There are several properties that must always hold:
 	$\mathcal{S} \ne \square \Rightarrow \mathbf{G}\mathbf{F} F(\mathcal{S})$
 	\item Sink state doesn't return any output. \\
 	$\forall_{0\le i<\vert \delta(\square) \vert} \pi_2( \delta(\square)[i] ) =  []^a$
-	\textcolor{red}{To również można wyrazić logiką temporalną, jeżeli się przekonwertuje automaty Mealy'ego na automaty Moore'a. Sednem mojego pomysłu tutaj jest to aby wyrażać wszelkie wymagania i specyfikacje automatów w logice temporalnej, następnie konwertować automaty do modelu Moore'a i przyjąć je za model semantyczny, który następnie można zweryfikować automatyczie. Byłaby to forma sprawdzania, czy skomplikowane systemy automatów spełniają jakieś wymagania. Z prakycznego punktu widzenia, możnaby np. zastąpić testy jednostkowe przy pomocy formuł temporalnych}
+
 \end{enumerate}
  Properties 3 , 4 and 5 are very important. Any automaton that satisfies all of them is called \textbf{relevant}. \\
  
@@ -647,136 +896,12 @@ But this poses a significant problem! When we simulate execution of such product
 $\forall_{a \in \Sigma^*} \Phi_A (a) \wedge \Phi_B (a) \implies \pi_1(\phi_{A\times B} ((q_{0A},q_{0B}),a)) = \pi_1(\phi_A (q_{0A},a)) = \pi_1(\phi_B (q_{0B},a))$ \\
 
 
-\textcolor{red}{Ten algorytm jeszcze muszę zmienić} 
-\begin{lstlisting}
-product_transition($\delta_A$:$[(\Sigma , Q_A , [ \Gamma ])]$, $\delta_B$:$[ (\Sigma , Q_B , [ \Gamma ])]$)$\rightarrow[(\Sigma ,(Q_A ,Q_B),([\Gamma ],[\Gamma ]))]$
-    a := 0
-    b := 0
-    o := []
-    while a < $\vert\delta_A\vert$ $\vee$ b < $\vert\delta_B\vert$
-        $\sigma_A$ := $\pi_0$($\delta_{A}$[a])
-        $\sigma_B$ := $\pi_0$($\delta_{B}$[b])
-        $q_C$ := ($\pi_1$($\delta_{A}$[a]),  $\pi_1$($\delta_{B}$[b]))
-        $\gamma$ := ($\pi_2$($\delta_{A}$[a]), $\pi_2$($\delta_{B}$[b]))
-        if $\sigma_A$ < $\sigma_B$
-            a := a + 1
-            $\sigma$ := a
-        else
-            b := b + 1
-            $\sigma$ := b
-        o := o + [($\sigma$,$q_C$,$\gamma$)] 
-    return o
-    
-    
-flatten_products(
-        $P_A$:$[(\Sigma ,(Q_A ,Q_B),([\Gamma ],[\Gamma ]))]$,
-        $P_B$:$[(\Sigma ,(Q_A ,Q_B),([\Gamma ],[\Gamma ]))]$)
-        $\rightarrow[(\Sigma ,(Q_A ,Q_B),([\Gamma ],[\Gamma ]))]$
-    a := 0
-b := 0
-o := []
-while a < $\vert\delta_A\vert$ $\vee$ b < $\vert\delta_B\vert$
-$\sigma_A$ := $\pi_0$($\delta_{A}$[a])
-$\sigma_B$ := $\pi_0$($\delta_{B}$[b])
-$q_C$ := ($\pi_1$($\delta_{A}$[a]),  $\pi_1$($\delta_{B}$[b]))
-$\gamma$ := ($\pi_2$($\delta_{A}$[a]), $\pi_2$($\delta_{B}$[b]))
-if $\sigma_A$ < $\sigma_B$
-a := a + 1
-$\sigma$ := a
-else
-b := b + 1
-$\sigma$ := b
-o := o + [($\sigma$,$q_C$,$\gamma$)] 
-return o
-\end{lstlisting}
-Having the above procedure defined, we can now use it to build algorithm for product of entire automaton.
-\begin{lstlisting}
-$\times$(A:$FSA^\Sigma_S$, u:$\mathbb{B} \times \mathbb{B}  \rightarrow \mathbb{B} $, B:$FSA^\Sigma_S$): $FSA^\Sigma_S$
-    q = ($s_{A0}$,$s_{B0}$)
-\end{lstlisting}
-\paragraph{}
-Now you can see how to define other operations in terms of product:
-\begin{itemize}
-	\item union $A \cup B$ is $A\times^\vee B$
-	\item intersection $A \cap B$ is $A\times^\wedge B$ 
-\end{itemize}
 
 \subsection{ Complement}
-This one is fairly straight forward. In order to create complement of some automata you simply need to negate accepting states. \\
-$\overline{A} = (\Sigma , S_A , s_{0}, \delta_{A}, \neg E_A, \square , \le) $ \\
-One interesting fact about this is that the sink state could become accepting. Albeit a bit counter-intuitive, it is actually completely fine according to our definition. If you look at property 3. you will see that it doesn't say anything about accepting or not. It only states that sink is inescapable. 
 \subsection{ Minimization}
 \subsection{ Concatenation}
 \subsection{ Kleene closure}
 \subsection{ Composition}
-\subsection{ Inverse}
-This operation is not possible in general case for deterministic Mealy machines. In fact, inversion becomes possible only when relation defined on input and output languages is a bijection.
 
-
-\section{Expression language}
-Now that we have all basic operations implemented and well thought-through, we can combine everything into a certain language that works similarly to regular expressions.\\
-\\
-We want to support multiple tapes along with composition . Therefore our language must be kinded. As we can freely use multiple alphabets the wisest thing would be to assume that every alphabet forms its own kind. Those kinds need to be defined at the very beginning. A notation similar to type-theoretic judgements seems to be a good starting point. Our top type $\top$ will be the type of all kinds. Judgement for introducing new kinds is of the form:\\
-$\vdash A = \{a_0, a_1, a_2, ... a_n\}  : \top $ \\
-Judgement for creating the most basic automaton possible (i.e. one that for certain single-sign input returns specific output) is given by: \\
-$a : A, b : B,c : C, ... , x:X^* \vdash (a,b,c,...) \rightarrow x : A^* \times B^* \times C^* \times ... \rightarrow X^* $ \\
-One of the most essential operations is changing order of input tapes/kinds. 
-\textcolor{red}{Trzeba to jeszcze rozwinąć} 
-
-\section{Extensions}
-
-\paragraph{Multitape} automata can be expressed in a variety of creative ways. The most obvious way is to use more complicated version of $\delta$ that looks more or less like this: $Q \rightarrow [ (\Sigma_1 ,  \Sigma_2 ,  \Sigma_3 , ... , Q , [ \Gamma ])]$. However, it greatly complicates all algorithms. On top of that, even though we might have total order on each alphabet $\Sigma_i$ by itself, there is no good total order for tuples $(\Sigma_1 ,  \Sigma_2 ,  \Sigma_3 , ... )$ . We could use lexicographic ordering but it actually makes matters worse. (Previously we could express ranges $s ... s'$ for $s\le s':\Sigma$ as list of form $[ ...,(s-1,\square),(s',q), ...]$, but now there is no way to express ranges $s_1...s_1' \times s_2...s_2'$ with constant asymptotic complexity of memory). It is possible cantor's pairing function to compress tuples $(\Sigma_1 ,  \Sigma_2 ,  \Sigma_3 , ...) $ into a new alphabet $\Sigma$ but it only delays problems instead of solving them. A far better approach is to forget about reading all tapes simultaneously, and instead combine all tapes into a single tape by interleaving all of them. Automaton that alternates between two tapes (and possibly two different alphabets) must keep track of currently used tape. For this reason there need to be  states of different kinds. We will illustrate it with example: \\
-\\
-Let's say there are two tapes, first with alphabet $\Sigma_0=\{ a , b\}$ and second with  $\Sigma_1=\{A,B\}$ . States that read from first tape will be marked red. Those that read from second are blue.
-
-\begin{center}
-	\begin{tikzpicture}[scale=0.2]
-	\tikzstyle{every node}+=[inner sep=0pt]
-	\draw [red] (13.5,-8) circle (3);
-	\draw (13.5,-8) node {$q_0$};
-	\draw [blue] (29.6,-8) circle (3);
-	\draw (29.6,-8) node {$q_1$};
-	\draw [red] (45,-8) circle (3);
-	\draw (45,-8) node {$q_2$};
-	\draw [blue] (58.5,-8) circle (3);
-	\draw (58.5,-8) node {$q_3$};
-	\draw [red] (16.29,-6.907) arc (106.6952:73.3048:18.309);
-	\fill [black] (26.81,-6.91) -- (26.19,-6.2) -- (25.9,-7.16);
-	\draw (21.55,-5.64) node [above] {$a,b$};
-	\draw [blue] (32.245,-6.596) arc (111.67997:68.32003:13.685);
-	\fill [black] (42.36,-6.6) -- (41.8,-5.84) -- (41.43,-6.77);
-	\draw (37.3,-5.13) node [above] {$B$};
-	\draw [blue] (26.802,-9.073) arc (-73.63011:-106.36989:18.635);
-	\fill [black] (16.3,-9.07) -- (16.92,-9.78) -- (17.21,-8.82);
-	\draw (21.55,-10.33) node [below] {$A$};
-	\draw [red] (42.423,-9.522) arc (-66.20209:-113.79791:12.696);
-	\fill [black] (32.18,-9.52) -- (32.71,-10.3) -- (33.11,-9.39);
-	\draw (37.3,-11.1) node [below] {$a$};
-	\draw [red] (47.469,-6.317) arc (115.60241:64.39759:9.906);
-	\fill [black] (56.03,-6.32) -- (55.53,-5.52) -- (55.09,-6.42);
-	\draw (51.75,-4.84) node [above] {$b$};
-	\draw [blue] (55.755,-9.195) arc (-72.81583:-107.18417:13.556);
-	\fill [black] (47.75,-9.19) -- (48.36,-9.91) -- (48.66,-8.95);
-	\draw (51.75,-10.3) node [below] {$A,B$};
-	\end{tikzpicture}
-\end{center}
-
-We say that states $q_0$ and $q_2$ are of kind $\Sigma_0 $, while $q_1$ and $q_3$ are of $\Sigma_1$. All edges coloured blue are of kind  $\Sigma_1 \rightarrow \Sigma_0$, and the red ones are $\Sigma_0 \rightarrow \Sigma_1$. 
-Notice that formally, all states $q_0, q_1, q_2, q_3$ are of course of type $Q$. It's important to keep the distinction between kinds of states and types of mathematical objects. However, when you focus solely on kinds, you could think of a certain algebraic abstraction that forms a semigroup:
-\begin{itemize}
-	\item associate signs in alphabet with functions
-	\item associate transitions/edges of automaton with members of those functions (keep in mind that a function could be defined as  set of pairs, so edges represent those exactly pairs)
-	\item let function composition to be the semigroup operation
-	\item then strings could be associated with compositions of those functions
-	\item kinds of transitions in automaton become associated with types of those functions
-\end{itemize}
-\textcolor{red}{Tutaj mogę rozwinąć tą algebrę, lub mogę usunąć ten fragment i go nie poruszać. Nie jestem jeszcze pewien czy będzie to potrzebne do dowodów poprawności, chociaż wydaje się, że może bardzo pomóc.}
-
-Notice that after erasing kinds, you are left with just 'plain' automaton that will work just fine as long as you don't feed it with invalid input (in the above example, input 'aAbBbBa' is valid, while  'aa', 'B' or 'aBB' are invalid). This is good news because we can reuse most of the algorithms for single-tape automaton and don't worry too much about generalising to multiple tapes. 
-
-\paragraph{Multitape output} could be just as a useful feature as multitape input. However, this time we need a different approach. It makes little sense to have separate kind of states/edges for each output tape. We should be able to write to any tape, whenever we want. That's why cantor's pairing function is a way to go this time. 
-
-\section{Correctness proofs}
-\textcolor{red}{Podam dowody poprawności algorytmów przy pomocy wcześniej wprowadzonej aksojmatyzacji w logice Hoare'a} 
 
 \end{document}
