@@ -9,6 +9,10 @@ Data: ...
 
 The foundation of modern technology lies in computability theory. There've been proposed dozens of various computation models. The most popular of them being Turing machines, unrestricted register machines, recursive functions, lambda calculus, cellular automata, circuit systems, algorithmic state machines etc. There are also many less powerful and specialized models such as primitive recursive functions, memory-restricted Turing machines, simply-typed lambda calculus, context-free grammars, determinisitc pushdown automata, finite state automata, regular expressions and many more. All of them (and many variantsof them) found extensive applications in industry. One of the models, called Mealy machines is especially heavily used in natural language processing, machine learning and formal specification of systems.
 
+##I think we should supplement the last sentence, because after enumeration of all models it looks like one of them, not like the main theme of the document. Maybe we can write a little bit more about advanteges or differences of mealy compiler.
+
+
+
 ### 2. Cel/Goal
 >Należy opisać, jaki problem zostanie rozwiązany dzięki projektowi, po co właśnie taki temat podejmujemy.
 Na przykład:
@@ -44,6 +48,8 @@ Serwis “RetroCar” jest kierowany do użytkowników, którzy chcą pochwalić
 
 Our target audience includes researchers, linguists and machine-learning experts working in fields related to natural language processing. Companies developing artifical inteligence systems might use it as one of their tools. 
 
+##I think in this part, we should add more about how program can help users, which of their problems it will solve, which benefits they will get.
+
 
 
 ### 5. Opis produktu/Description
@@ -64,6 +70,8 @@ organizowanie konkursów z głosowaniem na samochód miesiąca
 branżowa książka adresowa warsztatów mechanicznych, lakierników, wulkanizatorów, ... z łatwym wyszukiwaniem, dopisywaniem komentarzy, lokalizacją na mapie i integracją z dostępnymi w sieci źródłami takich danych—w wielu serwisach organizacja tego typu danych pozostawia wiele do życzenia, trudno odnaleźć poszukiwanych fachowców
 
 A simple and efficient library written in C will be the main and primary component of our product. On top of that, it will have command-line interface equipped with compiler. For easy and quick access, we should support online repl for all curious people who want to give our library a try. The compiler should support parallelism, warn user about non-determinism and allow for possibly some extent of generic programming (by defining functions working on regular expressions or bulk-generation of rules according to some regularities). We should ,however pay extra attention, to not making this language turing complete/undecidable by accident (otherwise compilation might never end).
+
+## Here we can add more about program. How interface will look like, how they can use it, which result they will have from this program. Here you written that the main component of our project is library in C, but you don't firstly define how the program will works. I think we can say something like "Program will look like that(...), where you can do that (...) and get that (...). The main component of this is that (...), and that's how it works (...) and that we should do (...)"
 
 ### 6. Zakres i ograniczenia/scope and limitations
 >Należy przedstawić zakres projektu obowiązujący przy pierwszej wersji systemu (na zaliczenie). Jeśli przewidujemy istotne ograniczenia, również powinny się tu znaleźć.
