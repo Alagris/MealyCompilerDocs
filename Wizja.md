@@ -11,7 +11,7 @@ The foundation of modern technology lies in computability theory. There've been 
 > Preatty neet, i like it but too bloated IMHO
 > I would suggest to make it more like marketing gibberish than introduction to serious papers. Maybe something more like following 
 
-A complex solution designed for NLP, ML and formal specification. Our product is based on a Mealy machine which is a highly specialised computation model.
+MealyCompiler is a complex solution designed for NLP, ML and formal specification. Our product is based on a Mealy machine which is a highly specialised computation model.
 
 > But it's only my opinion and i understand if you not share my point
 
