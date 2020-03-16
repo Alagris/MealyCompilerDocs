@@ -11,7 +11,7 @@ The foundation of modern technology lies in computability theory. There've been 
 > Preatty neet, i like it but too bloated IMHO
 > I would suggest to make it more like marketing gibberish than introduction to serious papers. Maybe something more like following 
 
-A complex solution designed for NLP, ML and formal specification. Based on Mealy machine which is highly specialised computation model.
+A complex solution designed for NLP, ML and formal specification. Our product is based on a Mealy machine which is a highly specialised computation model.
 
 > But it's only my opinion and i understand if you not share my point
 
@@ -54,11 +54,9 @@ A simple and efficient library written in C will be the main and primary compone
   * support for parallelism
   * warnings
   * API for developers
+* online repl
 
 ### 6. Zakres i ograniczenia/scope and limitations
->Należy przedstawić zakres projektu obowiązujący przy pierwszej wersji systemu (na zaliczenie). Jeśli przewidujemy istotne ograniczenia, również powinny się tu znaleźć.
-Na przykład:
-W pierwszej wersji systemu możliwa będzie edycja profilu użytkownika, dyskusje na forum, tworzenie galerii i edycja branżowej książki adresowej. System będzie wprowadzał ograniczenia na ilość wgrywanych multimediów.
 
 Time is our most valuable resource. If we start running out of it, we might drop support for formal specification and/or Mealy inference. By the end of semester we should have working library, although there is no guarantee that it will be optimised. Optimisations should be ready by the end of second semester, 
 though. There should also be a working basic version of expression language and compiler for it by the end of first semester. We should also have more-or-less working prototype of online repl, although the extent of what "working" means depends heavily on state of library.  
