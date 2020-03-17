@@ -1,35 +1,34 @@
 #Dokument wizji projektu MealyCompiler
+####(MealyCompiler project vision)
 
-Autor: ...
+Autor: Aleksander Mendoza, Bogdan Bondar, Marcin Jabłoński
+Información de la conversación
 
-Data: ...
+
+Data: 18 March 2020
 
 ### 1. Wprowadzenie/Introduction
->Dokument dotyczy projektu realizowanego w ramach  Niniejszy dokument służy przedstawieniu przeznaczenia tworzonego systemu, jego głównych cech i przyjętych założeń.
 
-The foundation of modern technology lies in computability theory. There've been proposed dozens of various computation models. The most popular of them being Turing machines, unrestricted register machines, recursive functions, lambda calculus, cellular automata, circuit systems, algorithmic state machines etc. There are also many less powerful and specialized models such as primitive recursive functions, memory-restricted Turing machines, simply-typed lambda calculus, context-free grammars, determinisitc pushdown automata, finite state automata, regular expressions and many more. All of them (and many variantsof them) found extensive applications in industry. One of the models, called Mealy machines is especially heavily used in natural language processing, machine learning and formal specification of systems.
+##### Some theoretical background in nutshell
+The foundation of modern technology lies in computability theory. There've been proposed dozens of various computation models. Chomsky proposed entire hierarchy of them. However, the more powerful a model is, the more complex are its properties, which makes it difficult or impossible to perform various operations. For instance you can easily minimize finite state automata, but doing so for non-deterministic automata is NP-hard*, while minimization of Turing machines is undecidable. Our product will focus on special model called Mealy automata. We should take advantage of all guarantees and features this model provides. Thanks to their ability to relate some strings to others, Mealy machines are especially heavily used in natural language processing, machine learning and formal specification of systems. The basic idea behind all kinds of Mealy machines is extending finite state automata with output. Each edge should have 2 labels: one for input and one for output. One of thme decides where to go, the other tells what to print. Such model has benefit of most of the properties of standard finite state automata, while also has many additional properties. You can compose and invert automata very much like functions or relations in other fields of mathematics. It's possible to extend regular expressions with output as well. You can minimize them easily or add non-determinism.
 
-##I think we should supplement the last sentence, because after enumeration of all models it looks like one of them, not like the main theme of the document. Maybe we can write a little bit more about advanteges or differences of mealy compiler.
+##### Our better model
 
+We should specifically focus only on Mealy machines that represent functions (always produce only one output), while also try to give them maximal expressive power that's practically possible. It should introduce a great model that any machine-learning specialist could add to their toolbox. Every formal-verification reasearcher could also express more advanced system properties, without sacrificing strong guarantees of deterministic models. On top of that, every linguist working with rule-based translation could easily use our product.
 
+*actually it's PSpace, which is conjectured to be NP-hard.
 
 ### 2. Cel/Goal
->Należy opisać, jaki problem zostanie rozwiązany dzięki projektowi, po co właśnie taki temat podejmujemy.
-Na przykład:
-Celem projektu jest stworzenie nowego serwisu społecznościowego “RetroCar”, umożliwiającego zawieranie znajomości i wymianę informacji osobom z Polski, zainteresowanym starymi samochodami.
 
 Our compiler of Mealy machines addresses two practical problems: 
 
 - difficulty of maintaining large rule-based systems
-- efficiency of evaluating millions of rules
+- efficiency of evaluating millions of rules in production environment
 
 
 
 
 ### 3. Rynek/Market
->Należy odnieść się do dostępnych rozwiązań realizujących podobny cel. Powinno być jasne, w jakim zakresie tworzony system się od nich odróżnia.
-Na przykład:
-Serwis “RetroCar”, w odróżnieniu od istniejących serwisów poświęconych wybranym markom samochodów (np. http://www.syrena.nekla.pl/), umożliwi zrzeszanie wielbicieli dowolnych marek samochodów. Jednocześnie będzie pozwalał, w miarę możliwości technicznych, na import danych z innych serwisów, na przykład poprzez mechanizm RSS.
 
 Currently there exists only one serious alternative, which is openfst library with their Thrax extension for writing regex-like grammars. Their solution has numerous problems. It's focus on probabilistic approach to modeling nondeterminism, made the library quite slow. It also became a double-edged sword, by making rule-based system difficult to maintain (compiler doesn't warn programmer when nondeterminism causes some rules to overshadow others). Compilation of grammars is lacking in many aspects. The grammar expression language is very basic and obscure. Compiler is not parallized and highly inefficient. On top of that, the probabilistic approach
 
@@ -39,44 +38,97 @@ For better support of machine-learning we might add built-in Mealy inference alg
 
 For better support of formal verification we might add temporal logic SAT-solver and specificaion meta-language.
 
-
-
 ### 4. Użytkownicy/Audiences
->Należy opisać, do jakich użytkowników będzie skierowany serwis—określić zarówno ich potrzeby jak i stopień zaawansowania w obsłudze systemów informatycznych.
-Na przykład:
-Serwis “RetroCar” jest kierowany do użytkowników, którzy chcą pochwalić się swoim samochodem, zasięgnąć porady innych użytkowników oraz zawierać znajomości. Użytkownicy potrafią posługiwać się systemami typu forum dyskusyjne, galeria zdjęć czy blog.
 
-Our target audience includes researchers, linguists and machine-learning experts working in fields related to natural language processing. Companies developing artifical inteligence systems might use it as one of their tools. 
+Our target audiences include:
 
-##I think in this part, we should add more about how program can help users, which of their problems it will solve, which benefits they will get.
+- researchers who want to:
+ - have some ready-made library with functionalities they need for experiments.
+ - verify formal properties of complex sequential systems
+- linguists 
+ - working on rule-based translation
+- machine-learning experts
+ - who work in fields related to natural language processing
+ - who use Mealy inference 
+- Companies developing artifical inteligence systems
+ - who might use it as one of their tools. (Especially if their employees are any of the people above) 
+
+
 
 
 
 ### 5. Opis produktu/Description
->Należy wymienić (można w punktach) główne funkcjonalności oferowane przez tworzony system. Należy zaznaczyć, które z nich wyróżniają się na rynku dostępnych rozwiązań.
-Na przykład:
-zakładanie profilu użytkownika z możliwością wgrania avatara, określenia zakresu widoczności poszczególnych danych osobowych
-zakładanie profili posiadanych samochodów—większość serwisów motoryzacyjnych umożliwia podanie tylko jednego pojazdu
-galeria zdjęć
-tagowanie zdjęć i wyszukiwanie po tagach—serwisy motoryzacyjne oparte o prosty silnik forum na ogół nie mają takich możliwości
-opcja importu zdjęć z wybranych serwisów foto, na przykład flickr
-prowadzenie dziennika internetowego lub import wiadomości użytkownika przez rss z innego serwisu
-łatwo przeszukiwalna baza wiedzy na temat rozwiązywania różnych problemów związanych z samochodami, edytowana przez użytkowników—w wielu serwisach porady giną pośród wielu wątków na forum i użytkownicy zadają wciąż te same pytania
-uczestniczenie w dyskusjach na forum, możliwość personalizacji stopki
-możliwość wysyłania prywatnych wiadomości innym użytkownikom
-możliwość dokumentowania zlotów motoryzacyjnych – wgrywanie opisów, zdjęć, oznaczanie uczestnictwa – dostępne serwisy nie umożliwiają łatwego organizowania tego typu informacji
-możliwość tworzenia grup użytkowników, na przykład zainteresowanych daną marką samochodów, odnawianiem starych pojazdów czy wyścigami
-organizowanie konkursów z głosowaniem na samochód miesiąca
-branżowa książka adresowa warsztatów mechanicznych, lakierników, wulkanizatorów, ... z łatwym wyszukiwaniem, dopisywaniem komentarzy, lokalizacją na mapie i integracją z dostępnymi w sieci źródłami takich danych—w wielu serwisach organizacja tego typu danych pozostawia wiele do życzenia, trudno odnaleźć poszukiwanych fachowców
 
 A simple and efficient library written in C will be the main and primary component of our product. On top of that, it will have command-line interface equipped with compiler. For easy and quick access, we should support online repl for all curious people who want to give our library a try. The compiler should support parallelism, warn user about non-determinism and allow for possibly some extent of generic programming (by defining functions working on regular expressions or bulk-generation of rules according to some regularities). We should ,however pay extra attention, to not making this language turing complete/undecidable by accident (otherwise compilation might never end).
 
-## Here we can add more about program. How interface will look like, how they can use it, which result they will have from this program. Here you written that the main component of our project is library in C, but you don't firstly define how the program will works. I think we can say something like "Program will look like that(...), where you can do that (...) and get that (...). The main component of this is that (...), and that's how it works (...) and that we should do (...)"
+* simple and efficient library written in C
+  * ports for other languages
+  * some data structure for representing various models of Mealy machines
+  * essential functions for operations of
+     * concatenation
+     * Kleene closure
+     * union
+     * composition
+     * projection
+  * additional less important operations (optional):
+     * inverse
+     * reverse
+     * intersection
+  * additional features such as (optional):
+     * algorithms of Mealy inference
+     * temporal logic specification and SAT solvers
+* compiler and CLI
+  * support for parallelism
+  * non-determinism warnings
+  * API for developers
+  * regular expression language:
+     * has all basic operations of concatenation, Kleene closure and union
+     * has features for generic programming such as (higher order) functions taking languages and returning languages
+     * has guarantee of terminating (so it's not Turing complete by accident)
+     * has basic mechanisms for reading files, editing/querying files in bulk and saving work in files for later
+* online repl
+  * can write regular expressions on-the-fly
+  * can test for determinism without constructing automata (it's more efficient)
+  * user can download effects of their work for their local computer
+
+Proposed architecture (one of possible ways we could implement it):
+
+- there is all theoretical work and background written in our PDF
+- theoretical paper serves as basis for formal specification of library functions
+- C library depends heavily on formal specification. There are two ways (we need to yet decide which to choose):
+  - there is one data structure and several functions operating on this data structure (possibly in-place to save space). Every more specialised data structure is just a special case of that one general data structure. For example finite state automata are just mealy machines with empty output everywhere.
+  -  there are multiple data structures and some functions take and produce different structures. For instance one function takes 2 finite state machines and combines them into one Mealy machine
+- compiler and cmd interface use library functions
+  - compiler implements parser of regular expressions
+  - cmd uses compiler to implement REPL
+  - compiler and cmd are distributed in form of single binary 
+  - there are two possible architectures (we need yet to choose):
+     - there is one real interface and compilation works just like: first start real, then type ":load some/file.code", then type ":compile", the type ":save some/file.binary" and then ":exit"
+     - every time you want do perform some operation, you use different command for it. For instance to concatenate two automata you run "compiler --concatenate file1.code file2.code --output file3.txt" and then to compiler you run "compiler --compile file3.txt --output file.binary"
+- online REPL 
+  - website with basic info, documentation and tutorials
+  - repl console. Two possible ways to implement it:
+     - everything runs on front-end. Because the goal is to be efficent, we should be able to pack everything in thin WebAssembly. No back-end required so we can put it on GitHub Pages.
+     - interface is on front-end but compiler is in back-end. We need to find hosting.
+
+
 
 ### 6. Zakres i ograniczenia/scope and limitations
->Należy przedstawić zakres projektu obowiązujący przy pierwszej wersji systemu (na zaliczenie). Jeśli przewidujemy istotne ograniczenia, również powinny się tu znaleźć.
-Na przykład:
-W pierwszej wersji systemu możliwa będzie edycja profilu użytkownika, dyskusje na forum, tworzenie galerii i edycja branżowej książki adresowej. System będzie wprowadzał ograniczenia na ilość wgrywanych multimediów.
 
 Time is our most valuable resource. If we start running out of it, we might drop support for formal specification and/or Mealy inference. By the end of semester we should have working library, although there is no guarantee that it will be optimised. Optimisations should be ready by the end of second semester, 
 though. There should also be a working basic version of expression language and compiler for it by the end of first semester. We should also have more-or-less working prototype of online repl, although the extent of what "working" means depends heavily on state of library.  
+
+We propose to split our work into alpha and beta phases:
+
+- alpha includes:
+  - formal specification
+  - C library prototype (unoptimised)
+  - compiler prototype
+  - online repl prototype (with dummy compiler functionality)
+- beta includes:
+  - optimised C library (all algorithms are polynomial-time)
+  - usable compiler
+  - online repl integrated with compiler
+- later if there is enough time:
+  - implement additional functionalities
+  - work on further ompimisations (algorithms are not only polynomial-time but also fast enough to compiler more or less million rules (counting atomic regular expressions) in under a second.
