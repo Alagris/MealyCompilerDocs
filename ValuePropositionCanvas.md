@@ -31,8 +31,8 @@
 ### Pains
 
 - non-determinism
-- long compilation time
-- long execution time
+- slow compilation time
+- slow execution time
 
 ### Customer jobs
 
