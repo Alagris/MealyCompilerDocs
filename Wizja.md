@@ -4,8 +4,6 @@
 
 
 Autor: Aleksander Mendoza, Bogdan Bondar, Marcin Jabłoński
-Información de la conversación
-
 
 Data: 18 March 2020
 
