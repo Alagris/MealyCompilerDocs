@@ -82,29 +82,34 @@ $\pi_t(M) = P$ such that $\forall_{y\in\Gamma^*} (\exists_{x\in\Sigma^*} M(x,y) 
 \paragraph{Functional Mealy machines} This is an even further extension of disjunctive Mealy machines. Now the tapes are no longer fixed. Instead every state has their own set of them. And every transition translates tapes of one states onto tapes of some other. Therefore it's better to think of is as memory cells associated with each states rather than actual tapes of whole automaton. Transitions copy contents of one cell into another, while also append some additional output. Here is a formal definition: \\
 $T$ is the set of cells. \\
 $\delta : Q \times \Sigma \rightarrow Q$ is the plain transition function between states. \\
-$G : Q \times \Sigma \times T \rightarrow  T \times (\Gamma^* \cup \{\emptyset \})$ is the transition function between memory cells.  $G(q,s,t) =(t',s')$ tells you to copy contents of  cell $t$ at state $q$ , append $s'$ and put resulting string $qs'$  in cell $t'$ of state $\delta(q,s)$. In cases where there exist two conflicting cells like $G(q,s,t_0) =(t',s_0')$ and $G(q,s,t_1) =(t',s_1')$, then you should take $t_0$ if  $t_1s_1' = \emptyset$, or otherwise take $t_1$ if  $t_0s_0' = \emptyset$ is empty. In cases when both $t_0s_0'$ and $t_1s_1'$ are non-empty at the same time, leading to conflict, then automaton immediately halts and rejects.\\
+$\gamma : Q \times \Sigma^* \times T \rightarrow (\Gamma^*\cup\{\emptyset \})$ is called context function. At any given time each cell from every state is either empty  or contains some string from $\Gamma^*$. We can retrieve those strings using $\gamma$. For instance $\gamma(q_4,010010,t_3)$ stands for contents of cell $t_3$ of state $q_4$ after reading input $010010$. \\
+$G : Q \times \Sigma \times T \rightarrow  \Gamma^*\times T$ is the \underline{partial} transition function between memory cells.  $G(q,s,t') = (s',t)$ tells you to copy contents of  cell $t$ at state $q$, append $s'$ and put resulting string  in cell $t'$ of state $\delta(q,s)$.  \\
 $F : Q \rightarrow (T \cup \{\emptyset\})$ is the accepting function that tells us which memory cell to take the output from. \\
-$q_0 : Q \times (T \rightarrow \Gamma^*)$ is the initial state along with some initial assignment to each memory cell. \\
-The evaluation of such automata work as follows: \\
+$(q_0,\gamma(q_0,\epsilon)) : Q \times (T \rightarrow \Gamma^*)$ is the initial state along with some initial assignment to each memory cell. Therefore $\gamma(q_0,\epsilon,t)$ for any $t\in T$ is initially set.\\
+The evaluation of such automaton follows this simple rule: \\
+Let $G(q,s,t') = (s',t')$ then for all $z\in\Sigma^*$ \\
+$\gamma(\delta(q,s),zs,t')= \gamma(q,z,t) s' $ \\
+whereas if $\forall_{t'\in T} G(q,s,t') = \emptyset$ then  $\gamma(\delta(q,s),zs,t') = \emptyset$.
+Also notice that if $\gamma(q,z,t) = \emptyset$ then $\gamma(q,z,t) s' = \emptyset$, because concatenation with empty language yields empty language too. \\
+Let's illustrate the process with an example: \\
 $\Sigma = \{a\}, \Gamma=\{0,1\}, T=\{A,B,C,D,E\}$
 \begin{center}
 	\begin{tikzpicture}[scale=0.2]
 	\tikzstyle{every node}+=[inner sep=0pt]
 	\draw [black] (13.9,-11.2) circle (3);
-	\draw (13.9,-11.2) node {$q_0^{ABC}$};
+	\draw (13.9,-11.2) node {$q_0$};
 	\draw [black] (13.9,-21.5) circle (3);
-	\draw (13.9,-21.5) node {$q_1^{DE}$};
+	\draw (13.9,-21.5) node {$q_1$};
 	\draw [black] (13.9,-14.2) -- (13.9,-18.5);
 	\fill [black] (13.9,-18.5) -- (14.4,-17.7) -- (13.4,-17.7);
 	\draw (14.4,-16.35) node [right] {$a:D\leftarrow A0,E\leftarrow B01$};
 	\end{tikzpicture}
 \end{center}
 The notation $a:D\leftarrow A0,E\leftarrow B01$ stands for $\delta(q_0,a) = q_1$ and \\
-$G(q_0,a,A)=(D,0)$ \\
-$G(q_0,a,B)=(E,01)$ \\
-$G(q_0,a,x)=(x,\emptyset)$ for all remaining $x \in \{C,D,E\}$\\
- Let's say you are in state $q_0$ with memory cells containing $A=001$, $B=\epsilon$, $C=11$. Then after transitioning over letter $a$, you will reach state $q_1$ with memory cells $D=A0=0010$ and $E=B01=01$. Notice that contents of $C$ are lost.  \\
- Another example could be $a:D\leftarrow A0,D\leftarrow B01$ and $A=\emptyset$, $B=01$, $C=\emptyset$. Then after transition you reach $q_1$ with $D=$
+$G(q_0,a,D) =(0,A)$ \\
+$G(q_0,a,E) = (01,B)$ \\
+(the rest is undefined because G can be partial)\\
+ Let's say you are in state $q_0$ with memory cells containing $\gamma(q_0,z,A)=001$, $\gamma(q_0,z,B)=\epsilon$, $\gamma(q_0,z,C)=11$. Then after transitioning over letter $a$, you will reach state $q_1$ with memory cells $\gamma(q_1,za,D)=\gamma(q_0,z,A)0=0010$ and $\gamma(q_1,za,E)=\gamma(q_0,z,B)01=01$. Notice that contents of $\gamma(q_0,z,C)$, $\gamma(q_0,z,D)$ and $\gamma(q_0,z,E)$ are not copied anywhere so they get lost.  Contents of $\gamma(q_1,za,A)$, $\gamma(q_1,za,B)$, $\gamma(q_1,za,C)$ are equal $\emptyset$.
 
 \paragraph{Non-deterministic Mealy machines} This model allows for greatest flexibility. $M \subset \Sigma^* \times \Gamma^*$ does not have any restrictions apart from the requirement that both input and output language must be regular. Furthermore, we can use epsilons to associate one input with multiple outputs. In fact, there could be infinitely many of them if epsilons create a loop at some point. 
 
@@ -531,15 +536,37 @@ $\forall_{x\in\Sigma^*} \forall_{q\in F} \vert \gamma_x(q) \vert \le 1$ and \\
 $\vert \gamma_s(q) \vert > 1 \implies \vert \gamma_{s'}(q') \vert  > 1$ then \\ $\forall_{x\in\Sigma^*} \forall_{q\in Q} \phi(q) \cap F \ne \emptyset \implies  \vert \gamma_x(q) \vert \le 1$ \\
 And in case of non-deterministic automata we can without any worries remove all such states that $ \phi(q) \cap F = \emptyset$, therefore we are left with: \\
 $\forall_{x\in\Sigma^*} \forall_{q\in Q} \vert \gamma_x(q) \vert \le 1$ \\
-This give us very strong guarantee. We can now use it to determinize automaton from $M\in\mathbb{M}$ to some $N\in\mathbb{M}_\rightarrow$. The procedure looks very similar to turning NFA to FSA. For simplicity assume \\
-$\delta_M : Q \times (\Gamma \cup \{\epsilon \}) \rightarrow Q \times \Gamma^*$\\
-We should also define $\check{\delta}_M : Q \times \Gamma \rightarrow \mathcal{P}(Q \times \Gamma^*)$ to be extended transition that traverses all $\epsilon$-edges: \\
-$\check{\delta}_M(q,s) = \delta_M(q,s) \cup \pi_1(\delta_M(q,\epsilon))\cdot \check{\delta}_M(\pi_0(\delta_M(q,\epsilon)),s) $  \\
-Notice that epsilon cycles are not allowed (otherwise there would be infinitely many outputs) so this recursive function is guaranteed to end at some point.
-Now construction of $N$ looks like this:\\
-$Q_N = \mathcal{P}(Q_M)$ \\
-$T_N(q) = q $ because $q\in Q_N$ is at the same time a set $q \subset Q_M$. \\
-$\delta_N(q_n,s) = f$ and $f(q_m') = (q_m,\delta_M())$ where $\delta_M(q_m,s) = ()$.
+This give us very strong guarantees but there is one more property automaton must satisfy in order to express functions.
+
+
+At any given point $x \in \Sigma^*$ in computation context, there could be at most one accepting state with $\gamma_x \ne \emptyset$. This could be written as: \\
+$\forall_{x\in\Sigma^*} \vert \bigcup_{q\in F} \gamma_x(q) \vert \le 1$ \\
+Therefore let's consider $\psi : \Sigma^* \rightarrow \mathcal{P}(Q)$ to be a function that returns all non-empty states at any given time in computation context: \\
+$\psi(x) = \{q \in Q : \gamma_x(q) \ne \emptyset \}$ \\
+Initially automaton starts with $\psi(\epsilon)$ and then it must inductively guarantee that: \\
+$\vert \psi(x) \cap F \vert \le 1 \implies  \forall_{s\in\Sigma}  \vert \psi(xs) \cap F \vert \le 1$ \\
+Let's denote by $Q_\psi$ set of all context states reachable in such way: \\
+$Q_\psi = \{ q \in \mathcal{P}(Q) : \exists_{x\in\Sigma^*} \psi(x)=q \}$ \\
+Moreover we can compose elements of $q \in Q_\psi$ with strings $s\in\Sigma$. Such composition should yield the next elements of $Q_\psi$ that the automaton would transition to: \\
+$qs = q' \iff   \exists_{x\in\Sigma^*} \psi(x)=q \wedge \psi(xs)=q' $  \\
+Notice that the $x$ can be arbitrary, because we only care whether $\gamma_x(q)$ is $\emptyset$ or not. The exact contents don't matter, therefore all sequences that lead to $q$ are equivalent.
+
+
+Thanks to $\forall_{x\in\Sigma^*} \forall_{q\in Q} \vert \gamma_x(q) \vert \le 1$ we can also show special property of how $\delta$ behaves with $Q_\psi$. Let's say that $q_1,q_2 \in  \psi(x)$, $s \in \Sigma$ and $(q',s_1') \in \check{\delta}(q_1,s)$ and $(q',s_2') \in \check{\delta}(q_2,s)$ (where $\check{\delta} : Q \times \Sigma \rightarrow \mathcal{P}(Q \times \Gamma^*)$ stands for extended version of $\delta$ that additionally follows  $\epsilon$ transitions). This means that both $\gamma_x(q_1)s_1' \in \gamma_{xs}(q') $ and $\gamma_x(q_2)s_2' \in \gamma_{xs}(q') $, but because we guarantee that $\vert \gamma_{xs}(q')\vert \le 1$ we can conclude that $\gamma_x(q_2)s_2' = \gamma_x(q_1)s_1'$. So in other words, every time two non-deterministic branches transition into the same state $q'$, they must carry the same output string.
+
+ We can now use it to determinize automaton from $M\in\mathbb{M}$ to some $N\in\mathbb{M}_\rightarrow$. The procedure looks very similar to turning NFA to FSA. (Of course we assume $\delta_M : Q \times (\Gamma \cup \{\epsilon \}) \rightarrow Q \times \Gamma^*$ ).
+Construction of $N$ looks like this:\\
+$Q_N = Q_\psi \subset \mathcal{P}(Q_M) $ \\
+$T_N = Q_M $ \\
+$\delta_N(q_n,s) = q_n s $ where $q_n\in Q_N$ is at the same time a set $q_n \subset Q_M$ and element $q_n \in Q_\psi $, therefore concatenation $q_ns \in Q_\psi = Q_N$\\
+$G_N(q,s,t') = (s',t) \iff t \in q \subset  Q_M \wedge t' \in \delta_N(q,s) \subset  Q_M \wedge (t',s') \in \check{\delta}_M(t,s) $ where we have the guarantee that either there is only one $t$ that leads  to $t'$ by following $(t',s') \in \check{\delta}_M(t,s)$ or there are multiple possible $t$ but we can chose arbitrary of them because all the transitions must produce the same output (as explained above).\\
+$F_N(q_n) = q_n \cap F_M$ is guaranteed to be either empty or singleton. \\
+$q_{0N} = \psi(\epsilon)$ \\
+And of course notice the correspondence between $\gamma_x(q)$ of $M$ and $\gamma(x,q)$ of $N$. This gives you initial state of memory cells as: \\
+$\gamma(q_{0N},\epsilon,t) = \gamma_\epsilon(t)$ \\
+
+This ends the construction of $N$. Moreover this it's easy to follow it in reverse order (there is 1-to-1 correspondence between most of the elements, and in places where the correspondence is one-to-many the choice can be made arbitrarily as it was in case of $t$ such that $(t',s') \in \check{\delta}_M(t,s)$). Nonetheless it's easy to show that converse $\mathbb{M}_\rightarrow \cap \mathcal{P}(\Sigma^* \times \Gamma^*) \subset   \mathbb{M} \cap \mathcal{P}(\Sigma^* \rightarrow \Gamma^*) $ holds as well.
+
 
 
 \end{enumerate}
@@ -588,6 +615,7 @@ Consider homogeneous class of deterministic relations $X = \Sigma^* \rightarrow 
 
 \subparagraph{Composition} Given two relations of the form $M_0 \subset \Sigma_1^* \rightarrow \Sigma_2^*$ and $M_1 \subset \Sigma_0^* \rightarrow \Sigma_1^*$ , the composition is defined as $(M_0 \circ M_1)(x) = M_0(M_1(x))$. Because $M_1$ is a \underline{partial} function (it's deterministic), we get only one possible output. That output is the processes by $M_0$ which in turn can give only one output again. Therefore you can clearly see that the operation of composition should preserve determinism. The situation gets slightly complicated in case of $M_{\#0},M_{\#1} \in M_{\#\rightarrow}$. \\
 Let $\#$ be a mealy machine that appends $\#$ to the end (just as explained previously in the section about end-of-string markers). Then  $M_0 \circ \# = M_{\#0}$ and $M_1 \circ \# = M_{\#1}$. You need to be careful and remember that composition of automata with $\#$ marker becomes $M_{\#0} \circ M_{\#1} = M_0 \circ \# \circ M_1 \circ \#$ instead of  $M_{\#0} \circ M_{\#1} = M_0 \circ M_1 \circ \#$.
+
 
 \subparagraph{Normalization} 
  Correspondence between relations on formal languages and Mealy machines is not 1-to-1. The same holds for finite state automata and formal languages. You can however choose one unique representative automaton for each language. Such process of normalization is equivalent to minimization for FSA (the minimal automaton is unique up to isomorphism). The same is true in case of single-output Mealy machines. However for multi-output machines we can express minimial automaton in many different ways and each of them differs only in outputs of edges. 
@@ -803,6 +831,18 @@ This  should conclude the implication that if $=_M$ induced finite number of equ
 The version of this theorem for $\mathbb{ M}_\vee$ is similar but you additionally need to take tapes into account: \\
 $\forall_{x,y\in\Sigma^*} x=_M y \iff \forall_{z:\Sigma^*,w\in\Gamma^*} ((xz,\hat{G}_M(x,\hat{F}_M(xz))w) \in M \iff (yz,\hat{G}_M(y,\hat{F}_M(yz))w) \in M)$ \\
 
+\subparagraph{Evaluation of $\mathbb{M}_\rightarrow$} The most basic way of evaluating functional machines is by gradually computing $\gamma$ for all memory cells and all states visited on our way. However, if there are millions of memory cells such process becomes quite inefficient. The alternative method is to split the evaluation into 3 phases:
+\begin{enumerate}
+	\item for given input string traverse states of automaton, without keeping track of memory cells. This way you first check whether the automaton accepts at all and if it does, then you know which state accepted and which memory cell was used as output.
+	\item traverse states backwards, starting from accepting state and ending in initial state. While doing so keep track of sequence of memory cells that leads to the accepting memory cell. This sequence is unambiguous, because given destination cell $t'$, we can precisely know source cell $t$ using $G(q,s,t') = (s',t)$.
+	\item traverse automaton forward once again, this time computing output only for the necessary memory cells (there is always only one such cell per each visited state). 
+\end{enumerate}
+While the original algorithm was $O(xy)$ where $x$ is length of input and $y$ is size of set $T$, this algorithm is only $O(3x) = O(x)$ (if you count memory-cell assignment as basic operation). So it reduces complexity from being quadratic to linear.
+
+\subparagraph{Lossy determinization of $\mathbb{M}$} As we already showed in the proof of $\mathbb{M}_\rightarrow \cap \mathcal{P}(\Sigma^* \times \Gamma^*) =  \mathbb{M} \cap \mathcal{P}(\Sigma^* \rightarrow \Gamma^*)$, there is a lossless way to convert $M \in \mathbb{ M}$ to $N \in mathbb{M}_\rightarrow$ only when they guarantee deterministic output. However in cases when $M \in \mathbb{ M}$ actually sometimes produces more than one output we need to forcefully choose only one of them. The good news is that we can take advantage of $Q_\psi$. We shall pay extra attention to all those elements $\psi(x) \in Q_\psi$ with more than one accepting state $\vert\psi(x) \cap F_M\vert > 1$. Whenever we encounter it we can just arbitrarily select only one cell $t \in \psi(x)$ to be accepting $F_N(\psi(x)) = t$ and discard the rest. Similarly in cases when multiple $t$ are eligible for $(t',s') \in \check{\delta}_M(t,s)$, we arbitrarily chose one. This should be enough to construct $N$. The rest of procedure remains the same. 
+
+\subparagraph{Detecting non-determinism  of $\mathbb{M}$}
+It's easy to detect non-determinism by using the same trick as in lossy determinization of  $\mathbb{M}$. We just search for such $\psi(x)$ where $\vert\psi(x) \cap F_M\vert > 1$. Unfortunately this is not enough, because non-determinism may also arise from ambiguous  $t$ for $(t',s') \in \check{\delta}_M(t,s)$.
 
 \subsection{Naive algorithms}
 \subparagraph{Weak concatenation in $\mathbb{REG}$}
@@ -846,6 +886,7 @@ F_{M_0}(q_{M_0})  & \mbox{if }  F_{M_0}(q_{M_0}) \ne \emptyset  \\
 F_{M_1}(q_{M_1})  & \mbox{otherwise} 
 \end{cases} $ \\
 Of course the initial state becomes $q_{0M_2}=(q_{0M_0},q_{0M_1})$.
+
 
 \subparagraph{Weak Kleene closure in $\mathbb{M}_\vee$} Just like concatenation but we don't need to create Cartesian product of tapes. Given $M \in \mathbb{M}_\vee$, kleene closure can be implemented as
 
