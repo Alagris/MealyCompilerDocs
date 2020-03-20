@@ -43,15 +43,15 @@ For better support of formal verification we might add temporal logic SAT-solver
 Our target audiences include:
 
 - researchers who want to:
- - have some ready-made library with functionalities they need for experiments.
- - verify formal properties of complex sequential systems
+  - have some ready-made library with functionalities they need for experiments.
+  - verify formal properties of complex sequential systems
 - linguists 
- - working on rule-based translation
+  - working on rule-based translation
 - machine-learning experts
- - who work in fields related to natural language processing
- - who use Mealy inference 
+  - who work in fields related to natural language processing
+  - who use Mealy inference 
 - Companies developing artifical inteligence systems
- - who might use it as one of their tools. (Especially if their employees are any of the people above) 
+  - who might use it as one of their tools. (Especially if their employees are any of the people above) 
 
 
 
