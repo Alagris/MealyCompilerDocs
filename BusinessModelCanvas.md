@@ -3,59 +3,113 @@
   <tr>
     <td rowspan="2">
       <b>Key Partnership</b>
-      <p>Zakład Przetwarzania
-      Języka Naturalnego
-      </p>
+	<ul>
+	 <li>Github</li>
+	</ul>
     </td>
     <td>
       <b>Key Activities</b>
-      <p>Long-term maintenance,
-      communication with customers
-      and key partners
-      </p>
+      <p>Long-term app maintenance</p>
+	<ul>
+	 <li>Bug fixing</li>
+	 <li>Contributors involving</li>
+	 <li>Further application development</li>
+	 <li>Optimisations</li>
+	 <li>Further theory development</li>
+	</ul>
     </td>
     <td rowspan="2" colspan="2">
       <b>Value Proposition</b>
-      <p>user-friendly,
-      easy to implement,
-      extremely efficient compiler
+	<ul>
+	 <li>Developers</li>
+	  <ul>
+	   <li>C library - implementing painlessly fast and efficient parsers, creating neat code</li>
+	  </ul>
+	 <li>Machine learning specialists</li>
+	  <ul>
+	   <li>Great for learning models by grammar induction</li>
+	  </ul>
+	 <li>Students</li>
+	  <ul>
+	   <li>Verifying theory with practice - REPL and papers</li>
+	  </ul>
+	 <li>Linguists, other researchers</li>
+	  <ul>
+	   <li>Regular expressions as fast way of building grammars</li>
+	   <li>low reference threshold to start working instead of learning new tools</li>
+	  </ul>
+	</ul>
     </td>
     <td>
       <b>Customer Relationship</b>
-      <p>GitHub
-      copied or bought</p>
+	Feedback, bug reports and support<br>
+	Communication media:
+	<ul>
+	 <li>StackOverflow</li>
+	 <li>Subreddit</li>
+	 <li>Direct Email</li>
+	 <li>Issues on Github</li>
+	</ul>
     </td>
     <td rowspan="2">
       <b>Customer Segments</b>
-      <p>End users,
-      Developers
+	<ul>
+	 <li>Developers</li>
+	 <li>Machine learning specialists</li>
+	 <li>Students</li>
+	 <li>Linguists and other researches</li>
+	</ul>
       </p>
     </td>
   </tr>
   <tr>
     <td>
       <b>Key Resources</b>
-      <p>People, communication
-      and development platforms</p>
+	<ul>
+	 <li>Theory</li>
+	 <li>GitHub Repository, Pages and Issues</li>
+	 <li>Developers</li>
     </td>
     <td>
       <b>Channels</b>
-      <p>Publicly available
-      repository,
-      online REPL
-      </p>
+	<ul>
+	 <li>Awareness</li>
+	  <ul>
+	   <li>Thesis</li>
+	   <li>Workshops</li>
+	   <li>Subreddit</li>
+	  </ul>
+	 <li>Evaluation</li>
+	  <ul>
+	   <li>Nice documentation and Github page</li>
+	   <li>Direct contact via Email</li>
+	   <li>Examples and tutorials</li>
+	  </ul>
+	 <li>Delivery</li>
+	  <ul>
+	   <li>Github repository, online REPL</li>
+	  </ul>
+	 <li>Aftersale</li>
+	  <ul>
+	   <li>Issues on Github</li>
+	   <li>Subreddit</li>
+	   <li>Email</li>
+	  </ul>
+	</ul>
     </td>
   </tr>
   <tr>
     <td colspan="3">
       <b>Cost Structure</b>
-      <p>People
-      </p>
+	<ul>
+	 <li>Priceless time of our youth</li>
+	</ul>
     </td>
     <td colspan="3">
       <b>Revenue Streams</b>
-      <p>not applicable - non-profit
-      </p>
+	<ul>
+	 <li>Eternal glory</li>
+	</ul>
     </td>
   </tr>
 </table>
