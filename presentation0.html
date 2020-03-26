@@ -1,0 +1,239 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <title>Title</title>
+    <meta charset="utf-8">
+    <style>
+      @import url(https://fonts.googleapis.com/css?family=Yanone+Kaffeesatz);
+      @import url(https://fonts.googleapis.com/css?family=Droid+Serif:400,700,400italic);
+      @import url(https://fonts.googleapis.com/css?family=Ubuntu+Mono:400,700,400italic);
+
+      body { font-family: 'Droid Serif'; }
+      h1, h2, h3 {
+        font-family: 'Yanone Kaffeesatz';
+        font-weight: normal;
+      }
+      .remark-code, .remark-inline-code { font-family: 'Ubuntu Mono'; }
+    </style>
+  </head>
+  <body>
+    <textarea id="source">
+
+class: center, middle
+
+# MealyCompiler
+
+---
+
+# Intro
+
+Mealy machines are just standard finite state automata but with additional output on edges.
+
+
+There are many different variants. 
+- They could be determinisitc or non-determinisitc. You in non-determinisitc case, could assign probablitity to each of the possible outcomes. 
+- You might also use them for machine learning with algorithms of grammatical inference and active learning. 
+- You could use them as formal specification model for circuits and state machines. 
+
+It's a great tool for linguists, researchers and machine learning specialists.
+
+
+---
+
+# Our product
+
+There will be 4 main components of our work:
+
+- theoretical work in form of publication paper
+- C library 
+- command-line interface with compiler of regular expressions and REPL
+- online website with REPL demo
+
+---
+
+# Architecure
+
+Our **theory** will be the basis for formal specification of library. When all theoretical background is ready and mature we will formalize it in ACSL and then verify against our library. The end goal is to not use any unit tests at all, and verify correctness matheamtically.
+
+**C library** implements data strucutre for representing determinisitc Mealy machines, along with all operations that manipulate them. 
+
+**Compiler** will implement glushkov's construction algorithm adjusted to Mealy automata. It should use flex&bison for parsing of grammars.
+
+**REPL** will be alternative interface to compiler.
+
+Both compiler and REPL will be distributed in **single executable**, which in turn has our library as it's core dependency.
+
+We will create **JavaScript binding** to library and compiler with help WebAssembly.
+Such binding will the be exposed to our **website** with out-of-the-box demo of REPL.
+
+
+---
+
+
+# From user's perspective
+
+There will be 3 main ways to use our product.
+
+- **Students** might be interesting in seeing Mealy automata in action straight away. They can use REPL on website to experiemnt easily. Their progress might be saved in cookies, so they can come back to it later. There should also be helpful documentation and tutorials on the website.
+
+- Researchers and linguists would be interested in maintaining large codebases of regular expressions. They would mostly use REPL and compiler from command-line interface
+
+- Developers/machine learning specialists would often require low level access to programmable API. The C library would be of their greatest interest.
+
+
+
+
+
+---
+
+
+# For students
+
+The greatest pain of being a student is that even after reading theory, you might still not feel the intuition behind anything. Experimenting with REPL should let them get more experience easily. No installation required, no configuration, no pain. 
+
+If that's not enough, there should be a lot of sample code with explanations, tutorials and manuals.
+
+---
+
+
+# For developers & machine learning
+
+- Their greatest pain is having to write code. In fact, many machine learning specialists are terrible at writing in anything different than Python and Bash. Our library should implement everything for them, so that later someone can just make Python binding. 
+
+- They often need a lot of flexibility. They should be able to write any procedure for generating any kind of automaton. Our library should grant them full control over details, if they ever need it. 
+
+- Out-of-the box learning algorithms are they key to attracting their attention. We might therefore implement active learning and grammatical inference algorithms. 
+
+- Another pain is hacing to use library with poor documentation. There must be tutorials and sample code available online.
+
+???
+
+- More specifically they should be able to design automata by directly specifying states and transitions, but at the same time, if they don't care about such low level describtion, they should be able to use higher level operations of union, concatenation etc. Every operation should be well documented, described and have a bunch of samples available, with key corner cases covered.
+
+
+
+---
+
+
+# For researchers 
+
+Researchers are an extremely varied group. 
+
+- Some of them might just study automata but they are not good "customers", because they most likely don't care about implementation.
+
+- Some who study formal methods might be interested in using our Mealy automata to model circuits and state machines. For them, meta-specification language with temporal logic refutation system might be useful
+
+- Linguists and language researchers would be especially important customers. They don't care so much about machines and they only need easy to use regular expressions for writing linguistic rules. Their greatest pain would be having to use openfst's Thrax.
+
+
+---
+
+
+# Justification for technology 
+
+- Why C? - it's popular, old and widespeard. There are alternative languages that would be faster or better designed (like Fortran or Rust), but not many people use them. 
+
+- Why WebAssembly? - because we are open source and have no income sources. We can't affort backend hosting. Plus it's also a great test for our library. It's meant to be fast, right? So let's try to make if fast enough to run in browser!
+
+- Why flex&bison - Lack of better options for C.
+
+- Why so little technology? - The simpler the better. And since it's going to be open source project, the less frameworks there are to learn, the easier it will be to find contributors later.
+
+
+---
+
+
+# Partners
+
+Our project will mostly depend on GitHub. They will provide GitHub Pages where we should host our website. 
+
+Another partner, (although not as essential as GitHub) will university's faculty of natural language processing. We depend on them for a lot of our theoretical support and consult them in order to evaluate usability of our product. They will be our main real life "testers".
+
+
+---
+
+# Team 
+
+- Aleksander Mendoza-Drosik (Product owner + Dev) 
+    - has means to consult our project with NLP faculty. 
+    - writes formal specification and is responsible for most of theoretical background
+    - manages integration and helps with code
+
+- Marcin Jabłoński (Scrum master + Dev) -
+    - implements C library
+    - implements parser & designs syntax
+    - helps with designing higher level features of regex language
+
+- Bogdan Bondar (Dev) -
+    - implements web interface
+    - helps with JavaScript bindings
+    - performs end-to-end tests
+
+
+---
+
+
+# Challenges
+
+At the moment the primary and most difficult challenges revolve around finishing works on theoretical foundations. Without them, the project has no meaning. About 90% is already done. 
+
+Second very important challenge is educating our whole crew about assential basics of automata theory. Everybody should feel more or less comfortable working in this field.
+
+Third challenge is creating prototype and skeleton for our codebase. We should get have "hellow world" programs in WebAssembly and flex&bison. Moreover we should set up build system, continous integration and plan file structure & code conventions.
+
+---
+
+
+# Effort estimations
+
+In the first semester we should focus on polishing theory and making prototype or library.
+
+- Dummy REPL on website using WebAssembly
+- Data structures for representing automata and some basic (unoptimised) implementations of operations
+- compiler capable of handling basic regular expressions (union, concatenation, Kleene closure)
+
+In second semester we should focus on:
+
+- optimising library
+- extending compiler and regular expression language with gadgets and extra features
+- making sure website and REPL are user friendly
+
+Additionally if we have enough time left we will add:
+- formal specification meta-language
+- active learning algorithms
+- grammatical inference for Mealy machines
+- extra optimisations
+
+---
+
+# More technical details for nerds
+
+Library should support:
+
+- concatenation, Kleene closure, union, composition, reverse, 
+- Glushkov's construction
+- weak operations validation
+- threadsafety & memory safety
+- formal specification of core procedures
+
+Compiler should support:
+
+- parallel compilation
+- caching of compiled objects
+- non-determinism warnings
+- *explicit* way to force lossy determinization
+
+REPL should support:
+
+- loading from source files
+- loading from binaries
+- exporting to files 
+
+    </textarea>
+    <script src="https://remarkjs.com/downloads/remark-latest.min.js">
+    </script>
+    <script>
+      var slideshow = remark.create();
+    </script>
+  </body>
+</html>

@@ -1202,7 +1202,7 @@ WORK IN PROGRESS
 
 
 \subparagraph{Optimisations}
-Very often you don't actually need to compute whole Cartesian products. We will show a couple idea on how to speed up some of the algorithms.
+Very often you don't actually need to compute whole Cartesian products. We will show a couple of ways to speed up some of the algorithms.
 
 
 Suppose you have two automata $P_0,P_1 \subset \Sigma^*$ and you attempt to evaluate both of them simultaneously and check if they are the same . You start in pair of initial states $(p_{0P_0},p_{0P_1})$ and you look for some signs that would tell you whether $P_0 \ne P_1$. If one of the states is accepting but the other one is not, then that would immediately tell you there is a difference indeed. Another thing to look for is whether one of the states is a sink state, while the other one is not (or in other words, if you still have the potential to accept in the future or not). If so far you couldn't tell any difference then try each transition, one by one. Let's say that you decided to transition over character $s \in \Sigma$ and that lead you to $(p_x,p_y) = (\delta(p_{0P_0},s),\delta(p_{0P_1},s))$. Now you check again whether one of the states is sink or accepts and the other is different. You repeat this search recursively until you either visit all accessible pairs of states $Q_{P_0} \times Q_{P_1}$ or until you hit such pair of states where there is a difference. This is indeed and efficient algorithm for checking equivalence of automata. 
@@ -1267,6 +1267,120 @@ Then given any formula that uses mix of FSA and Mealy operations, we can define 
     \item $\phi(a\circ b) = a\circ b$ where $a,b\subset \Sigma^* \times \Gamma^*$
 \end{itemize} 
 
+It's forth noticing that the following equalities hold:\\
+$(ab:c) = (a:\epsilon)(b:c)$ \\
+$(a^*:c) = (a^*:\epsilon)(\epsilon:c) = (a:\epsilon)^*(\epsilon:c)$ \\
+$(a+b:c) = (a:c)+(b:c)$ \\
+where $a,b\in\Sigma^*$ and $c\in\Gamma^*$. Therefore indeed, atomic pairs are enough to build everything else. We do no need atomic characters.
+
+
+\subparagraph{Kleene algebra}
+
+We can introduce algebra ($\mathcal{A}$,$+$,$\cdot$,$^*$) where $\mathcal{A}$ is some set such that operations of union $+:\mathcal{A}\times\mathcal{A}\rightarrow$, concatenation $\cdot:\mathcal{A}\times\mathcal{A}\rightarrow\mathcal{A}$ and Kleene closure $^*:\mathcal{A} \rightarrow \mathcal{A}$ are closed. Then we admit the following axioms:
+\begin{itemize}
+	\item Associativity of $+$ \\
+	$a + (b + c) = (a + b) + c$ and $a(bc) = (ab)c$
+	\item Commutativity of $+$: \\
+	$a + b = b + a$
+	\item Distributivity \\
+	$a(b + c) = (ab) + (ac)$ \\
+	$(b + c)a = (ba) + (ca)$
+	\item Identity element $0$  \\
+	$a + 0 = 0 + a = a$
+	\item Identity element $1$  \\
+	$a \cdot 1 = 1 \cdot a = a$  
+	\item Annihilation: \\
+	$a \cdot 0 = 0 \cdot a = 0$
+\end{itemize}
+Then we can define partial order $a \le b \iff  a+b = b$, which we use to define the rest of axioms:
+\begin{itemize}
+	\item $1 + a(a^*) \le a^*$ 
+	\item $1 + (a^*)a \le a^*$
+	\item $ax \le x\implies a^*x \le x$
+	\item $xa \le x\implies xa^* \le x$
+\end{itemize}
+This ends the definition of Kleene algebra. Notice that  $\mathcal{A}$ could be the set of regular languages $\mathcal{A} \subset \mathcal{P}(\Sigma^*)$ with identity elements $\emptyset$ as $0$ and $\epsilon$ as $1$. However, it might also be the set of $\mathbb{ M}$ relations $\mathcal{A} \subset \mathcal{P}(\Sigma^* \times \Gamma^*)$ with $\emptyset$ as $0$ and $(\epsilon:\epsilon)$ as $1$. We shall focus on second case and prove that all the axioms are indeed valid in $\mathbb{ M}$: 
+\begin{itemize}
+	\item $a + (b + c) = (a + b) + c$ \\
+	from definition we know that $(x:y) \in a + (b + c) \iff (x:y) \in a \vee ((x:y) \in b \vee (x:y) \in b) $ but logical disjunction is of course associative by itself.
+	\item $ a + b = b + a $ \\
+	here similarly, logical disjunction is commutative.
+	\item $a(bc) = (ab)c$ \\
+	from definition we get $(x:y) \in a(bc) \iff \exists_{x = x_0x_1} \exists_{y = y_0 y_1} (x_0:y_0) \in a \wedge (x_1:y_1) \in bc \iff \exists_{x = x_0x_1x_2} \exists_{y = y_0 y_1y_2} (x_0:y_0) \in a \wedge ((x_1:y_1) \in b \wedge (x_2:y_2) \in c)$ but logical conjunction is of course associative. 
+	\item $a(b + c) = (ab) + (ac)$ \\
+	from definition we get $(x:y) \in a(b+c) \iff \exists_{x = x_0x_1} \exists_{y = y_0 y_1} (x_0:y_0) \in a \wedge (x_1:y_1) \in b+c \iff \exists_{x = x_0x_1} \exists_{y = y_0 y_1} (x_0:y_0) \in a \wedge ((x_1:y_1) \in b \vee (x_1:y_1) \in c)$, but logical disjunction and conjunction are distributive with respect to each other. 
+	\item $(b + c)a = (ba) + (ca)$ \\
+	this can be derived analogically to earlier proofs.
+	\item $a + \emptyset = \emptyset + a = a$ \\
+	from definition we get $(x:y) \in a + \emptyset \iff (x:y) \in a \vee (x:y) \in \emptyset$, but obviously $(x:y) \in \emptyset$ is false therefore $(x:y) \in a + \emptyset \iff (x:y) \in a$. 
+	\item $a (\epsilon:\epsilon) = (\epsilon:\epsilon) a = a$  \\
+	from definition we get $(x:y) \in a (\epsilon:\epsilon) \iff  \exists_{x = x_0x_1x_2} \exists_{y = y_0 y_1y_2} (x_0:y_0) \in a \wedge (x_1:y_1) = (\epsilon:\epsilon)$, but since $(x_1:y_1) = (\epsilon:\epsilon)$, then $x=x_1$ and $y=y_1$ so that leaves us with  $(x:y) \in a (\epsilon:\epsilon) \iff   (x:y) \in a $
+	\item $a\emptyset = \emptyset a = \emptyset$ \\
+	from definition we get $(x:y) \in a \emptyset \iff  \exists_{x = x_0x_1x_2} \exists_{y = y_0 y_1y_2} (x_0:y_0) \in a \wedge (x_1:y_1) \in \emptyset$, but since $(x_1:y_1) \in \emptyset$ is always false, that leaves us with the entire right side of equivalence always false. Therefore the equivalence will be true only when $(x:y) \in a \emptyset$ is always false. That means, nothing belongs to $a \emptyset$, so $a \emptyset = \emptyset$.
+\end{itemize}
+
+One of the most important properties of such algebra is Arden's theorem. It says that:
+if $x = ax+b$ then $x=a^*b$\\
+The proof is quite simple (although not very formal): \\
+if $x = ax+b$ then of course $x = a(ax+b)+b = aax+ab+b$. We can keep substituting $x$ infinitely to obtain series $x = b + ab + a^2b + a^3b + ... = (1 + a + a^2 + a^3 + ...)b$ and you should notice that $(1 + a + a^2 + a^3 + ...)$ is the exact definition of $a^*$. Therefore $x=a^*b$.
+
+
+You can prove analogical property for $x = xa+b \implies x=ba^*$ and even for $x = cxa+b \implies x=c^nba^n$, but it's not really important for our purposes. The reason why Arden's theorem is so important is because it allows us to convert every Mealy machine to some regular expression. Here is how it can be done:
+
+Assume that we are given some automaton $M\in \mathbb{ M}$ with $\delta : Q \times (\Sigma \cup \{\epsilon \}) \rightarrow Q \times \Gamma^*$. We can associate certain relation with each of its states. $q \in Q$ is "equivalent" to relation $l_q \subset \Sigma^* \times \Gamma^*$ such that every pair $(x,y) \in \Sigma^* \times \Gamma^*$ belongs to $(x,y) \in l_q$ iff it would be accepted by automaton $M$ with $q$ as initial state. Every transition $  \delta(q,s) = (q',s')$ can be then associated with regular expressions $q(s:s') < q'$. We can present it visually as:
+
+
+
+\begin{center}
+	\begin{tikzpicture}[scale=0.2]
+	\tikzstyle{every node}+=[inner sep=0pt]
+	\draw [black] (46.7,-16.1) circle (3);
+	\draw (46.7,-16.1) node {$q_m$};
+	\draw [black] (27.4,-7.3) circle (3);
+	\draw (27.4,-7.3) node {$q_1$};
+	\draw [black] (27.4,-16.1) circle (3);
+	\draw (27.4,-16.1) node {$q_2$};
+	\draw [black] (27.4,-25) circle (3);
+	\draw (27.4,-25) node {$q_n$};
+	\draw [black] (30.13,-8.54) -- (43.97,-14.86);
+	\fill [black] (43.97,-14.86) -- (43.45,-14.07) -- (43.04,-14.98);
+	\draw (39.58,-11.18) node [above] {$s_1:s_1'$};
+	\draw [black] (30.4,-16.1) -- (43.7,-16.1);
+	\fill [black] (43.7,-16.1) -- (42.9,-15.6) -- (42.9,-16.6);
+	\draw (37.05,-15.6) node [above] {$s_2:s_2'$};
+	\draw [black] (30.12,-23.74) -- (43.98,-17.36);
+	\fill [black] (43.98,-17.36) -- (43.04,-17.24) -- (43.46,-18.15);
+	\draw (40.72,-21.08) node [below] {$s_n:s_n'$};
+	\draw [black] (47.145,-13.145) arc (199.16362:-88.83638:2.25);
+	\draw (54.85,-10.06) node [above] {$s_m:s_m'$};
+	\fill [black] (49.32,-14.66) -- (50.24,-14.87) -- (49.91,-13.92);
+	\end{tikzpicture}
+\end{center}
+$ l_{q_1}(s_1:s_1') \le l_{q_m}$, \\
+$ l_{q_2}(s_2:s_2') \le l_{q_m}$, \\
+ ...,  \\
+$ l_{q_n}(s_n:s_n') \le l_{q_m}$,\\
+$l_{q_m}(s_m:s_m') \le l_{q_m}$. \\
+Indeed it holds that: \\
+$l_{q_m} =  l_{q_1}(s_1:s_1') + l_{q_2}(s_2:s_2') + .. + l_{q_n}(s_1:s_n') + l_{q_m}(s_m:s_m')$ \\
+and you can build such equations for every state. This should yield entire system of linear equations that can be solved using method similar to Gaussian elimination in some sense. You could represent this system in such a way: \\
+$l_{q_0} = l_{q_0}p_{00} + l_{q_1}p_{10} + l_{q_2}p_{20} + ...$ \\
+$l_{q_1} = l_{q_0}p_{01} + l_{q_1}p_{11} + l_{q_2}p_{21} + ...$ \\
+$l_{q_2} = l_{q_0}p_{02} + l_{q_1}p_{12} + l_{q_2}p_{22} + ...$ \\
+$...$ \\
+where each $p_{ij}$ corresponds to some pair of the form $p_{ij} \subset (\Sigma \cup \{\epsilon \}) \times \Gamma^*$ such that $\delta(q_j,\pi_0(p))=(q_i,\pi_1(p))$, or otherwise in cases when there is no transition from $q_j$ to $q_i$ then $p=\emptyset$. Notice that we can apply Arden's theorem to convert \\
+$l_{q_0} = l_{q_0}p_{00} + l_{q_1}p_{10} + l_{q_2}p_{20} + ...$ \\
+into \\
+$l_{q_0} =  (l_{q_1}p_{10} + l_{q_2}p_{20} + ...)p_{00}^*$ \\
+which can also be written as: \\
+$l_{q_0} =  l_{q_1}p_{10}p_{00}^* + l_{q_2}p_{20}p_{00}^* + ...$ \\
+Next you can substitute $ l_{q_0}$ in all other equations, yielding: \\
+$l_{q_1} = l_{q_1}(p_{11} + p_{10}p_{00}^*p_{01} )+ l_{q_2}(p_{21} + p_{20}p_{00}^*p_{01})+... $ \\
+$l_{q_2} = l_{q_1}(p_{12} + p_{10}p_{00}^*p_{02}) + l_{q_2}(p_{22} + p_{20}p_{00}^*p_{02})+ ...$ \\
+$...$\\
+This way we effectively got rid of one column and row. By repeating this procedure iteratively we will eventually reach just one single equation. However, notice that it's not the end. Currently we arranged all equations in order starting from $q_0$ going up to the last state, because such arrangement looks simpler and more tidy. Unfortunately as a result we will obtain equation describing the last state, not the initial state $q_0$. We can fix it be making a simple rearrangement of equations. We just need to make sure that we never substitute $q_0$.
+
+
 
 
 
@@ -1298,16 +1412,15 @@ to be the initial contents of each tape. Many such  automata can be reduced to e
 	\item Normalization can be performed the same way are previously, but you should first attempt to reduce initial tapes to empty if possible.
 	\item Union (both partial $\cup$ and non-commutative $\oplus$) will work the same as previously except you need to make sure that both automata have the same initial contents in their respective initial tapes $t_\epsilon$. If they are different then union is undefined. Notice that in case of $\oplus$ union, we could prioritize $t_\epsilon$ of left argument over the right one. Therefore $\oplus$ is not partial.
 	\item Weak concatenation $M_0 M_1 = M_2$ should work similarly with some tiny modifications. You need to perform Cartesian product of tapes. Then initial tape contents of $M_2$ should be the same as respective contents of $M_0$. For each accepting state of $M_0$, we need to redirect transitions. All those transition that go over character belonging to base of $M_1$,  need to be redirected to initial state of $M_1$. However, this time we additionally append to output of those transitions, the initial tape contents of  $M_1$ (most tapes are initially empty except for $t_{\epsilon M_1}$). You should also take extra caution in case when both $M_0$ and $M_1$ have some mapping for  $\epsilon$, because then the mapping for $M_2$ is concatenation of both. And when you perform Cartesian  product of tapes, some of them will need to be preallocated with $s_{\epsilon M_0}$, while there will be one tape preallocated with concatenation $s_{\epsilon M_0}s_{\epsilon M_1}$ of both.
-	\item Weak Kleene closure cannot work if $\epsilon$ mapping is accepted and is a non-empty string. Therefore we either can reduce the automaton to equivalent one with all initial tapes empty, or we cannot perform Kleene closure at all.
+	\item Weak Kleene closure cannot work if $\epsilon$ mapping is accepted and is a non-empty string. Therefore we either can reduce the automaton to equivalent one with all initial tapes empty, or we cannot perform Kleene closure at all. 
+	
+	This should conclude the procedure for converting Mealy machines to regular expressions. At the same time it's also a constructive proof that power of regular expressions is at least as expressive as that of $\mathbb{ M}$ (in fact their power is equal).
 	
 \end{itemize}
 
 \subparagraph{Weak union} We can further weaken partial union by using the same mechanism as in weak concatenation and weak Kleene closure. Weak union $M_0 \cup' M_1$ is defined iff base of $M_0$ and base of $M_1$ have no common elements. It may seam like weak union is more limited in expressive power than partial union but it's not entirely true.
 
-\subparagraph{Regular expressions for $\mathbb{ M}_\infty$} In case of $\mathbb{ M}_\infty$ 
-
-
-\subparagraph{Regular expressions for $\mathbb{ M}_\vee$} In case of deterministic Mealy machines, the language of regular expressions becomes a bit more limited. For both $\mathbb{M}_\infty$ and $\mathbb{M}_\vee$ our best option is to use weak union, weak concatenation and weak Kleene closure. On top of that, the syntactic correctness of formulas doesn't correspond to semantic correctness. For instance the formula $(a:\epsilon)^*$ is correct both syntactically and semantically, but formula $((a:\epsilon)^*)^*$ is only valid in syntactic sense. Because of the partial nature of the three fundamental operations, many cases become invalid semantically. The most obvious way to validate formula is of course by attempting to build corresponding automaton. However, this might be an expensive operation. We could propose a more efficient way that validates formula without evaluating it.
+\subparagraph{Regular expressions for $\mathbb{ M}_\infty$} We already showed how Kleene algebra can work for $\mathbb{ M}$ (and it works almost the same for FSA). Now we will investigate deterministic $\mathbb{ M}_\infty$ automata. Since we already know that $\mathbb{ M}_\infty \subsetneq \mathbb{ M}$ and regular expressions are equivalent in power to $\mathbb{ M}$, we could intuitively conclude that regular expressions for $\mathbb{ M}_\infty$ should be different (and less powerful). Our best option is to use weak union, weak concatenation and weak Kleene closure. Unfortunately it has one serious drawback. The syntactic correctness of formulas does no longer correspond to semantic correctness. For instance the formula $(a:\epsilon)^*$ is correct both syntactically and semantically, but formula $((a:\epsilon)^*)^*$ is only valid in syntactic sense. Because of the partial nature of the three fundamental operations, many cases become invalid semantically. The most obvious way to validate formula is of course by attempting to build corresponding automaton. However, this might be an expensive operation. We could propose a more efficient way that validates formula without evaluating it.
 
 The idea is quite simple. Start with atomic pairs/characters and gradually traverse syntax tree while keeping track of base, co-base and initial $t_\epsilon$ tape of each subformula  (in case of $\mathbb{ M}_\infty$, $t_\epsilon $ is just the single output tape that's available). Let's denote base alphabet of formula $a$ as $\alpha(a)$ and co-base alphabet as $\omega(a)$ and $\epsilon$ mapping that $a$ accepts as $\mathcal{T}(a)$. Then:
 \begin{itemize}
@@ -1367,50 +1480,16 @@ Given $M \in \mathbb{ M}_\vee$ with set of tapes $T$ we can produce automaton $N
 
 Such approach will be of great importance when investigating properties of regular expressions for $\mathbb{ M}_\vee$, because we can operate on strings produced by $N$ just as if we operated all tapes of $M$ simultaneously.
 
-\subparagraph{ Weak Kleene algebra} Previously we showed various ways to define regular expressions. Now let's focus all our attention on one particular model. We will only work with $\mathbb{ M}_\vee$ automata and assume the input and output alphabets to be $\Sigma$ and $\Gamma$ respectively. Therefore all elements in our new algebra will be subsets of $\Sigma^* \rightarrow \Gamma$. We will denote this to be the universum $\mathcal{A} = \mathcal{P}(\Sigma^* \rightarrow \Gamma)$. We need operations of partial union $+ : \mathcal{A} \times \mathcal{A} \rightarrow \mathcal{A} $, weak concatenation $\cdot : \mathcal{A} \times \mathcal{A} \rightarrow \mathcal{A} $ and weak Kleene closure $^* : \mathcal{A} \rightarrow \mathcal{A} $. Therefore we can introduce  algebra ($\mathcal{A}$,$+$,$\cdot$,$^*$) with the following axioms:
-\begin{itemize}
-	\item Associativity of $+$ \\
-	$a + (b + c) = (a + b) + c$ and $a(bc) = (ab)c$
-	\item Commutativity of $+$: \\
-	$a + b = b + a$
-	\item Distributivity \\
-	 $a(b + c) = (ab) + (ac)$ \\
-	 $(b + c)a = (ba) + (ca)$
-	 \item Identity element $\emptyset$  \\
-	 $a + \emptyset = \emptyset + a = a$
-	 \item Identity element $\epsilon:\epsilon$  \\
-	 $a (\epsilon:\epsilon) = (\epsilon:\epsilon) a = a$  
-	 \item Annihilation: \\
-	  $a\emptyset = \emptyset a = \emptyset$
-\end{itemize}
-Then we can define partial order $a \le b \iff  a+b = b$, which we use to define the rest of axioms:
-\begin{itemize}
-	\item $(\epsilon:\epsilon) + a(a^*) \le a^*$ 
-    \item $(\epsilon:\epsilon) + (a^*)a \le a^*$
-    \item $ax \le x\implies a^*x \le x$
-    \item $xa \le x\implies xa^* \le x$
-\end{itemize}
-These axioms look very much like those of Kleene algebra with the one exception that all the operations are partial. Here are proofs that all those axioms are valid for  $\mathbb{ M}_\vee$ WORK IN PROGRESS:
-\begin{itemize}
-	\item $a + (b + c) = (a + b) + c$ 
-	\item $ a + b = b + a $
-	\item $a(bc) = (ab)c$
-	\item $a(b + c) = (ab) + (ac)$ 
-	\item $(b + c)a = (ba) + (ca)$
-	\item $a + \emptyset = \emptyset + a = a$
-	\item $a (\epsilon:\epsilon) = (\epsilon:\epsilon) a = a$  
-	\item $a\emptyset = \emptyset a = \emptyset$
-\end{itemize}
-Good news is that Arden's theorem still holds: \\
-if $x = ax+b$ then $x=a^*b$ provided that $a^*b$ is defined. \\
-This is crucial for proving that every automaton can be reduced to regular expression. 
+\subparagraph{ Weak Kleene algebra}  In case of $\mathbb{ M}_\infty$, regular expressions are limited by weak concatenation, weak Kleene closure and weak union. We can use those operations to build system similar to Kleene algebra with the only exception that, almost every axiom needs to take partiality of operations into account. For instance the axiom of commutativity would now look like this: \\
+$a + b = b + a \iff \alpha(a) \cap \alpha(b) = \emptyset$
 
-Given any automaton $M\in \mathbb{ M}_\vee$ we can associate certain relation with each of its states. $q \in Q_M$ is "equivalent" to relation $l_q \subset \Sigma^* \times \Gamma^*$ such that every pair $(x,y) \in \Sigma^* \times \Gamma^*$ belongs to $(x,y) \in l_q$ iff it would be accepted by automaton $M$ with $q$ as initial state. To every transition $\delta(q,s) = q'$ with output $G(q,s) = (s_0',s_1',..s_n')$,  we associate atomic pair
+Because of this, Arden's theorem becomes: \\
+$(x=ax+b \implies x = a^*b) \iff \alpha(a) \cap \omega(a) \cap \alpha(b) = \emptyset$
+We can prove it as: 
 
+\subparagraph{Glushkov's construction for Mealy machines}
 
-\section{Maximal canonical Mealy machines}
-
-We already know how to build regular expressions for $\mathbb{M}_\vee$ machines and how to convert one. We also showed algorithms for performing all the basic operations of union, concatenation and Kleene closure. While it's easy to notice that  those algorithms are polynomial (which is great by itself!), the bad news is that many of them perform Cartesian products of states or tapes. Therefore if given two automata with respective number of states/tapes $n$ and $m$, then performing those operations can be done in $O(mn)$ time. Now it gets more complicated when we compute entire regular expressions. let's say that we perform union $k$ times for automata $M_1 \cup M_2 \cup ... \cup M_k \subset \Sigma^* \rightarrow \Gamma^*$. Then Cartesian product of $Q_1 \times Q_2 \times... Q_k$ yields exponential number of states with respect to $k$. Good news is that we can make huge optimisations with help of maximal canonical automata (MCA for short). 
+We already know how to build regular expressions for $\mathbb{M}_\vee$ machines and how to convert one. We also showed algorithms for performing all the basic operations of union, concatenation and Kleene closure. While it's easy to notice that  those algorithms are polynomial (which is great by itself!), the bad news is that many of them perform Cartesian products of states or tapes. Therefore if given two automata with respective number of states/tapes $n$ and $m$, then performing those operations can be done in $O(mn)$ time. Now it gets more complicated when we compute entire regular expressions. let's say that we perform union $k$ times for automata $M_1 \cup M_2 \cup ... \cup M_k \subset \Sigma^* \rightarrow \Gamma^*$. Then Cartesian product of $Q_1 \times Q_2 \times... Q_k$ yields exponential number of states with respect to $k$. Good news is that we can make huge optimisations with help of Glushkov's construction.
 
 
 
