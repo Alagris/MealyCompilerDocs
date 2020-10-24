@@ -1,0 +1,161 @@
+% ======================================================== %
+% Przeczytaj plik amuthesis-doc.pdf, aby poznać opcje      %
+% klasy `amuthesis`                                        %
+% ======================================================== %
+\documentclass[oneside,polski,logo]{amuthesis}
+
+% Zdefiniuj kodowanie pliku źródłowego (domyślnie utf8)
+\usepackage[utf8]{inputenc}
+
+% ======================================================== %
+% Dane autora i pracy                                      %
+% ======================================================== %
+
+% --- Autor pracy
+\author{Bohdan Bondar, Marcin Jałoński, Aleksander Mendoza-Drosik}
+% --- Numer albumu
+\album{}
+% --- Tytuł pracy (w języku polskim i angielskim)
+\titlePL{Solomonoff - kompilator transduktorów skończenie stanowych}
+\titleEN{Solomonoff - Finite state tranducer compiler}
+% --- Typ pracy (inżynierska, licencjacka, magisterska)
+\type{inżynierska}
+% --- Wydział (wykaz skrótów):
+% --- --- WA    --- Wydział Anglistyki
+% --- --- WB    --- Wydział Biologii
+% --- --- WCh   --- Wydział Chemii
+% --- --- WFPiK --- Wydział Filologii Polskiej i Klasycznej
+% --- --- WF    --- Wydział Fizyki
+% --- --- WH    --- Wydział Historyczny
+% --- --- WMiI  --- Wydział Matematyki i Informatyki
+% --- --- WNGiG --- Wydział Nauk Geograficznych i Geologicznych
+% --- --- WNPiD --- Wydział Nauk Politycznych i Dziennikarstwa
+% --- --- WNS   --- Wydział Nauk Społecznych
+% --- --- WN    --- Wydział Neofilologii
+% --- --- WPAK  --- Wydział Pedagogiczno-Artystyczny w Kaliszu
+% --- --- WPiA  --- Wydział Prawa i Administracji
+% --- --- WSE   --- Wydział Studiów Edukacyjnych
+% --- --- WT    --- Wydział Teologiczny
+% --- --- IKE   --- Instytut Kultury Europejskiej w Gnieźnie
+\faculty{WMiI}
+% --- Kierunek (w mianowniku)
+\field{informatyka}
+% --- Specjalność (w formie mianownikowej)
+% --- (ustaw puste, jeśli bez specjalności)
+\specialty{}
+% --- Promotor (w dopełniaczu)
+\supervisor{dr Bartłomieja Przybylskiego}
+% --- Data złożenia pracy (Miasto, miesiąc rok)
+\date{Poznań, luty 2021}
+
+% --- Płeć autora (M/K)
+\stsex{M/M/M}
+% --- Zgoda na udostępnienie pracy w czytelni (TAK/NIE)
+\stread{TAK/TAK/TAK}
+% --- Zgoda na udostępnienie pracy w zakresie ochrony (TAK/NIE)
+\stprotect{TAK/TAK/TAK}
+% --- Data podpisania oświadczenia (Miasto, data)
+\stdate{Poznań, \today{} r.}
+
+% ======================================================== %
+% Dodatkowe pakiety wykorzystywane w pracy                 %
+% ======================================================== %
+
+\usepackage{lipsum}
+
+% ======================================================== %
+% Zasadnicza część dokumentu                               %
+% ======================================================== %
+
+\begin{document}
+
+% Strona tytułowa
+\maketitle
+% Oświadczenie
+\makestatement
+
+% Blok abstraktu w języku polskim
+\begin{streszczenie}
+This project focuses on research in the field of automata theory and inductive inference. While many existing libraries already provide support for general purpose automata and implement various related algorithms, this project takes a slightly different approach. The primary tool for working with the library, is through doman specific language. Most of the things can be done without writing even a single line of Java code.
+
+
+Compilation of regular expressions is very efficient thanks to Glshkov's construction. Hence all operations of concatenation, union, Kleene closure (including *, +, ?) are constant-time operations. Moreover, the automata will have only as many states as there are symbols in regular expression.
+
+
+All automata are nondeterministic functional subsequential weighted transducers. The primary semiring of weights is arctic lexicographic semiring (more options will come in the future). Compiler always enforces functionality (that is, at most one output can be printed for each input) through an efficient transducer squaring algorithm (time complexity is quadratic). Moreover, all trnsitions are ranged - that is they don't accept just a single symbol but instead they span entire range of symbols. Therefore expressions like . translate to just one single transition. Glushkov's construction gives us guarantee that there are only as many transitions as there are symbols in regular epxression (each range [a-z] counts as one).
+
+
+All regular expressions are strongly typed. The type system is polymorpic and (unlike in most Turing-complete languages), the typechecking is not done through unification algorithm, but rather the language inclusion. All types are regular expressions themselves as well, although it is required that they are deterministic (that is, the automaton produced with Glushkov's construction is deterministic). This way, language inclusion can be checked by performing product of automata (quadratic time-complexity). In some places (explained below) also nondeterministic language inclusion is checked, but unfortunately it can only be done with subset construction (exponential time complexity). Hence, user is advised to use nondeterministic typechecking only when absolutely necessary.
+
+
+All automata are very small thanks to nondeterministic pseudo-minimisation! Unlike most other libraries that implement minimisation through construction of minimal DFA, here we actually perform pseduo-minimisation on nondeterministic transducers. The algorithm uses heuristics inspired by Brzozowski's construction and Kameda-Weiner's NFA minimisation. Unfortunately performing full minimisation on NFA is a hard problem, which requires exponential complexity. Our algorithm is O(n log n) on average (and O(n^2 log n) in a very unlikely pessimistic case) and attempts to reduce size of automaton as much as possible, without actually searching for the smallest one. Note that not always finding the smallest nondeterministic transducer, should not be a problem, because the NFA are often much smaller than even the smallest DFA. Moreover, thanks to glushkov's construction, all compiled automata are often in practice smaller than minimal DFA even without pseudo-minimisating them.
+
+
+Evaluation is very efficient thanks to guarantees of lexicographic weights. In pessimistic case evaluation is quadratic, but after performing pseudo-minimisation, it is in practice often close to being linear (optimistic case being deterministic automata, whose evaluation has linear time complexity).
+
+
+Transducer composition is lazy because otherwise it would pose the danger of exponentially exploding size of automata (composition of two transducers is quadratic, but if composition is used multiple times in a regular expression then, that would lead to exponential number of states in worst case). However, making composition lazy has some advantages - this compiler allows for invoking external functions written in Java. Hence you can ad-hoc mix regular expressions with custom Java functions. If really necessary, there is also a function for explicitly performing composition in non-lazy manner, but it should be used with caution and only applied when automata are reasonably small.
+
+
+External functions can be called to add even more features. For instance, instead of making import some.other.module a keyword (like in most other languages), here import!('some/other/module.mealy') is an external function. It's possible to read automata in various formats such as AT&T, DOT and compressed binary.
+
+
+Inductive inference/machine learning can beextensively used with ease. At the moment all inference functions are provided by LearnLib (Solomonoff is compatible with LearnLib and AutomataLib). More algorithms, specific to transducers will be added soon.
+
+
+Solomonoff implementation is small and generic. It takes up roughly 10-15 classes and many algrithms are written in a clean reusable manner. Because the main way of interaction with the library is via its domain specific language, most of the underlying implementation is free to be changed and reworked in drastic ways at any time. The Java API accessible to end-users is very minimalist just like Java's Pattern.compile (you don't see things like Pattern.union or Pattern.kleeneClosure). This means that our library has a lot more room for refactoring, simplyfing and optimising the implementation.
+
+
+The primary philosophy used in implementing this library is the top-down approach and features are added conservatively in a well thought-through manner. No features will be added ad-hoc. Everything is meant to fit well together and follow some greater design strategy. For comparision, consider the difference between OpenFst and Solomonoff.
+
+
+\begin{itemize}
+	\item OpenFst has Matcher that was meant to compactify ranges. In Solomonoff all transitions are ranged and follow the theory of (S,k)-automata. They are well integrated with regular expressions and Glushkov's construction. They allow for more efficient squaring and subset construction. Instead of being an ad-hoc feature, they are well integrated everywhere.
+	
+	\item OpenFst has no built-in support for regular expression and it was added only later in form of Thrax grammars, that aren't much more than another API for calling library functions. In Solomonoff the regular expressions are the library. Instead of having separate procedures for union, concatenation and Kleene closure, there is only one procedure that takes arbitrary regular expression and compiles it in batch. This way everything works much faster, doesn't lead to introduction of any ε-transitions (that's right! In Solomonoff, ε-transitions aren't even implemented, because they were never needed thanks to Glushkov's construction). This leads to significant differences in performance. Compiling a dictionary txt file that has several thousands of entries, takes hours for OpenFst but only 2-5 seconds for Solomonoff. That comes out-of-the-box without hand-optimising any code.
+	
+\end{itemize}
+
+
+For embedded systems Java might not be the ideal language of choice, hence we (will soon) provide C backend. The compiler itself will remain written purely in Java, but there will be alternative C runtime capable of running all automata as well. Moreover, for places where resources are really tight, Solomonoff will offer direct compilation of transtucers into C code (similarly to how Flex and Bison or other parser generators work, except that Solomonoff will generate transducers instead of parsers).
+
+
+Compilation of UNIX regexes and Thrax grammars will be soon supported as well. Hence Solomonoff will try to compete with Google's RE2. Solomonoff will do all this via active learning. This approach has numerous advantages.
+
+\begin{itemize}
+	\item First there is no need to explicitly write and converters. You only give Solomonoff some Java function that is of type String someFunction(String input){...} and Solomonoff will treat it as oracle for grammatical inference. For example someFunction might call input.replaceAll("some|complicated(regex)*","substitution") (even multiple times) and Solomonoff will learn and produce some transducer. This way lookahead's and lookbehind's will be supported (so it can do more than Google's RE2 library).
+
+	\item Second it will not only convert but also hugely optimise all regexes.
+	
+	\item Third it will be very generic. It could in fact learn any Java function, as long as it's functionality can be expressed by a transducer (context free or context sensitive transductions are not supported). Hence Solomonoff might be a perfect tool for simplify your ancient codebase of spaghetti regexes, written by "some guy who no longer works here".
+	
+\end{itemize}
+
+
+\paragraph{Słowa kluczowe:} klasa
+\end{streszczenie}
+
+% Blok abstraktu w języku angielskim
+\begin{abstract}
+\lipsum[2]
+
+\paragraph{Keywords:} klasa
+\end{abstract}
+
+% Opcjonalny blok dedykacji
+\begin{dedykacja}
+Tu możesz umieścić swoją dedykację.
+\end{dedykacja}
+
+% Spis treści
+\tableofcontents
+
+% ======================================================== %
+% Właściwa część pracy                                     %
+% ======================================================== %
+
+\chapter{Treść mojej pracy}
+
+\lipsum[3]
+
+\end{document}
