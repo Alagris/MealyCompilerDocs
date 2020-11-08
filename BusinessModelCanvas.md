@@ -23,7 +23,7 @@
 	<ul>
 	 <li>Developers</li>
 	  <ul>
-	   <li>C library - implementing painlessly fast and efficient parsers, creating neat code</li>
+	   <li>Java API</li>
 	  </ul>
 	 <li>Machine learning specialists</li>
 	  <ul>
