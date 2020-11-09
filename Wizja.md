@@ -1,6 +1,6 @@
 
-# Dokument wizji projektu MealyCompiler
-#### (MealyCompiler project vision)
+# Dokument wizji projektu Solomonoff
+#### (Solomonoff project vision)
 
 
 Autor: Aleksander Mendoza, Bogdan Bondar, Marcin Jabłoński
@@ -10,7 +10,7 @@ Data: 18 March 2020
 ### 1. Wprowadzenie/Introduction
 
 ##### Some theoretical background in nutshell
-The foundation of modern technology lies in computability theory. There've been proposed dozens of various computation models. Chomsky proposed entire hierarchy of them. However, the more powerful a model is, the more complex are its properties, which makes it difficult or impossible to perform various operations. For instance you can easily minimize finite state automata, but doing so for non-deterministic automata is NP-hard*, while minimization of Turing machines is undecidable. Our product will focus on special model called Mealy automata. We should take advantage of all guarantees and features this model provides. Thanks to their ability to relate some strings to others, transducers are especially heavily used in natural language processing, machine learning and formal specification of systems. The basic idea behind all kinds of Mealy machines is extending finite state automata with output. Each edge should have 2 labels: one for input and one for output. One of thme decides where to go, the other tells what to print. Such model has benefit of most of the properties of standard finite state automata, while also has many additional properties. You can compose and invert automata very much like functions or relations in other fields of mathematics. It's possible to extend regular expressions with output as well. You can minimize them easily or add non-determinism.
+The foundation of modern technology lies in computability theory. There've been proposed dozens of various computation models. Chomsky proposed entire hierarchy of them. However, the more powerful a model is, the more complex are its properties, which makes it difficult or impossible to perform various operations. For instance you can easily minimize finite state automata, but doing so for non-deterministic automata is NP-hard*, while minimization of Turing machines is undecidable. Our product will focus on special model of transducers. We should take advantage of all guarantees and features this model provides. Thanks to their ability to relate some strings to others, transducers are especially heavily used in natural language processing, machine learning and formal specification of systems. The basic idea behind all kinds of transducers is extending finite state automata with output. Each edge should have 2 labels: one for input and one for output. One of thme decides where to go, the other tells what to print. Such model has benefit of most of the properties of standard finite state automata, while also has many additional properties. You can compose and invert automata very much like functions or relations in other fields of mathematics. It's possible to extend regular expressions with output as well. You can minimize them easily or add non-determinism.
 
 ##### Our better model
 
@@ -101,7 +101,6 @@ Proposed architecture (one of possible ways we could implement it):
 - package manager is intergrated with build system and shares common codebase
 - online REPL is built by compiling Java compiler with JWebAssembly
        - everything runs on front-end. Because the goal is to be efficent, we should be able to pack everything in thin WebAssembly. No back-end required so we can put it on GitHub Pages.
-       - interface is on front-end but compiler is in back-end. We need to find hosting.
 - website with basic info, documentation, examples and tutorials
 - YouTube channel and blog contain additional resources. They help us to promote the library and attract users
 
@@ -110,7 +109,7 @@ Proposed architecture (one of possible ways we could implement it):
 
 ### 6. Zakres i ograniczenia/scope and limitations
 
-Time is our most valuable resource. If we start running out of it, we might drop support for formal specification and/or Mealy inference. By the end of semester we should have working library, although there is no guarantee that it will be optimised. Optimisations should be ready by the end of second semester, 
+Time is our most valuable resource. If we start running out of it, we might drop support for formal specification and/or transducers. By the end of semester we should have working library, although there is no guarantee that it will be optimised. Optimisations should be ready by the end of second semester, 
 though. There should also be a working basic version of expression language and compiler for it by the end of first semester. We should also have more-or-less working prototype of online repl, although the extent of what "working" means depends heavily on state of library.  
 
 We propose to split our work into alpha and beta phases:
