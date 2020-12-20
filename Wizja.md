@@ -1,12 +1,12 @@
-Dokument wizji projektu
+# Dokument wizji projektu
 
-Nazwa projektu: Solomonoff
+#### Nazwa projektu: Solomonoff
 
-Autorzy: Aleksander Mendoza, Bogdan Bondar, Marcin Jabłoński
+#### Autorzy: Aleksander Mendoza, Bogdan Bondar, Marcin Jabłoński
 
-Data: 13.12.2020
+#### Data: 13.12.2020
 
-1. Executive summary (max. 150 słów)
+### 1\. Executive summary 
 
 This project focuses on research in the field of automata theory and inductive inference. While many existing libraries already provide support for general purpose automata and implement various related algorithms, this project takes a slightly different approach. The primary tool for working with the library, is through doman specific language of regular expressions. Most of the things can be done without writing even a single line of Java code. 
 
@@ -14,7 +14,7 @@ The main applications concern formal methods, natural language processing, state
 
 The greatest competitor for Solomonoff is Google's OpenFST project. Solomonoff introduces dozens of improvements. The most important being efficiency improvements, symbolic ranges, nondeterminism detection and type system.
 
-2. Cel i grupa docelowa (min. 150 słów)
+### 2\. Goal and target audience
 
 The goal is provide an better alternative for OpenFST. Solomonoff strives to provide improvement in the following domains:
 
@@ -48,7 +48,7 @@ The goal is provide an better alternative for OpenFST. Solomonoff strives to pro
 
 The project found approval among members of Samsung's R&D team for Bixby developement and inductive inference researchers from Dortmund Technical University, Germany. 
 
-3. Rynek (min. 3 konkurencyjne produkty)
+### 3\. Market
 
 Currently there exists only one serious alternative, which is openfst library with their Thrax extension for writing regex-like grammars. Their solution has numerous problems. It's focus on probabilistic approach to modeling nondeterminism, made the library quite slow. It also became a double-edged sword, by making rule-based system difficult to maintain (compiler doesn't warn programmer when nondeterminism causes some rules to overshadow others). Compilation of grammars is lacking in many aspects. The grammar expression language is very basic and obscure. Compiler is not parallized and highly inefficient. On top of that, the probabilistic approach.
 
@@ -64,32 +64,34 @@ There used to be another similar project, developed by AT&T but it's been long d
 
 
 
-4. Opis produktu (min. 3 moduły/epiki)
+### 4\. Product description
 
 A simple and efficient library written in C will be the main and primary component of our product. On top of that, it will have command-line interface equipped with compiler. For easy and quick access, we should support online repl for all curious people who want to give our library a try. The compiler should support parallelism, warn user about non-determinism and allow for possibly some extent of generic programming (by defining functions working on regular expressions or bulk-generation of rules according to some regularities). We should ,however pay extra attention, to not making this language turing complete/undecidable by accident (otherwise compilation might never end).
 
 - simple and efficient library written in Java
   - essential functions for operations of
-    - concatenation
-    - Kleene closure
-    - union
-    - composition
-    - projection
+     - concatenation
+     - Kleene closure
+     - union
+     - composition
+     - projection
   - additional less important operations
-    - inverse
-    - composition
+     - inverse
+     - composition
   - algorithms of inference
   - type system
   - integration with LearnLib
   - is optimised for functional ranged transducers (so called symbolic automata)
-  - REPL and build system
+
+- REPL and build system
     - support for parallelism
     - non-determinism warnings
     - packaging system
     - dependency resolver
     - supports everything that compiler does
     - additional directives
-  - online repl
+
+- online repl
     - can write regular expressions on-the-fly
     - can test for determinism without constructing automata (it's more efficient)
     - user can download effects of their work for their local computer
@@ -121,7 +123,7 @@ who use Solomonoff inference
 who might use it as one of their tools. (Especially if their employees are any of the people above)
 
 
-5. Zakres i ograniczenia
+### 5\. Scope and limitations
 
 
 Time is our most valuable resource. If we start running out of it, we might drop support for formal specification and/or transducers. By the end of semester we should have working library, although there is no guarantee that it will be optimised. Optimisations should be ready by the end of second semester, though. There should also be a working basic version of expression language and compiler for it by the end of first semester. We should also have more-or-less working prototype of online repl, although the extent of what "working" means depends heavily on state of library.
@@ -145,11 +147,11 @@ Team:
 
 - Aleksander Mendoza
   - formal specification and theoretical foundations
-  - compiler implementation
+  - compiler implementation (Java)
 - Bogdan Bondar
-  - web design
-  - backend development
+  - web design (Bootstrap)
+  - backend development (Spring)
 - Marcin Jabłoński
-  - build system
-  - REPL
+  - build system (Java)
+  - REPL (ANTLR)
   - assisting with compiler implementation
