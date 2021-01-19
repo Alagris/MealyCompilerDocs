@@ -1,0 +1,53 @@
+The primary goal of this project was do develop the compiler backend. 
+Initially little attention was paid to structuring larger projects composed of multiple source files and dependencies. While smaller applications can work fine with a single script of regular expressions, in the tasks on natural language processing its common to build large codebases composed of millions of linguistic rules. Being able to manage and organise them efficiently becomes a major issue. 
+
+The compiler builds automata using our special version fo Glushkov's construction, which is capable of compiling subexpressions independently of each other. The results are returned in form of singly linked graph. This format allows one to parallelise compilation and split work across multiple files. 
+Such a feature is not native to the compiler itself and has been delegated to the build system as an independent application instead. 
+
+The easiest approach of implementing build system would be by concatenating all source files into one large steam of input and then feed it into the compiler. It could be easily done with a simple Bash script or a couple of Makefiles. Despite being very straightforward, such a solution has multiple flaws. The order of concatenation matters a lot. The compiler requires that every variable is defined before being used. Should the order get mistakenly swapped, the compilation would fail. As a result, it would be user's obligation to ensure correct order of concatenation, which might quickly become unmaintainable in large projects. Second problem stems from linear types. The compiler follows the semantics of linear logic and a variable once consumed should not be reused. An explicit copy is always necessary. Hence the order of definition and usage of all variables is even more important than in other general-purpose languages that do not have linear types. For instance this will compile
+\begin{lstlisting}
+X = 'a'
+Y = !!X 'b'
+Z = X 'c'
+\end{lstlisting}
+but this one will fail
+\begin{lstlisting}
+X = 'a'
+Z = X 'c'
+Y = !!X 'b'
+\end{lstlisting}
+Third problem is that managing dependencies and building packages would become impossible. For example we might imagine code, which includes some library 
+\begin{lstlisting}
+include libX
+X = f  // f is defined in libX
+\end{lstlisting}
+If in the future a new version of the library is released, it might happen that variable X is added and suddenly our code becomes invalid because we're trying to redefine X.
+
+Our initial thought was to introduce a special function \texttt{import!('filepath')}, which would load any variable from a precompiled binary file. Then the user would write code as follows
+\begin{lstlisting}
+X = import!('lib/libX/f')
+\end{lstlisting}
+This approach suffers from one logistic problem. If user decided to split their code into several files and then import the necessary automata at will, the build system would need to detect the correct compilation order of all files. For instance if there were two files like these
+\begin{lstlisting}
+file X.mealy:
+    a = 'a'
+file Y.mealy:
+    b = import!('X/a')
+\end{lstlisting}
+then the build system would need to first compile \texttt{X.mealy} and produce binary file \texttt{X} and only then compilation of \texttt{Y.mealy} would become possible. The major problem appears when cyclic dependencies between files arise
+\begin{lstlisting}
+file X.mealy:
+    X = import!('Y/Y')
+file Y.mealy:
+    Y = import!('X/X')
+\end{lstlisting}
+While it's possible to create a built tool capable of detecting such problems and notifying the user, its main disadvantage is that in some cases, there might be cyclic dependency between files, despite not introducing cyclic dependencies between automata themselves. As a result, logically valid regular expressions would be prematurely rejected by build system. For example
+\begin{lstlisting}
+file X.mealy:
+    X1 = import!('Y/Y1')
+    X2 = 'a'
+file Y.mealy:
+    Y1 = 'b'
+    Y2 = import!('X/X2')
+\end{lstlisting}
+The final solution we settled for was to split compilation into three phases. First the build system scans all files (in parallel) and builds abstract syntax trees of all variable definitions. In those trees there would be references to other variables that could be defined anywhere else in the project. Then in the second phase the variables would be scanned and a dependency graph would be built. We used a specialised data structure for efficiently working with directed acyclic graphs. If at any point a cycle was introduced, the build system would throw an error. Finally in the last phase every node in the graph would be compiled in parallel. For optimal performance, multiple threads would take vertices in topological order.

@@ -1,0 +1,86 @@
+
+Creation of user-friendly interface was an important part of the project.
+The greatest challenge lied in finding the most intuitive way of presenting a complicated and highly advanced system. The main component was the language of regular expressions itself. User should be able to edit its code with ease. The second key feature was the ability to execute the code. 
+In many Turing-complete languages, every expression can be evaluated into some value, which could the be printed back to the user. Here the problem was not so trivial. The regular expressions could in principle be evaluated down to formal languages. For example 
+\begin{lstlisting}
+'a' ('b' | 'c' | 'ef' ) 'd'
+\end{lstlisting}
+would return a language consisting of strings
+\begin{lstlisting}
+'abd', 'acd', 'aefd'
+\end{lstlisting}
+The issue wish such approach is that not all languages are finite. The expression
+\begin{lstlisting}
+'a'*
+\end{lstlisting}
+would be evaluated as infinite set
+\begin{lstlisting}
+'', 'a', 'aa', 'aaa', ...
+\end{lstlisting}
+Some regexes, might be finite but of exponential size. For instance
+\begin{lstlisting}
+('0' | '1') ('0' | '1') ('0' | '1') ('0' | '1')
+\end{lstlisting}
+yields set of all bit-strings of length 4. Presenting user with the result in form of formal languages would be often impractical or impossible. 
+
+As a result, our REPL does not evaluate expressions. The results of compilation are not printed in any form. Instead the interface is meant to be silent when compilation is successful. Only errors are printed. 
+
+There are many different approaches to implement user interface for REPL.
+One of them would be having a single editor window with all the code in it and the REPL output printed on the margins next to each respective line. This provides a very immersive user experience for Turing-complete languages. For regular expressions i'ts not as spectacular. Instead we decided to use two windows - one for code editor and the other for REPL console. All interaction with regular expressions is performed via special commands built into the console. Those commands could not be used inside the code editor, as they are not part of the language itself. In order to evaluate a transducer user would type the following line into REPL input
+\begin{lstlisting}
+:eval NAME 'input string'
+\end{lstlisting}
+Sometimes, user might want to see all the strings that belong to a given language. While there might be infinitely many of them, it's possible to ask user how large sample to generate. To achieve this the following line can be used
+\begin{lstlisting}
+:rand_sample NAME of_size NUMBER
+\end{lstlisting}
+Automata can also be interpreted as directed graphs. This property makes was used to further enhance user interface. Automaton's graph will be shown after typing this command
+\begin{lstlisting}
+:vis NAME
+\end{lstlisting}
+Those and many other functionalities have been implemented in the browser-based version of REPL. 
+
+The implementation is not trivial. One of the ways to achieve such results would be by implementing a parser that could halt mid-parsing. For example user could first type
+\begin{lstlisting}
+x = ('x' |
+\end{lstlisting}
+and hit return button. The parser should notice that the expression is not finished and it has to wait for the next line of input.  Then as the user types the next line
+\begin{lstlisting}
+'y' )
+\end{lstlisting}
+a full and valid expression could be recognised and parser could return.
+This approach is used by some programming languages. It's difficult to implement and requires the grammar to be appropriately structured. We later abandoned this idea due to the problematic nature of Solomonoff's grammar. In particular, it does not use semicolons to separate statements. For example
+\begin{lstlisting}
+x = 'a' 
+y = 'b'
+\end{lstlisting}
+could be written in a single line
+\begin{lstlisting}
+x = 'a' y = 'b'
+\end{lstlisting}
+The equality sign determines start of new statement. By its very nature, parsing this, requires a lookahead of one token into the future. When the input is read in fragments, line by line, such a lookahead is not possible to obtain.
+User could first type
+\begin{lstlisting}
+x = 'a' y
+\end{lstlisting}
+which would be recognized by parser as concatenation of string \texttt{'a'} with variable \texttt{y}. If the user then types
+\begin{lstlisting}
+ = 'b'
+\end{lstlisting}
+in the upcoming line, then the previous results of parsing would have to be discarded and the entire input reparsed again. Hence we decided to simplify the REPL and assume that every line of input fully defines the entirety of expression. As a result it's not possible to split input into multiple lines when using console. This is not a serious limitation, because multiline expressions could still be written in the editor window instead of console. 
+
+The division of user interface into editor and console has one more advantage. It closely mimics the layout of command-line interface, where the typical workflow is to edit source code in local files using any text editor of user's choice and the REPL is kept open all the time alongside the editor. Many existing modes for Emacs follow similar convention.
+
+The REPL is implemented on server-side as a REST API endpoint. 
+
+Aside from the editor and REPL there is one more window, dedicated for tutorial and short documentation.  While it does not enhance the functionality of the website per se, it plays an important role. The Solomonoff compiler is a very niche and specialised tool. There are no similar tools and every user coming to the website is not expected to be familiar with its usage. The primary purpose of the website is not to be a replacement for user's IDE and terminal. Instead it serves as an all-in-one introductory tutorial, interactive playground and a marketing campaign. We want to make the learning materials easily accessible and abundant. Building a strong community is the back-bone of every open-source project. 
+
+
+
+
+
+
+
+
+
+
