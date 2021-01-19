@@ -1,10 +1,34 @@
 The primary goal of this project was do develop the compiler backend. 
 Initially little attention was paid to structuring larger projects composed of multiple source files and dependencies. While smaller applications can work fine with a single script of regular expressions, in the tasks on natural language processing its common to build large codebases composed of millions of linguistic rules. Being able to manage and organise them efficiently becomes a major issue. 
 
-The compiler builds automata using our special version fo Glushkov's construction, which is capable of compiling subexpressions independently of each other. The results are returned in form of singly linked graph. This format allows one to parallelise compilation and split work across multiple files. 
-Such a feature is not native to the compiler itself and has been delegated to the build system as an independent application instead. 
+The compiler builds automata using our special version fo Glushkov's construction, which is capable of compiling subexpressions independently of each other. The results are returned in form of singly linked graph. This format allows one to parallelise compilation and split work across multiple files. For instance user could create two files \texttt{file1.mealy} and \texttt{file2.mealy}, define some variable in the first one and the use it in the second.
+\begin{lstlisting}
+file1.mealy:
+    var1 = 'abc'
+file2.mealy:
+    var2 = ('prefix' var1 'suffix')*
+\end{lstlisting}
+Such a feature is not native to the compiler backend itself (it only parses continuous string of input) and has been delegated to the build system as an independent application instead. 
 
-The easiest approach of implementing build system would be by concatenating all source files into one large steam of input and then feed it into the compiler. It could be easily done with a simple Bash script or a couple of Makefiles. Despite being very straightforward, such a solution has multiple flaws. The order of concatenation matters a lot. The compiler requires that every variable is defined before being used. Should the order get mistakenly swapped, the compilation would fail. As a result, it would be user's obligation to ensure correct order of concatenation, which might quickly become unmaintainable in large projects. Second problem stems from linear types. The compiler follows the semantics of linear logic and a variable once consumed should not be reused. An explicit copy is always necessary. Hence the order of definition and usage of all variables is even more important than in other general-purpose languages that do not have linear types. For instance this will compile
+The easiest approach to implementing build system would be by concatenating all source files into one large steam of input and then feed it into the compiler.
+For instance 
+\begin{lstlisting}
+concatenatedFiles.mealy:
+    //from file1.mealy
+    var1 = 'abc'
+    //from file2.mealy
+    var2 = ('prefix' var1 'suffix')*
+\end{lstlisting}
+It could be easily done with a simple Bash script or a couple of Makefiles. Despite being very straightforward, such a solution has multiple flaws. The order of concatenation matters a lot. The compiler requires that every variable is defined before being used. Should the order get mistakenly swapped, the compilation would fail. For instance 
+\begin{lstlisting}
+concatenatedFiles.mealy:
+    //from file2.mealy
+    var2 = ('prefix' var1 'suffix')* 
+    // var1 used before definition!
+    //from file1.mealy
+    var1 = 'abc'
+\end{lstlisting}
+As a result, it would be user's obligation to ensure correct order of concatenation, which might quickly become unmaintainable in large projects. Second problem stems from linear types. The compiler follows the semantics of linear logic and a variable once consumed should not be reused. An explicit copy is always necessary. Hence the order of definition and usage of all variables is even more important than in other general-purpose languages that do not have linear types. For instance this will compile
 \begin{lstlisting}
 X = 'a'
 Y = !!X 'b'
@@ -50,4 +74,29 @@ file Y.mealy:
     Y1 = 'b'
     Y2 = import!('X/X2')
 \end{lstlisting}
-The final solution we settled for was to split compilation into three phases. First the build system scans all files (in parallel) and builds abstract syntax trees of all variable definitions. In those trees there would be references to other variables that could be defined anywhere else in the project. Then in the second phase the variables would be scanned and a dependency graph would be built. We used a specialised data structure for efficiently working with directed acyclic graphs. If at any point a cycle was introduced, the build system would throw an error. Finally in the last phase every node in the graph would be compiled in parallel. For optimal performance, multiple threads would take vertices in topological order.
+The final solution we settled for was to split compilation into three phases. First the build system scans all files (in parallel) and builds abstract syntax trees of all variable definitions. In those trees there would be references to other variables that could be defined anywhere else in the project. Then in the second phase the variables would be scanned and a dependency graph would be built. We used a specialised data structure for efficiently working with directed acyclic graphs. If at any point a cycle was introduced, the build system would throw an error. Finally in the last phase every node in the graph would be compiled in parallel. For optimal performance, multiple threads would take vertices in topological order. If there is a directed edge from vertex $v_1$ to $v_2$ (meaning that variable $v_2$ depends on $v_1$), then $v_1$ will be added to the queue before $v_2$. Threads process queue entries in the FIFO order. 
+
+In the first phase, the parser that scans source files has been reused from the compiler backend. More precisely, the grammar of syntax is taken from the library but the build system has its own implementation of \texttt{SolomonoffGrammarListener}. Parsing is then performed using the standard ANTLR functions
+\begin{lstlisting}
+SolomonoffGrammarLexer lexer =
+  new SolomonoffGrammarLexer(sourceFile);
+SolomonoffGrammarParser parser =
+  new SolomonoffGrammarParser(new CommonTokenStream(lexer));
+
+parser.addErrorListener(new BaseErrorListener() {
+    public void syntaxError(Recognizer<?, ?> recognizer, 
+            Object offendingSymbol, 
+            int line,
+            int charPositionInLine, 
+            String msg, 
+            RecognitionException e) {
+    	System.err.println("line " + line 
+    	+ ":" + charPositionInLine 
+    	+ " " + msg + " " + e);
+    }
+});
+
+final SolomonoffWeightedParser listener =
+  new SolomonoffWeightedParser(collector, sourceFile, compiler);
+ParseTreeWalker.DEFAULT.walk(listener, parser.start());
+\end{lstlisting}
