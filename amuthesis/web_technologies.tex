@@ -71,9 +71,171 @@ in the upcoming line, then the previous results of parsing would have to be disc
 
 The division of user interface into editor and console has one more advantage. It closely mimics the layout of command-line interface, where the typical workflow is to edit source code in local files using any text editor of user's choice and the REPL is kept open all the time alongside the editor. Many existing modes for Emacs follow similar convention.
 
-The REPL is implemented on server-side as a REST API endpoint. 
+The REPL is implemented on the server-side as a REST API endpoint. 
+\begin{lstlisting}
+@PostMapping("/repl")
+public ReplResponse repl(HttpSession httpSession, 
+    @RequestBody String line)
+\end{lstlisting}
+Every user has their own instance of REPL
+\begin{lstlisting}
+Repl repl = (Repl) httpSession.getAttribute("repl");
+\end{lstlisting}
+which holds a reference to the compiler and a set of built-in commands
+\begin{lstlisting}
+ public static class Repl {
+    private static class CmdMeta<Result> {
+        final ReplCommand<Result> cmd;
+        final String help;
+        final String template;
+        
+        private CmdMeta(ReplCommand<Result> cmd, 
+               String help, String template) {
+            this.cmd = cmd;
+            this.help = help;
+            this.template = template;
+        }
+    }
+	
+    HashMap<String, Repl.CmdMeta<String>> commands;
+    OptimisedHashLexTransducer compiler;
+}
+\end{lstlisting}
+whenever user types some command on the REPL console
+\begin{lstlisting}
+:cmd arg1 arg2 arg3
+\end{lstlisting}
+it gets parsed as
+\begin{lstlisting}
+String firstWord = "cmd";
+String remaining = "arg1 arg2 arg3";
+\end{lstlisting}
+and then the appropriate command implementation is looked up in the map
+\begin{lstlisting}
+final Repl.CmdMeta<String> cmd = commands.get(firstWord);
+return cmd.cmd.run(httpSession, compiler, log, debug, remaining);
+\end{lstlisting}
+The rest controller contains implementations of many such commands
+\begin{lstlisting}
+public static final ReplCommand<String> REPL_LIST = ...
+public static final ReplCommand<String> REPL_EVAL = ...
+public static final ReplCommand<String> REPL_RUN = ...
+public static final ReplCommand<String> REPL_EXPORT = ..
+public static final ReplCommand<String> REPL_IS_DETERMINISTIC = ...
+public static final ReplCommand<String> REPL_LIST_PIPES = ...
+public static final ReplCommand<String> REPL_EQUAL = ...
+public static final ReplCommand<String> REPL_RAND_SAMPLE = ...
+public static final ReplCommand<String> REPL_CLEAR = ...
+public static final ReplCommand<String> REPL_UNSET = ...
+public static final ReplCommand<String> REPL_RESET = ...
+public static final ReplCommand<String> REPL_LOAD = ...
+public static final ReplCommand<String> REPL_VIS = ...
+\end{lstlisting}
+All of those definitions above are lambda expressions that use library functions
+of the compiler. The parameters taken by those lambda expressions are as follows
+\begin{lstlisting}
+public interface ReplCommand<Result> {
+    Result run(
+        HttpSession httpSession, 
+        OptimisedHashLexTransducer compiler, 
+        Consumer<String> log, 
+        Consumer<String> debug, 
+        String args) throws Exception;
+}
+\end{lstlisting}
+As an example, consider the command 
+\begin{lstlisting}
+:eval f 'abc'
+\end{lstlisting}
+which evaluates transducer \texttt{f} for input string \texttt{'abc'}. 
+On the frontend JavaScript will perform REST query
+\begin{lstlisting}
+const response = await fetch('repl', {
+	method: 'POST',
+	body: ":eval f 'abc'"
+})
+\end{lstlisting}
+which will be received by server
+\begin{lstlisting}
+@PostMapping("/repl")
+public ReplResponse repl(HttpSession httpSession, 
+        @RequestBody String line) {
+    Repl repl = (Repl) httpSession.getAttribute("repl");
+    final String result = repl.run(
+        httpSession, 
+        line, // ":eval f 'abc'"
+        s -> out.append(s).append('\n'), // console output
+        s -> { } // debug logs are not displayed
+    );
+    ...
+}
+\end{lstlisting}
+and the \texttt{repl.run} method will query the appropriate implementation to call for
+the \texttt{:eval} command.
+\begin{lstlisting}	
+final String firstWord = "eval";
+final String remaining = "f 'abc'";
+final Repl.CmdMeta<String> cmd = commands.get(firstWord);
+return cmd.cmd.run(httpSession, compiler, log, debug, remaining);
+\end{lstlisting}
+This in turn will trigger the following lambda function
+\begin{lstlisting}
+ReplCommand<String> REPL_EVAL = 
+        (httpSession, compiler, logs, debug, args) -> {
+    String[] parts = args.split("\\s+", 2); // f 'abc'
+    String name = parts[0]; // f
+    String input = parts[1]; // 'abc'
+    G transducer = compiler.getTransducer(name);
+    String output = compiler.specs.evaluate(transducer, input);
+    return output == null ? "No match!" : output;
+};
+\end{lstlisting}
+The output is sent back to JavaScript in form of JSON
+\begin{lstlisting}
+const replResult = JSON.parse(await response.text())
+\end{lstlisting}
+Remaining commands are implemented in a similar way.
 
-Aside from the editor and REPL there is one more window, dedicated for tutorial and short documentation.  While it does not enhance the functionality of the website per se, it plays an important role. The Solomonoff compiler is a very niche and specialised tool. There are no similar tools and every user coming to the website is not expected to be familiar with its usage. The primary purpose of the website is not to be a replacement for user's IDE and terminal. Instead it serves as an all-in-one introductory tutorial, interactive playground and a marketing campaign. We want to make the learning materials easily accessible and abundant. Building a strong community is the back-bone of every open-source project. 
+Several of the functions may require access to HTTP session. In particular it's worth analysing the \texttt{:load} command. It's purpose is to emulate the process of loading source code from file. Whenever user types some code in the editor, it needs to be transported to server, then parsed and compiled. All the defined transducers results need to be saved for later use. The simplest way of achieving this, would be by extending the REST API as
+\begin{lstlisting}
+class ReplInput{
+	String command;
+	String editorContent;
+}
+public ReplResponse repl(
+    HttpSession httpSession, 
+    @RequestBody ReplInput)
+\end{lstlisting}
+and query it using
+\begin{lstlisting}
+const response = await fetch('repl', {
+    method: 'POST',
+    body: {
+        command: replCommand,
+        editorContent: editor.getValue()
+    }
+})
+\end{lstlisting}
+The downside of such solution is that the editor content could become large and sending it would require more internet bandwidth and time. Often user only wants to execute simple short REPL commands that do not require sending the entire code. Sometimes the code might be required but resending it might be omitted as long as user has not modified it. Hence the process of uploading code to the server has been delegated to a separate REST call.
+\begin{lstlisting}
+const response = await fetch('upload_code', {
+	method: 'POST',
+	body: code
+})
+\end{lstlisting}
+The code is then stored in HTTP session, so the REST endpoint has a very simple implementation
+\begin{lstlisting}
+@PostMapping("/upload_code")
+public void uploadCode(HttpSession httpSession, 
+        @RequestBody String text) {
+    httpSession.setAttribute("code", text);
+}
+\end{lstlisting}
+
+
+Aside from the editor and REPL there is one more window on the webpage. It is dedicated for tutorial and short documentation.  While it does not enhance the functionality of the website per se, it plays an important role. The Solomonoff compiler is a very niche and specialised tool. There are no similar tools and any user coming to the website is not expected to be familiar with its usage. The primary purpose of the website is not to be a replacement for user's IDE and terminal. Instead it serves as an all-in-one introductory tutorial, interactive playground and a marketing campaign. We want to make the learning materials easily accessible and abundant. Building a strong community is the back-bone of every open-source project. 
+
+
 
 
 
