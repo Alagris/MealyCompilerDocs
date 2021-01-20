@@ -313,5 +313,114 @@ for (Future<Void> task : queue) {
 }
 \end{lstlisting}
 In the dependency graph, every vertex represents an individual variable with
-unique identifier. A dependency between two variables is formed when one variable is used as a subexpression in the definition of another.
+unique identifier. A dependency between two variables is formed when one variable appears in the syntax tree in the definition of another.
+For instance in the following code
+\begin{lstlisting}
+x = 'a' | 'b'
+y = 'a' (x 'b')*
+\end{lstlisting}
+there are two variables \texttt{x} and \texttt{y} where \texttt{y} depends on \texttt{x}. This would translate to dependency graph on two vertices with one edge
+\begin{center}
+	\begin{tikzpicture}[scale=0.2]
+		\tikzstyle{every node}+=[inner sep=0pt]
+		\draw [black] (16.5,-23.2) circle (3);
+		\draw (16.5,-23.2) node {$x$};
+		\draw [black] (28,-23.2) circle (3);
+		\draw (28,-23.2) node {$y$};
+		\draw [black] (19.5,-23.2) -- (25,-23.2);
+		\fill [black] (25,-23.2) -- (24.2,-22.7) -- (24.2,-23.7);
+	\end{tikzpicture}
+\end{center}
+The simplest way to build such a graph would be to scan every syntax tree searching for variables and then add edges accordingly. The inductive procedure could be implemented as follows
+\begin{lstlisting}
+interface Regex{
+    void forEachVariable(Consumer<Variable> callback);
+}
+class Union implements Regex{
+    Regex a; 
+    Regex b;
+    void forEachVariable(Consumer<Variable> callback){
+        a.forEachVariable(callback);
+        b.forEachVariable(callback);
+    }
+}
 
+... the rest is done analogically...
+
+class Variable implements Regex{
+    void forEachVariable(Consumer<Variable> callback){
+    	callback.accept(this);
+    }
+}
+
+class String implements Regex{
+    java.lang.String str;
+    void forEachVariable(Consumer<Variable> callback){
+    }
+}
+\end{lstlisting}
+The dependency graph is implemented using JGraphT library. It comes with a specialised data structure for directed acyclic graphs that guarantees acyclicity and throws exception whenever a newly added edge violates this property.
+\begin{lstlisting}
+DirectedAcyclicGraph<String, Object> dependencyOf =
+    new DirectedAcyclicGraph<>(null, null, false);
+\end{lstlisting}
+The graph can be build by iterating all the definitions stored in \texttt{shared} map.
+\begin{lstlisting}
+for (Map.Entry<String, SolomonoffWeighted> def : shared.entrySet()) {
+    String identifier = def.getKey();
+    SolomonoffWeighted syntaxTree = def.getValue();
+    syntaxTree.forEachVariable(var->{
+        dependencyOf.add(
+            var.identifier, // source vertex
+            new Object(), // unique edge
+            identifier, // target vertex
+        );
+    });
+}
+\end{lstlisting}
+The above code was simple but it requires to first build the syntax tree and then scan it. As a result every node of the tree is visited twice - first time during creation and second time during scanning. It also requires using the 
+\texttt{forEachVariable} function. It's possible to make this procedure even simper and more efficient. The dependencies could be collected on the spot as the parsing progresses. Because multiple files are parsed in parallel
+and \texttt{DirectedAcyclicGraph} is not thread-safe, an intermediate temporary storage for edges was necessary. We could first collect all of the edges into a list of pairs.
+\begin{lstlisting}
+List<Pair<String,String>> dependsOn;
+\end{lstlisting}	
+The problem with such approach is that certain edges might be duplicated. For instance consider the regular expression that uses $x$ twice
+\begin{lstlisting}
+x = 'a' | 'b'
+y = 'a' (x 'b' x)*
+\end{lstlisting}
+This would lead to adding edge \texttt{Pair.of("y","x")} twice into \texttt{dependsOn}. To prevent this we use a set instead of list. The constructor of parser listener takes the following form
+\begin{lstlisting}
+Set<Pair<String,String>> dependsOn;
+ConcurrentHashMap<String,SolomonoffWeighted> idToAST;
+Set<Pair<String,String>> dependsOn;
+SolomonoffWeightedParser(
+         ConcurrentHashMap<String,SolomonoffWeighted> shared,
+         Set<Pair<String,String>> dependsOn){
+    this.idToAST = shared;
+    this.dependsOn = dependsOn;
+}
+\end{lstlisting}
+The set can be made thread-safe by using the concurrent implementation from Java's standard library.
+\begin{lstlisting}
+ConcurrentHashMap.newKeySet()
+\end{lstlisting}}
+
+\begin{lstlisting}
+String currentVariable;
+
+@Override
+public void enterFuncDef(SolomonoffGrammarParser.FuncDefContext funcDefContext) {
+    currentVariable = funcDefContext.ID().getText();
+}
+@Override
+public void exitFuncDef(FuncDefContext funcDefContext) {
+    String currentVariableID = funcDefContext.ID().getText();
+    SolomonoffWeighted def = stack.pop();
+    idToAST.put(currentVariable, def);
+    dependsOn
+}
+\end{lstlisting}
+
+
+ 
