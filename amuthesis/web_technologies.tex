@@ -1,7 +1,17 @@
 
 Creation of user-friendly interface was an important part of the project.
 The greatest challenge lied in finding the most intuitive way of presenting a complicated and highly advanced system. The main component was the language of regular expressions itself. User should be able to edit its code with ease. The second key feature was the ability to execute the code. 
-In many Turing-complete languages, every expression can be evaluated into some value, which could the be printed back to the user. Here the problem was not so trivial. The regular expressions could in principle be evaluated down to formal languages. For example 
+In many Turing-complete languages, every expression can be evaluated into some value, which could the be printed back to the user. For example in python's REPL, typing $2+2$ yields $4$.
+\begin{lstlisting}
+>>> 2 + 2
+4
+\end{lstlisting}
+and after running a regex, user obtains an object containing all matched groups
+\begin{lstlisting}
+>>> re.compile('a|b*').match('xxaxxbxxbbbx')
+<re.Match object; span=(0, 0), match=''>
+\end{lstlisting}
+In Solomonoff the problem is not so trivial. The regular expressions could in principle be evaluated down to formal languages. For example 
 \begin{lstlisting}
 'a' ('b' | 'c' | 'ef' ) 'd'
 \end{lstlisting}
