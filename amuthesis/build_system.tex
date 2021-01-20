@@ -100,3 +100,126 @@ final SolomonoffWeightedParser listener =
   new SolomonoffWeightedParser(collector, sourceFile, compiler);
 ParseTreeWalker.DEFAULT.walk(listener, parser.start());
 \end{lstlisting}
+The listener is responsible for building abstract syntax tree for each variable and storing all definitions. Here is a fragment of ANTLR grammar that forms the list of variable definitions 
+\begin{lstlisting}
+funcs :
+    funcs exponential='!!'? ID '=' mealy_union  # FuncDef
+    | 
+;
+\end{lstlisting} 
+Whenever some definition is parsed, the following listener callback is invoked
+\begin{lstlisting}
+@Override
+public void exitFuncDef(FuncDefContext funcDefContext) {
+    String currentVariableID = funcDefContext.ID().getText();
+    SolomonoffWeighted def = stack.pop();
+    collector.define(currentVariable, def);
+}
+\end{lstlisting}
+The integral part of listener is the \texttt{collector} object. It is responsible for storing all defined variables and remembering their respective abstract syntax trees. Initially, it was enough to store a \texttt{HashMap} within the \texttt{SolomonoffWeightedParser} object and register variables using 
+\begin{lstlisting}
+HashMap<String,SolomonoffWeighted> idToAST = 
+    new HashMap<>();
+    
+@Override
+public void exitFuncDef(FuncDefContext funcDefContext) {
+    String currentVariableID = funcDefContext.ID().getText();
+    SolomonoffWeighted def = stack.pop();
+    idToAST.put(currentVariable, def);
+}
+\end{lstlisting}
+Later it was changed to a more complicated implementation, which is
+\begin{lstlisting}
+ConcurrentHashMap<String,SolomonoffWeighted> idToAST;
+SolomonoffWeightedParser(
+    ConcurrentHashMap<String,SolomonoffWeighted> shared){
+    this.idToAST = shared;
+}
+@Override
+public void exitFuncDef(FuncDefContext funcDefContext) {
+    String currentVariableID = funcDefContext.ID().getText();
+    SolomonoffWeighted def = stack.pop();
+    idToAST.put(currentVariable, def);
+}
+\end{lstlisting}
+In such a way, it became possible to create multiple instances of 
+\texttt{SolomonoffWeightedParser} and run all of them in parallel, while the results of parsing could still be collected into one joint map.
+The use of \texttt{ConcurrentHashMap} instead of regular \texttt{HashMap} allows for concurrent insertions, without requiring any locks or synchronization. 
+
+The abstract syntax tree closely follows the definition of Solomonoff's syntax. Its formal grammar is fairly simple and mimics the mathematical definition of regular expressions
+\begin{lstlisting}
+mealy_union
+:
+    (mealy_concat bar='|') * mealy_concat # MealyUnion
+;
+
+mealy_concat
+:
+    mealy_concat mealy_Kleene_closure
+    | mealy_Kleene_closure # MealyEndConcat
+;
+
+mealy_Kleene_closure
+:
+    mealy_prod  (star='*' | plus='+' | optional='?') 
+    | mealy_prod # MealyNoKleeneClosure
+;
+
+mealy_prod
+:
+    mealy_atomic colon=':' StringLiteral # MealyProduct
+    | mealy_atomic colon=':' Codepoint # MealyProductCodepoints
+    | mealy_atomic # MealyEpsilonProduct
+;
+
+mealy_atomic
+:
+    StringLiteral # MealyAtomicLiteral
+    | Range # MealyAtomicRange
+    | '(' mealy_union ')' # MealyAtomicNested
+;
+\end{lstlisting}
+In more mathematical terms it could be rewritten as
+\begin{lstlisting}
+regex ::= 
+    regex | regex // union
+    regex regex // concatenation
+    regex* // Kleene closure
+    : regex // output/product
+    STRING_LITERAL 
+    ( regex ) 
+\end{lstlisting}
+When presented in such a form, the algebraic data types become apparent.
+A regular expression is either one of those 6 cases. Hence the above grammar could be represented as Haskell-style algebraic data type
+\begin{lstlisting}
+type Regex = 
+    Union Regex Regex 
+    | Concat Regex Regex
+    | Kleene Regex
+    | Output Regex
+    | Brackets Regex
+\end{lstlisting}
+Every class in Java works like an algebraic product of its member fields. All interfaces are the algebraic sum of their implementations. As a result the Haskell code could be directly translated into Java as
+\begin{lstlisting}
+interface Regex{}
+class Union implements Regex{
+    Regex a; 
+    Regex b;
+}
+class Concat implements Regex{
+    Regex a;
+    Regex b;
+}
+class Kleene implements Regex{
+    Regex a;
+}
+class Output implements Regex{
+    Regex a;
+}
+\end{lstlisting}
+It should be pointed out that the brackets do not serve any semantic purpose. They are merely a syntactic construct. In particular, if we used reverse Polish notation, then the brackets would be unnecessary. Their existence is only required by the parser but the abstract syntax tree could function without them. In a sense, every node of the tree works like brackets by itself. Hence we do not need
+\begin{lstlisting}
+class Brackets implements Regex{
+    Regex a;
+}
+\end{lstlisting}
