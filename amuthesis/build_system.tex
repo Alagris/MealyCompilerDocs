@@ -198,6 +198,7 @@ type Regex =
     | Kleene Regex
     | Output Regex
     | Brackets Regex
+    | String
 \end{lstlisting}
 Every class in Java works like an algebraic product of its member fields. All interfaces are the algebraic sum of their implementations. As a result the Haskell code could be directly translated into Java as
 \begin{lstlisting}
@@ -216,10 +217,101 @@ class Kleene implements Regex{
 class Output implements Regex{
     Regex a;
 }
+class String implements Regex{
+}
 \end{lstlisting}
-It should be pointed out that the brackets do not serve any semantic purpose. They are merely a syntactic construct. In particular, if we used reverse Polish notation, then the brackets would be unnecessary. Their existence is only required by the parser but the abstract syntax tree could function without them. In a sense, every node of the tree works like brackets by itself. Hence we do not need
+While the standard mathematical definition of regular expressions has no place
+for variables, Solomonoff does indeed extend the language of expressions with variable names. As a result we obtain one more class
+\begin{lstlisting}
+class Variable implements Regex{
+    java.lang.String identifier;
+}
+\end{lstlisting}
+Another deviation from mathematical definition appears when it comes to braces. It should be pointed out that they do not serve any semantic purpose. They are merely a syntactic construct. In particular, if we used reverse Polish notation, then the brackets would be unnecessary. Their existence is only required by the parser but the abstract syntax tree could function without them. In a sense, every node of the tree works like brackets by itself. Hence we do not need
 \begin{lstlisting}
 class Brackets implements Regex{
     Regex a;
 }
 \end{lstlisting}
+Lastly, a few notes should be made about the \texttt{String} class.
+One of the weak points of Java
+ is that it artificially enforces 
+ rigid hierarchy of interfaces,
+ even thought it would often be
+ perfectly reasonable to
+ add more interfaces
+ for already existing classes, such as
+ java.lang.String. 
+ Duck typing is a much more powerful and
+ mathematically inspired paradigm, than object oriented programming.
+ Thankfully, the typeclass pattern can be used to circumvent this issue.
+ We can wrap any existing type in a new class and then implement any
+ interface of our choice.
+ \begin{lstlisting}
+ class String implements Regex{
+     java.lang.String str;
+ }
+ \end{lstlisting}
+It works almost like the \texttt{impl} keyword from Rust
+ \begin{lstlisting}
+impl Regex for String{...}
+\end{lstlisting}
+The only downside of the typeclass pattern in Java is the inconvenience of overly verbose notation. It forces us to later wrap every 
+\texttt{java.lang.String} in our own class, before being able to use it like an instance of \texttt{Regex}.
+
+The abstract syntax tree is a recursive data structure and any algorithm that manipulates them must be inductive. One of the most important  algorithms is the compilation procedure. It mainly uses functions provided by compiler backend, hence it's exact implementation might look uninteresting. 
+\begin{lstlisting}
+interface Regex{
+    G compile();
+}
+class Union implements Regex{
+    Regex a; 
+    Regex b;
+    G compile(){
+        return specs.union(a.compile(),b.compile());
+    }
+}
+
+... the rest is done analogically...
+
+class String implements Regex{
+    java.lang.String str;
+    G compile(){
+        return specs.fromStr(str);
+    }
+}
+\end{lstlisting}
+The \texttt{G} class stands for singly-linked graph that encodes structure of the transducer. The above procedure strictly follows Glushkov's construction.
+The exact details are implemented by \texttt{specs}, which holds reference to the compiler backend. 
+
+To sum up, in the first phase, build system reads all source files and collects abstract syntax trees for every definition. The files are parsed in parallel. A pool of threads needs to be initialised and a queue of pending tasks is formed. This could be represented using the following code.
+\begin{lstlisting}
+ExecutorService pool = Executors.newWorkStealingPool();
+Queue<Future<Void>> queue = new LinkedList<>();
+ConcurrentHashMap<String, SolomonoffWeighted> shared = 
+    new ConcurrentHashMap<>();
+for (final File sourceFile : sourceFiles) {
+    queue.add(pool.submit(() -> {
+        SolomonoffGrammarLexer lexer =
+            new SolomonoffGrammarLexer(sourceFile);
+        SolomonoffGrammarParser parser =
+            new SolomonoffGrammarParser(new CommonTokenStream(lexer));
+        
+        parser.addErrorListener(new BaseErrorListener() {...});
+        
+        final SolomonoffWeightedParser listener =
+            new SolomonoffWeightedParser(shared);
+        ParseTreeWalker.DEFAULT.walk(listener, parser.start());
+        return null;
+    }
+}
+\end{lstlisting}
+In the next phase, the build system creates a dependency graph. This requires having access to all variables and their syntax trees. Hence it's necessary to wait for the parsing to complete.
+\begin{lstlisting}
+for (Future<Void> task : queue) {
+    task.get(); // blocks until finished
+}
+\end{lstlisting}
+In the dependency graph, every vertex represents an individual variable with
+unique identifier. A dependency between two variables is formed when one variable is used as a subexpression in the definition of another.
+
