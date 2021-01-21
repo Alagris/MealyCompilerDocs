@@ -1,4 +1,6 @@
 
+\subsection{Editor and REPL console}
+
 Creation of user-friendly interface was an important part of the project.
 The greatest challenge lied in finding the most intuitive way of presenting a complicated and highly advanced system. The main component was the language of regular expressions itself. User should be able to edit its code with ease. The second key feature was the ability to execute the code. 
 In many Turing-complete languages, every expression can be evaluated into some value, which could the be printed back to the user. For example in python's REPL, typing $2+2$ yields $4$.
@@ -245,11 +247,40 @@ public void uploadCode(HttpSession httpSession,
 
 Aside from the editor and REPL there is one more window on the webpage. It is dedicated for tutorial and short documentation.  While it does not enhance the functionality of the website per se, it plays an important role. The Solomonoff compiler is a very niche and specialised tool. There are no similar tools and any user coming to the website is not expected to be familiar with its usage. The primary purpose of the website is not to be a replacement for user's IDE and terminal. Instead it serves as an all-in-one introductory tutorial, interactive playground and a marketing campaign. We want to make the learning materials easily accessible and abundant. Building a strong community is the back-bone of every open-source project. 
 
+\subsection{Design}
 
+The website has seen numerous design changes. Since the beginning we knew there must be a way to interact with the code but the best exact way of presenting it to the user was not so self-evident. There exist numerous different approaches that are highly dependent on the language. For example the online  Java  compiler consists of only two windows - one for code and one for compiler output.
+\begin{center}
+\includegraphics[scale=0.3]{java.png}
+\end{center}
+Java does not have REPL, hence there is no need to implement console input.
+A slightly different has been taken by Haskell mode for emacs. 
+\begin{center}
+	\includegraphics[scale=0.45]{haskell.png}
+\end{center}
+Here it is indeed possible to evaluate smaller snippets of code in the right window, while the left one is solely dedicated to editing local files that can be saved persistently. This is the approach that we settled for in our online playground for Solomonoff. 
+\begin{center}
+	\includegraphics[scale=0.3]{web8.png}
+\end{center}
+Before reaching such final version we have experimented with another approach that seemed more natural for regular expressions. Here is an example of a similar website that evaluates UNIX regexes.
+\begin{center}
+	\includegraphics[scale=0.65]{regex.png}
+\end{center}
+Initially we tried to mimic such approach with some modifications. Solomonoff is much more complex than UNIX regexes. It allows variables, functions, comments and the overall code could consist of multiple lines. Hence a dedicated multiline editor window was required like in case of Java or Haskell.
+\begin{center}
+	\includegraphics[scale=0.2]{web3.png}
+\end{center}
+The upper left window was dedicated to code. The lower left was meant to hold the test input string and the upper right would show the resulting transducer output. Such an approach seemed perfect at the beginning, when Solomonoff was still in early development. Over time, the language became increasingly complex. Several features were added that allowed for visualizing graphs of automata, sampling their languages, testing their formal properties and querying more complex information about them. The interface couldn't keep up with the full range of possibilities offered by he compiler. Hence, we decided to scrap the idea with two input-output windows and tried to emulate console-like REPL instead. The first version looked as follows
+\begin{center}
+	\includegraphics[scale=0.2]{web6.png}
+\end{center}
+It was at this point when we first tried to add a window for documentation. A great source of inspiration was the Alt-Ergo online playground. It comes with many helpful examples, which can be automatically copied to the editor upon clicking on them.
+\begin{center}
+	\includegraphics[scale=0.3]{alt-ergo.png}
+\end{center}
+Later we extended this idea to a full tutorial with explanations, rather than a simple list of copyable examples. 
 
-
-
-
+At the same time as the layout of page evolved, we also actively developed the editor itself. While initially we used a simple HTML textarea element, we soon replaced it with the Ace editor. 
 
 
 
