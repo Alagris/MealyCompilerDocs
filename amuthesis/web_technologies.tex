@@ -108,7 +108,7 @@ which holds a reference to the compiler and a set of built-in commands
             this.template = template;
         }
     }
-	
+     
     HashMap<String, Repl.CmdMeta<String>> commands;
     OptimisedHashLexTransducer compiler;
 }
@@ -163,8 +163,8 @@ which evaluates transducer \texttt{f} for input string \texttt{'abc'}.
 On the frontend JavaScript will perform REST query
 \begin{lstlisting}
 const response = await fetch('repl', {
-	method: 'POST',
-	body: ":eval f 'abc'"
+     method: 'POST',
+     body: ":eval f 'abc'"
 })
 \end{lstlisting}
 which will be received by server
@@ -184,7 +184,7 @@ public ReplResponse repl(HttpSession httpSession,
 \end{lstlisting}
 and the \texttt{repl.run} method will query the appropriate implementation to call for
 the \texttt{:eval} command.
-\begin{lstlisting}	
+\begin{lstlisting}     
 final String firstWord = "eval";
 final String remaining = "f 'abc'";
 final Repl.CmdMeta<String> cmd = commands.get(firstWord);
@@ -211,8 +211,8 @@ Remaining commands are implemented in a similar way.
 Several of the functions may require access to HTTP session. In particular it's worth analysing the \texttt{:load} command. It's purpose is to emulate the process of loading source code from file. Whenever user types some code in the editor, it needs to be transported to server, then parsed and compiled. All the defined transducers results need to be saved for later use. The simplest way of achieving this, would be by extending the REST API as
 \begin{lstlisting}
 class ReplInput{
-	String command;
-	String editorContent;
+     String command;
+     String editorContent;
 }
 public ReplResponse repl(
     HttpSession httpSession, 
@@ -231,8 +231,8 @@ const response = await fetch('repl', {
 The downside of such solution is that the editor content could become large and sending it would require more internet bandwidth and time. Often user only wants to execute simple short REPL commands that do not require sending the entire code. Sometimes the code might be required but resending it might be omitted as long as user has not modified it. Hence the process of uploading code to the server has been delegated to a separate REST call.
 \begin{lstlisting}
 const response = await fetch('upload_code', {
-	method: 'POST',
-	body: code
+     method: 'POST',
+     body: code
 })
 \end{lstlisting}
 The code is then stored in HTTP session, so the REST endpoint has a very simple implementation
@@ -249,41 +249,240 @@ Aside from the editor and REPL there is one more window on the webpage. It is de
 
 \subsection{Design}
 
-The website has seen numerous design changes. Since the beginning we knew there must be a way to interact with the code but the best exact way of presenting it to the user was not so self-evident. There exist numerous different approaches that are highly dependent on the language. For example the online  Java  compiler consists of only two windows - one for code and one for compiler output.
+The website has seen numerous design changes. Since the beginning we knew there must be a way to interact with the code but the exact best way of presenting it to the user was not so self-evident. There exist numerous different approaches that are highly dependent on the language. For example the online  Java  compiler consists of only two windows - one for code and one for compiler output.
 \begin{center}
 \includegraphics[scale=0.3]{java.png}
 \end{center}
 Java does not have REPL, hence there is no need to implement console input.
 A slightly different has been taken by Haskell mode for emacs. 
 \begin{center}
-	\includegraphics[scale=0.45]{haskell.png}
+     \includegraphics[scale=0.45]{haskell.png}
 \end{center}
 Here it is indeed possible to evaluate smaller snippets of code in the right window, while the left one is solely dedicated to editing local files that can be saved persistently. This is the approach that we settled for in our online playground for Solomonoff. 
 \begin{center}
-	\includegraphics[scale=0.3]{web8.png}
+     \includegraphics[scale=0.3]{web8.png}
 \end{center}
 Before reaching such final version we have experimented with another approach that seemed more natural for regular expressions. Here is an example of a similar website that evaluates UNIX regexes.
 \begin{center}
-	\includegraphics[scale=0.65]{regex.png}
+     \includegraphics[scale=0.65]{regex.png}
 \end{center}
 Initially we tried to mimic such approach with some modifications. Solomonoff is much more complex than UNIX regexes. It allows variables, functions, comments and the overall code could consist of multiple lines. Hence a dedicated multiline editor window was required like in case of Java or Haskell.
 \begin{center}
-	\includegraphics[scale=0.2]{web3.png}
+     \includegraphics[scale=0.2]{web3.png}
 \end{center}
 The upper left window was dedicated to code. The lower left was meant to hold the test input string and the upper right would show the resulting transducer output. Such an approach seemed perfect at the beginning, when Solomonoff was still in early development. Over time, the language became increasingly complex. Several features were added that allowed for visualizing graphs of automata, sampling their languages, testing their formal properties and querying more complex information about them. The interface couldn't keep up with the full range of possibilities offered by he compiler. Hence, we decided to scrap the idea with two input-output windows and tried to emulate console-like REPL instead. The first version looked as follows
 \begin{center}
-	\includegraphics[scale=0.2]{web6.png}
+     \includegraphics[scale=0.2]{web6.png}
 \end{center}
 It was at this point when we first tried to add a window for documentation. A great source of inspiration was the Alt-Ergo online playground. It comes with many helpful examples, which can be automatically copied to the editor upon clicking on them.
 \begin{center}
-	\includegraphics[scale=0.3]{alt-ergo.png}
+     \includegraphics[scale=0.3]{alt-ergo.png}
 \end{center}
 Later we extended this idea to a full tutorial with explanations, rather than a simple list of copyable examples. 
 
-At the same time as the layout of page evolved, we also actively developed the editor itself. While initially we used a simple HTML textarea element, we soon replaced it with the Ace editor. 
+\subsection{Ace editor}
 
+At the same time as the layout of page evolved, we also actively developed the editor itself. While initially we used a simple HTML textarea element, we soon replaced it with the Ace editor. It allowed for integrating many additional features such as syntax highlighting, auto-suggestions, code snippets and marking errors. The core component of working with Ace was the necessity of developing our own syntax highlighting. All the previously mentioned come out-of-the box for existing languages, like JavaScript, C and Python. The matters get much more complicated, when one attempts to define their custom language. Ace documentation for syntax developers tends to be rather sparse. 
 
+There exists a common framework followed by most syntax highlighters. Their configuration consists of two main components - the highlighting rules and the styling rules. The former consist of a set of regular expressions. Any region matched by a certain expression is marked with a list of styles. Then each style decides about the colour. Many existing text editors come with their own syntax highlighter and the required configurations may differ, albeit each format could be automatically converted into any other. 
 
+By using the Iro editor, developer can develop only a single set of rules and then have them automatically converted to any other syntax highlighter. This includes support for Ace, SublimeText, TextMate and Atom. Most of the other editors, like Intellij, Eclipse, Notepad++ etc. use one of the above standards. 
 
+The general format of Iro is as follows
+\begin{lstlisting}
 
+styles [] {
+     
+     .comment : style {
+          color                 = #688557
+          italic                = true
+          ace_scope             = comment
+          textmate_scope        = comment
+          pygments_scope        = Comment
+     }
+ 
+}
+
+main : context {
+     
+     : pattern {
+          regex          \= (//.*)
+          styles []       = .comment;
+     }
+ 
+}
+\end{lstlisting}
+each pattern matches some fragment of code and assigns a style to it. Then the style defines colour and scope. The scope is later used as a hint for various other tools that rely on syntax recognition. The colours themselves are also a mere hint. The end user might use an editor that supports various colour palettes. In particular many editors come with optional dark and light theme. Depending on user's choice, our colouring might be overriden. Hence the assigned scope is more important than the colour hint.
+
+Most of the language grammars are context-free and cannot be recognized with a simple regular expression. Hence syntax highlighters allow for using stacks. A good example of this are the block comments. The regular expressions that apply outside of comments should not apply inside them. Iro allows developer to manipulate the stack using push and pop command.
+\begin{lstlisting}
+: inline_push {
+     regex          \= (/\*)
+     styles []       = .comment;
+     default_style   = .comment
+     : pop {
+          regex       \= (\*/)
+          styles []    = .comment;
+     }
+}
+\end{lstlisting}
+Solomonoff's syntax highlighter uses stack to correctly recognize comments and string literals enclosed in quotes and angle brackets. The rest of syntax highlighter is fairly simple and only matches key characters, such as equal signs, brackets, Kleene stars and union vertical pipes as well as variable identifiers.
+
+After the syntax highlighter was developed, Iro automatically generated necessary Ace files. All those configurations are written JavaScript. In order to make them work, it's necessary to clone Ace's repository and compile the custom syntax along with the rest of sources. The compiled project needs to be hosted on website along with remaining JavaScript files. The Ace editor can be initialized using the following lines
+\begin{lstlisting}
+var editor = ace.edit("editor");
+editor.session.setMode("ace/mode/mealy");
+\end{lstlisting}
+where \texttt{mealy} is the name of our custom syntax.
+The editor has been styled using monokai theme
+\begin{lstlisting}
+editor.setTheme("ace/theme/monokai");
+\end{lstlisting}
+because its dark palette of colours gives the website a sharp and modern look. The dark theme is preferred by most users and is very popular nowadays. Moreover it's more relaxing to look at and doesn't irritate the eye. This point is especially important, because Solomonoff is targetted at tech-oriented audiences, so there is a good chance that our users will spend many hours looking at the editor. 
+
+Solomonoff comes with several built-in functions. To make the interface more intuitive and ergonomic the editor needs to provide auto-suggestions with the full range available functions. Below is a list presenting some of the more important options.
+\begin{lstlisting}
+editor.setOptions({
+     enableBasicAutocompletion: [{
+          getCompletions: (editor, session, pos,
+           prefix, callback) => {
+               callback(null, [{
+                    name: 'subtract[',
+                    value: 'subtract[]',
+                    score: 1,
+                    meta: 'difference of two languages'
+               },
+               {
+                    name: 'rpni!(',
+                    value: 'rpni!()',
+                    score: 1,
+                    meta: 'RPNI inference algorithm'
+               },
+               {
+                    name: 'rpni_mealy!(',
+                    value: 'rpni_mealy!()',
+                    score: 1,
+                    meta: 'RPNI for Mealy machiens'
+               },
+               {
+                    name: 'ostia!(',
+                    value: 'ostia!()',
+                    score: 1,
+                    meta: 'OSTIA inference for transducers'
+               },
+               {
+                    name: 'compose[',
+                    value: 'compose[]',
+                    score: 1,
+                    meta: 'transducer composition'
+               },
+               {
+                    name: 'inverse[',
+                    value: 'inverse[]',
+                    score: 1,
+                    meta: 'transducer inversion'
+               }
+               ]);
+          },
+     }],
+     enableSnippets: true,
+     enableLiveAutocompletion: true
+});
+\end{lstlisting}
+The \texttt{value} field is the text that autocompletion will produce when selected. The \texttt{meta} argument provides a short explanation that will be shown to the user. We decided to set \texttt{enableLiveAutocompletion} so that the dropdown box with all available functions will automatically show up as soon as the user starts typing. Some less experienced users might not be aware that the suggestions can be triggered manually by pressing \texttt{CTRL+SPACE}. The downside is that in some contexts the autosuggestion will pop up  despite not being necessary. This could irritate some users. Perhaps the best approach would be to make the auto-suggestions configurable. A user could set the editor properties according to their own liking. The only problem was that adding user customizations would increase the complexity of final product. Our goal was not to create a fully functioning IDE. The website is meant to work only as a showcase. Hence the final decision was to make the website as friendly to the newcomers as possible even at the cost of making the experienced users less comfortable. The general consensus was that users that like our product will quickly download the compiler locally and use it in conjunction with their own editor of choice. 
+
+Initially, the Ace  was only used in the main editor window. The REPL console would be made of two text areas, one serving as editable input line and the other for console output, which was permanently set as non-editable. By design, the REPL commands could only be used in console and placing them in the main editor would only result in syntax errors. For instance
+\begin{lstlisting}
+:eval f 'input'
+\end{lstlisting}
+would only work in REPL, despite not being a valid Solomonoff code per se. As auto-suggestions were added, it became apparent that showing  REPL commands tin main editor would be very misleading
+\begin{lstlisting}
+editor.setOptions({
+     enableBasicAutocompletion: [{
+          getCompletions: (editor, session, pos,
+          prefix, callback) => {
+               callback(null, [
+          ... 
+               {
+                    name: ':eval',
+                    value: ':eval',
+                    score: 1,
+                    meta: 'evaluate transducer'
+               }
+          ...
+               ]);
+          },
+     }],
+     enableSnippets: true,
+     enableLiveAutocompletion: true
+});
+\end{lstlisting}
+On the other hand, not showing any hints related to REPL commands would seems like major shortcoming of the online playground. To address this issue it was later decided tha the REPL input line should also use Ace. As a result the website ended up with two instances of Ace editor. Both very similar to each other. The only difference being that auto-suggestions in REPL input would also display REPL commands, whereas the main code editor would not.
+
+Using Ace in REPL input also happened to solve another problem. Every REPL command would have their own format of argument. For example the \texttt{:eval} would take transducer name and then some input string. The visualization only needs transducer name
+\begin{lstlisting}
+:vis f
+\end{lstlisting}
+ The most unintuitive is the random sample command which has two possible formats
+ \begin{lstlisting}
+:rand_sample f of_size 10
+ \end{lstlisting}
+and
+ \begin{lstlisting}
+:rand_sample f of_length 10
+\end{lstlisting}
+The former generates 10 random member strings, whereas the latter generates all member strings up to length of 10.
+The \texttt{of\_size} and \texttt{of\_length} argument decides, which fo the two modes of generation to use. The initial idea to address this issue was to add user help displayed by the \texttt{:?} command.
+\begin{lstlisting}
+> :?
+:vis [ID]
+    Shows graph diagram of automaton
+:rand_sample [ID] [of_size/of_length] [NUM]
+    Generates random sample of input:output pairs produced 
+    by ths transducer
+:ls
+    Lists all currently defined transducers
+:clear
+    Clears REPL console
+:run [ID] [STRING]
+    Runs pipeline for the given input
+:unset [ID]
+    Deletes a variable
+:is_det [ID]
+    Tests whether transducer is deterministic
+:eval [ID] [STRING]
+    Evaluates transducer on requested input
+...
+\end{lstlisting}
+User could the consult this cheat sheet to determine format of arguments for each command. Such a solution was simple but it certainly didn't make for the most ergonomic user interface. With Ace it became possible to use code snippets instead.
+Below are a few examples.
+\begin{lstlisting}
+getCompletions: (editor, session, pos, prefix, callback) => {
+     callback(null, [
+     {
+          name: ':eval',
+          value: ':eval',
+          snippet: ':eval ${1:transducer_name} \'${2:input_string}\'',
+          score: 1,
+          meta: 'evaluate transducer'
+     },
+     {
+          name: ':rand_sample of_size',
+          value: ':rand_sample',
+          snippet: ':rand_sample ${1:transducer_name} of_size ${2:number}',
+          score: 1,
+          meta: 'randomly generate sample'
+     },
+     {
+          name: ':rand_sample of_length',
+          value: ':rand_sample',
+          snippet: ':rand_sample ${1:transducer_name} of_length ${2:number}',
+          score: 1,
+          meta: 'randomly generate sample'
+     },
+     ]);
+}
+\end{lstlisting}
+The structure of arguments for each command was intuitively encoded in form
+of blanks that need to be filled in each snippet. Each blank is specified using the \texttt{\$\{\}} braces.
 
