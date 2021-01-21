@@ -90,9 +90,9 @@ parser.addErrorListener(new BaseErrorListener() {
             int charPositionInLine, 
             String msg, 
             RecognitionException e) {
-    	System.err.println("line " + line 
-    	+ ":" + charPositionInLine 
-    	+ " " + msg + " " + e);
+         System.err.println("line " + line 
+         + ":" + charPositionInLine 
+         + " " + msg + " " + e);
     }
 });
 
@@ -321,15 +321,15 @@ y = 'a' (x 'b')*
 \end{lstlisting}
 there are two variables \texttt{x} and \texttt{y} where \texttt{y} depends on \texttt{x}. This would translate to dependency graph on two vertices with one edge
 \begin{center}
-	\begin{tikzpicture}[scale=0.2]
-		\tikzstyle{every node}+=[inner sep=0pt]
-		\draw [black] (16.5,-23.2) circle (3);
-		\draw (16.5,-23.2) node {$x$};
-		\draw [black] (28,-23.2) circle (3);
-		\draw (28,-23.2) node {$y$};
-		\draw [black] (19.5,-23.2) -- (25,-23.2);
-		\fill [black] (25,-23.2) -- (24.2,-22.7) -- (24.2,-23.7);
-	\end{tikzpicture}
+     \begin{tikzpicture}[scale=0.2]
+          \tikzstyle{every node}+=[inner sep=0pt]
+          \draw [black] (16.5,-23.2) circle (3);
+          \draw (16.5,-23.2) node {$x$};
+          \draw [black] (28,-23.2) circle (3);
+          \draw (28,-23.2) node {$y$};
+          \draw [black] (19.5,-23.2) -- (25,-23.2);
+          \fill [black] (25,-23.2) -- (24.2,-22.7) -- (24.2,-23.7);
+     \end{tikzpicture}
 \end{center}
 The simplest way to build such a graph would be to scan every syntax tree searching for variables and then add edges accordingly. The inductive procedure could be implemented as follows
 \begin{lstlisting}
@@ -349,7 +349,7 @@ class Union implements Regex{
 
 class Variable implements Regex{
     void forEachVariable(Consumer<Variable> callback){
-    	callback.accept(this);
+         callback.accept(this);
     }
 }
 
@@ -372,8 +372,8 @@ for (Map.Entry<String, SolomonoffWeighted> def : shared.entrySet()) {
     syntaxTree.forEachVariable(var->{
         dependencyOf.add(
             var.identifier, // source vertex
-            new Object(), // unique edge
             identifier, // target vertex
+            new Object() // unique edge
         );
     });
 }
@@ -383,7 +383,7 @@ The above code was simple but it requires to first build the syntax tree and the
 and \texttt{DirectedAcyclicGraph} is not thread-safe, an intermediate temporary storage for edges was necessary. We could first collect all of the edges into a list of pairs.
 \begin{lstlisting}
 List<Pair<String,String>> dependsOn;
-\end{lstlisting}	
+\end{lstlisting}     
 The problem with such approach is that certain edges might be duplicated. For instance consider the regular expression that uses $x$ twice
 \begin{lstlisting}
 x = 'a' | 'b'
@@ -401,11 +401,18 @@ SolomonoffWeightedParser(
     this.dependsOn = dependsOn;
 }
 \end{lstlisting}
-The set can be made thread-safe by using the concurrent implementation from Java's standard library.
+The set can be made thread-safe by using the concurrent implementation from Java standard library.
 \begin{lstlisting}
 ConcurrentHashMap.newKeySet()
 \end{lstlisting}
-
+The parser listener is a state-based device. When a certain rule of the formal grammar is fully parsed, several of the listener's callbacks are fired. For instance when the following rule \texttt{FuncDef} is recognized
+\begin{lstlisting}
+funcs :
+    funcs exponential='!!'? ID '=' mealy_union  # FuncDef
+    | 
+;
+\end{lstlisting} 
+it will first fire \texttt{enterFuncDef}, then recursively all the events hiding under \texttt{mealy\_union} are executed and at the very end comes the \texttt{exitFuncDef}. If the expression contained a reference to some variable identifier at any point, then the event \texttt{exitMealyAtomicVarID} will be fired at some point during evaluation of \texttt{mealy\_union} callbacks. As a result the following code can be used to collect all dependencies into a set of pairs.
 \begin{lstlisting}
 String currentVariable;
 
@@ -415,12 +422,113 @@ public void enterFuncDef(SolomonoffGrammarParser.FuncDefContext funcDefContext) 
 }
 @Override
 public void exitFuncDef(FuncDefContext funcDefContext) {
-    String currentVariableID = funcDefContext.ID().getText();
     SolomonoffWeighted def = stack.pop();
     idToAST.put(currentVariable, def);
-    dependsOn
+}
+@Override
+public void exitMealyAtomicVarID(MealyAtomicVarIDContext ctx) {
+    final String id = ctx.ID().getText();
+    dependsOn.add(Pair.of(currentVariable,id));
+    stack.push(new Variable(id));
 }
 \end{lstlisting}
+When the parsing finishes, all of the collected dependencies need to be converted into edges of a directed graph:
+\begin{lstlisting}
+for (Pair<String, String> dependency : dependsOn) {
+    dependencyOf.addEdge(
+        dependency.right(), 
+        dependency.left(), 
+        new Object()
+    );
+}
+\end{lstlisting}
+If at any point a cyclic dependency is detected, the method \texttt{addEdge} will throw an exception and build system will exit prematurely.
+This concludes the second phase of build procedure. 
 
+The third and last phase is to compile all syntax trees is the correct order and parallelise it as much as possible. The compilation procedure presented before was a minimal prototype that could work with a single variable-free syntax tree.
+like follows
+\begin{lstlisting}
+interface Regex{
+     Regex substitute(HashMap<String,Regex> substitution);
+}
+class Union implements Regex{
+     Regex a; 
+     Regex b;
+     Regex substitute(HashMap<String,Regex> substitution){
+          return new Union(
+              a.substitute(substitution),
+              b.substitute(substitution)
+          );
+     }
+}
 
+... the rest is done analogically...
+
+class Variable implements Regex{
+     String identifier;
+     Regex substitute(HashMap<String,Regex> substitution){
+          return substitution.get(identifier);
+     }
+}
+
+class String implements Regex{
+     java.lang.String str;
+     Regex substitute(HashMap<String,Regex> substitution){
+          return this;
+     }
+}
+\end{lstlisting}
+ As a result all syntax trees would become variable-free. This comes at the cost of possibly exponential blow-up in size of certain trees. The major advantage is that now all trees can be compiled in parallel, although despite this, the compilation might in reality get worse than if we serially compiled trees with variables. That's because the overall number of nodes to be compiled could increase exponentially and the number of truly parallel threads (the number of cores in CPU) is usually small. Hence a better approach is needed. 
  
+ The right solution is to compile all trees in parallel and block on variables that have not yet been processed.
+ \begin{lstlisting}
+ interface Regex{
+      G compile(Function<String,Regex> blockingSubstitution);
+ }
+ class Union implements Regex{
+      Regex a; 
+      Regex b;
+      G compile(Function<String,Regex> blockingSubstitution){
+           return specs.union(
+               a.compile(blockingSubstitution),
+               b.compile(blockingSubstitution)
+           );
+      }
+ }
+ 
+ ... the rest is done analogically...
+ 
+ class Variable implements Regex{
+      String identifier;
+      G compile(Function<String,Regex> blockingSubstitution){
+           return blockingSubstitution.apply(identifier);
+      }
+ }
+ 
+ class String implements Regex{
+      java.lang.String str;
+      G compile(Function<String,Regex> blockingSubstitution){
+           return specs.fromStr(str);
+      }
+ }
+\end{lstlisting}
+The \texttt{blockingSubstitution} mimics the \texttt{HashMap.get} function but is more generalised. It allows us to provide lambda implementation 
+that lookups a "lazy" map. Such a feature can be obtained by keeping a map of future promises. 
+\begin{lstlisting}
+ConcurrentHashMap<String, SolomonoffWeighted> shared;
+ConcurrentHashMap<String,Future<G>> compiled;
+
+... phase 1 and 2 ...
+
+for(String variable : dependencyOf.vertexSet()){
+	SolomonoffWeighted syntaxTree = shared.get(variable);
+    compiled.put(id, pool.submit(() -> 
+        syntaxTree.compile((referencedVar)->
+            compiled.get(referencedVar).get() // may block
+    );
+}
+\end{lstlisting}
+The above snippet is simple but taking a closer look will reveal that its in fact incorrect. The \texttt{compiled.get(referencedVar)} might return \texttt{null} if
+dependencies are not submitted before all their dependants. To prevent this we need to use topological order on directed acyclic graphs. The JGraphT provides a ready-made \texttt{TopologicalOrderIterator}. 
+
+Every time we perform \texttt{pool.submit} the task is added to queue of tasks that will be picked up by some available thread in \texttt{ExecutorService}.By submitting those tasks in topological order we also guarantee optimal queue arrangement. The minimal number of threads will block on \texttt{get()} function as a result.
