@@ -417,7 +417,7 @@ it will first fire \texttt{enterFuncDef}, then recursively all the events hiding
 String currentVariable;
 
 @Override
-public void enterFuncDef(SolomonoffGrammarParser.FuncDefContext funcDefContext) {
+public void enterFuncDef(FuncDefContext funcDefContext) {
     currentVariable = funcDefContext.ID().getText();
 }
 @Override
