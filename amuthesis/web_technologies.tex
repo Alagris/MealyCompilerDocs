@@ -75,7 +75,7 @@ User could first type
 \begin{lstlisting}
 x = 'a' y
 \end{lstlisting}
-which would be recognized by parser as concatenation of string \texttt{'a'} with variable \texttt{y}. If the user then types
+which would be recognized by parser as concatenation of string     exttt{'a'} with variable     exttt{y}. If the user then types
 \begin{lstlisting}
  = 'b'
 \end{lstlisting}
@@ -159,7 +159,7 @@ As an example, consider the command
 \begin{lstlisting}
 :eval f 'abc'
 \end{lstlisting}
-which evaluates transducer \texttt{f} for input string \texttt{'abc'}. 
+which evaluates transducer     exttt{f} for input string     exttt{'abc'}. 
 On the frontend JavaScript will perform REST query
 \begin{lstlisting}
 const response = await fetch('repl', {
@@ -182,8 +182,8 @@ public ReplResponse repl(HttpSession httpSession,
     ...
 }
 \end{lstlisting}
-and the \texttt{repl.run} method will query the appropriate implementation to call for
-the \texttt{:eval} command.
+and the     exttt{repl.run} method will query the appropriate implementation to call for
+the     exttt{:eval} command.
 \begin{lstlisting}     
 final String firstWord = "eval";
 final String remaining = "f 'abc'";
@@ -208,7 +208,7 @@ const replResult = JSON.parse(await response.text())
 \end{lstlisting}
 Remaining commands are implemented in a similar way.
 
-Several of the functions may require access to HTTP session. In particular it's worth analysing the \texttt{:load} command. It's purpose is to emulate the process of loading source code from file. Whenever user types some code in the editor, it needs to be transported to server, then parsed and compiled. All the defined transducers results need to be saved for later use. The simplest way of achieving this, would be by extending the REST API as
+Several of the functions may require access to HTTP session. In particular it's worth analysing the     exttt{:load} command. It's purpose is to emulate the process of loading source code from file. Whenever user types some code in the editor, it needs to be transported to server, then parsed and compiled. All the defined transducers results need to be saved for later use. The simplest way of achieving this, would be by extending the REST API as
 \begin{lstlisting}
 class ReplInput{
      String command;
@@ -333,7 +333,7 @@ After the syntax highlighter was developed, Iro automatically generated necessar
 var editor = ace.edit("editor");
 editor.session.setMode("ace/mode/mealy");
 \end{lstlisting}
-where \texttt{mealy} is the name of our custom syntax.
+where     exttt{mealy} is the name of our custom syntax.
 The editor has been styled using monokai theme
 \begin{lstlisting}
 editor.setTheme("ace/theme/monokai");
@@ -389,7 +389,7 @@ editor.setOptions({
      enableLiveAutocompletion: true
 });
 \end{lstlisting}
-The \texttt{value} field is the text that autocompletion will produce when selected. The \texttt{meta} argument provides a short explanation that will be shown to the user. We decided to set \texttt{enableLiveAutocompletion} so that the dropdown box with all available functions will automatically show up as soon as the user starts typing. Some less experienced users might not be aware that the suggestions can be triggered manually by pressing \texttt{CTRL+SPACE}. The downside is that in some contexts the autosuggestion will pop up  despite not being necessary. This could irritate some users. Perhaps the best approach would be to make the auto-suggestions configurable. A user could set the editor properties according to their own liking. The only problem was that adding user customizations would increase the complexity of final product. Our goal was not to create a fully functioning IDE. The website is meant to work only as a showcase. Hence the final decision was to make the website as friendly to the newcomers as possible even at the cost of making the experienced users less comfortable. The general consensus was that users that like our product will quickly download the compiler locally and use it in conjunction with their own editor of choice. 
+The     exttt{value} field is the text that autocompletion will produce when selected. The     exttt{meta} argument provides a short explanation that will be shown to the user. We decided to set     exttt{enableLiveAutocompletion} so that the dropdown box with all available functions will automatically show up as soon as the user starts typing. Some less experienced users might not be aware that the suggestions can be triggered manually by pressing     exttt{CTRL+SPACE}. The downside is that in some contexts the autosuggestion will pop up  despite not being necessary. This could irritate some users. Perhaps the best approach would be to make the auto-suggestions configurable. A user could set the editor properties according to their own liking. The only problem was that adding user customizations would increase the complexity of final product. Our goal was not to create a fully functioning IDE. The website is meant to work only as a showcase. Hence the final decision was to make the website as friendly to the newcomers as possible even at the cost of making the experienced users less comfortable. The general consensus was that users that like our product will quickly download the compiler locally and use it in conjunction with their own editor of choice. 
 
 Initially, the Ace  was only used in the main editor window. The REPL console would be made of two text areas, one serving as editable input line and the other for console output, which was permanently set as non-editable. By design, the REPL commands could only be used in console and placing them in the main editor would only result in syntax errors. For instance
 \begin{lstlisting}
@@ -419,7 +419,7 @@ editor.setOptions({
 \end{lstlisting}
 On the other hand, not showing any hints related to REPL commands would seems like major shortcoming of the online playground. To address this issue it was later decided tha the REPL input line should also use Ace. As a result the website ended up with two instances of Ace editor. Both very similar to each other. The only difference being that auto-suggestions in REPL input would also display REPL commands, whereas the main code editor would not.
 
-Using Ace in REPL input also happened to solve another problem. Every REPL command would have their own format of argument. For example the \texttt{:eval} would take transducer name and then some input string. The visualization only needs transducer name
+Using Ace in REPL input also happened to solve another problem. Every REPL command would have their own format of argument. For example the     exttt{:eval} would take transducer name and then some input string. The visualization only needs transducer name
 \begin{lstlisting}
 :vis f
 \end{lstlisting}
@@ -432,7 +432,7 @@ and
 :rand_sample f of_length 10
 \end{lstlisting}
 The former generates 10 random member strings, whereas the latter generates all member strings up to length of 10.
-The \texttt{of\_size} and \texttt{of\_length} argument decides, which fo the two modes of generation to use. The initial idea to address this issue was to add user help displayed by the \texttt{:?} command.
+The     exttt{of\_size} and     exttt{of\_length} argument decides, which fo the two modes of generation to use. The initial idea to address this issue was to add user help displayed by the     exttt{:?} command.
 \begin{lstlisting}
 > :?
 :vis [ID]
@@ -484,5 +484,59 @@ getCompletions: (editor, session, pos, prefix, callback) => {
 }
 \end{lstlisting}
 The structure of arguments for each command was intuitively encoded in form
-of blanks that need to be filled in each snippet. Each blank is specified using the \texttt{\$\{\}} braces.
+of blanks that need to be filled in each snippet. Each blank is specified using the     exttt{\$\{\}} braces.
 
+\section{WebAssembly}
+
+The early versions of compiler were written in C. With help of Emscripten it was possible to then port the code to WebAssembly and call every function directly from JavaScript. Such a solution was preferable, because everything worked on client-side and we could host the website free-of-charge on GitHub
+Pages. The WASM interface exposed two functions
+\begin{lstlisting}
+function compile(){
+	console.log(input.value)
+	Module.ccall('compile',
+	'void',
+	['string'], 
+	[input.value])
+}
+function runMealy(){
+	console.log(output.value)
+	var c = Module.ccall('run_global',
+	'string',
+	['string'], 
+	[output.value])
+	console.log(c);
+	output.value = c;
+}
+\end{lstlisting}
+First one received a string of source code and the other executed defined transducer. 
+Emscripten also generated a layer of JavaScript code in
+\begin{lstlisting}
+<script async type="text/javascript" src="web_mealy_compiler.js"></script>
+\end{lstlisting}
+that smoothened process of WebAssembly integration.
+At that stage, the compiler was simple and such minimalist API was enough. Later a lot of new functionalities were added and the project requirements shifted to Java. Several approaches for compiling Java code to WASM were attempted but with unsatisfying results.
+
+The first framework we attempted to use was JWebAssembly. We successfully compiled and integrated toy projects but as complexity increased, the limitations became more apparent. The project page itself admitted that JWebAssembly is not yet production ready. Parts of Java standard library were missing, exceptions and threads had limited support and any attempts at converting our compiler to WASM resulted in uncountable of errors.
+
+The next library we attempted was CheerpJ. It was the most promising option. The project compiled successfully and could run in browser. The problem was that support for WASM is still at experimental stage and instead CheerpJ generated JavaScript transcription of our code wrapped in heavyweight runtime. The framework is a commercial product and is primarily targeted at porting Swing/JavaFX applications to browser. There was no documentation explaining how to expose JavaScript API or how to call any Java functions programmatically. There was also no way of manually writing HTML and CSS. Instead the produced applications mimicked typical desktop graphical interface. If we chose to use CheerpJ, we'd be forced to write user interface in Java Swing technology.
+
+The last available option was to use TeaVM. It suffered similar problems to JWebAssembly. Parts of Java standard library were not supported. Parts of compiler code had to be rewritten to use workaround functions. For instance
+the
+\begin{lstlisting}
+X x = hashMap.computeIfAbsent(k,key->new X());
+\end{lstlisting}
+had to be rewritten as
+\begin{lstlisting}
+if(hashMap.conatinsKey(k)){
+    x = hashMap.get(k);
+}else{
+    x = new X();
+    hashMap.put(k,x);
+}
+\end{lstlisting}
+Another problem was with porting all the libraries and dependencies.
+Parts of ANTLR code could not be compiled and we resorted to cloning the original ANTLR repo and manually rewriting parts of its code. Clever workarounds had to be implemented but in some cases, the code could not work in browser in any form and had to be removed.
+After enough modifications, our code compiled successfully.
+When ran in browser, the execution time was prohibitively slow and even the simplest tasks could not be completed in a satisfying time.
+
+As a result, we were forced to forego the idea of compiling Java to WASM and switched to using backend instead. Java has long and extensive history of being used as server-side language with plethora of tools and frameworks available - Spring being one of the most popular.

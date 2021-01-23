@@ -1,6 +1,8 @@
 The primary goal of this project was do develop the compiler backend. 
 Initially little attention was paid to structuring larger projects composed of multiple source files and dependencies. While smaller applications can work fine with a single script of regular expressions, in the tasks on natural language processing its common to build large codebases composed of millions of linguistic rules. Being able to manage and organise them efficiently becomes a major issue. 
 
+\section{Build system as extension of compiler}
+
 The compiler builds automata using our special version fo Glushkov's construction, which is capable of compiling subexpressions independently of each other. The results are returned in form of singly linked graph. This format allows one to parallelise compilation and split work across multiple files. For instance user could create two files \texttt{file1.mealy} and \texttt{file2.mealy}, define some variable in the first one and then use it in the second.
 \begin{lstlisting}
 file1.mealy:
@@ -75,6 +77,8 @@ file Y.mealy:
     Y2 = import!('X/X2')
 \end{lstlisting}
 The final solution we settled for was to split compilation into three phases. First the build system scans all files (in parallel) and builds abstract syntax trees of all variable definitions. In those trees there would be references to other variables that could be defined anywhere else in the project. Then in the second phase the variables would be scanned and a dependency graph would be built. We used a specialised data structure for efficiently working with directed acyclic graphs. If at any point a cycle was introduced, the build system would throw an error. Finally in the last phase every node in the graph would be compiled in parallel. For optimal performance, multiple threads would take vertices in topological order. If there is a directed edge from vertex $v_1$ to $v_2$ (meaning that variable $v_2$ depends on $v_1$), then $v_1$ will be added to the queue before $v_2$. Threads process queue entries in the FIFO order. 
+
+\section{Implementation}
 
 In the first phase, the parser that scans source files has been reused from the compiler backend. More precisely, the grammar of syntax is taken from the library but the build system has its own implementation of \texttt{SolomonoffGrammarListener}. Parsing is then performed using the standard ANTLR functions
 \begin{lstlisting}
@@ -442,7 +446,7 @@ funcs :
     | 
 ;
 \end{lstlisting} 
-it will first fire \texttt{enterFuncDef}, then recursively all the events hiding under \texttt{mealy\_union} are executed and at the very end comes the \texttt{exitFuncDef}. If the expression contained a reference to some variable identifier at any point, then the event \texttt{exitMealyAtomicVarID} will be fired at some point during evaluation of \texttt{mealy\_union} callbacks. As a result the following code can be used to collect all dependencies into a set of pairs.
+it will first fire \texttt{enterFuncDef}, then all the events hiding under \texttt{mealy\_union} are recursively executed and at the very end comes the \texttt{exitFuncDef}. If the expression contained a reference to some variable identifier at any point, then the event \texttt{exitMealyAtomicVarID} will be fired at some point during evaluation of \texttt{mealy\_union} callbacks. As a result the following code can be used to collect all dependencies into a set of pairs.
 \begin{lstlisting}
 String currentVariable;
 
@@ -476,7 +480,8 @@ If at any point a cyclic dependency is detected, the method \texttt{addEdge} wil
 This concludes the second phase of build procedure. 
 
 The third and last phase is to compile all syntax trees is the correct order and parallelise it as much as possible. The compilation procedure presented before was a minimal prototype that could work with a single variable-free syntax tree.
-like follows
+The challenge appears when we wish to compile multiple trees that reference each other through use of variables. The simplest and most naive solution would be to substitute the variables for their appropriate referenced trees.
+Such substitution could be achieved as follows
 \begin{lstlisting}
 interface Regex{
      Regex substitute(HashMap<String,Regex> substitution);
@@ -508,7 +513,17 @@ class String implements Regex{
      }
 }
 \end{lstlisting}
- As a result all syntax trees would become variable-free. This comes at the cost of possibly exponential blow-up in size of certain trees. The major advantage is that now all trees can be compiled in parallel, although despite this, the compilation might in reality get worse than if we serially compiled trees with variables. That's because the overall number of nodes to be compiled could increase exponentially and the number of truly parallel threads (the number of cores in CPU) is usually small. Hence a better approach is needed. 
+ As a result all syntax trees would become variable-free. This comes at the cost of possibly exponential blow-up in size of certain trees. For example consider the expression
+ \begin{lstlisting}
+f1 = 'a'
+f2 = !!f1 f1
+f4 = !!f2 f2
+f8 = !!f4 f4
+f16 = !!f8 f8
+f32 = !!f16 f16
+ \end{lstlisting}
+The automaton defined by $f32$ would accept string of exponential length 32, which requires as many states.
+ The major advantage is that now all trees can be independently compiled in parallel. Despite this, the compilation might in reality get worse than if we serially compiled trees with variables. That's because the overall number of nodes to be compiled could increase exponentially and the number of truly parallel threads (the number of cores in CPU) is usually small. Hence a better approach is needed. 
  
  The right solution is to compile all trees in parallel and block on variables that have not yet been processed.
  \begin{lstlisting}
@@ -562,3 +577,7 @@ The above snippet is simple but taking a closer look will reveal that its in fac
 dependencies are not submitted before all their dependants. To prevent this we need to use topological order on directed acyclic graphs. The JGraphT provides a ready-made \texttt{TopologicalOrderIterator}. 
 
 Every time we perform \texttt{pool.submit} the task is added to queue of tasks that will be picked up by some available thread in \texttt{ExecutorService}.By submitting those tasks in topological order we also guarantee optimal queue arrangement. The minimal number of threads will block on \texttt{get()} function as a result.
+
+\section{Command-line interface}
+
+
