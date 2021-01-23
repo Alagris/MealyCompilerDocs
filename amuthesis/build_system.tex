@@ -1,7 +1,7 @@
 The primary goal of this project was do develop the compiler backend. 
 Initially little attention was paid to structuring larger projects composed of multiple source files and dependencies. While smaller applications can work fine with a single script of regular expressions, in the tasks on natural language processing its common to build large codebases composed of millions of linguistic rules. Being able to manage and organise them efficiently becomes a major issue. 
 
-The compiler builds automata using our special version fo Glushkov's construction, which is capable of compiling subexpressions independently of each other. The results are returned in form of singly linked graph. This format allows one to parallelise compilation and split work across multiple files. For instance user could create two files \texttt{file1.mealy} and \texttt{file2.mealy}, define some variable in the first one and the use it in the second.
+The compiler builds automata using our special version fo Glushkov's construction, which is capable of compiling subexpressions independently of each other. The results are returned in form of singly linked graph. This format allows one to parallelise compilation and split work across multiple files. For instance user could create two files \texttt{file1.mealy} and \texttt{file2.mealy}, define some variable in the first one and then use it in the second.
 \begin{lstlisting}
 file1.mealy:
     var1 = 'abc'
@@ -200,7 +200,28 @@ type Regex =
     | Brackets Regex
     | String
 \end{lstlisting}
-Every class in Java works like an algebraic product of its member fields. All interfaces are the algebraic sum of their implementations. As a result the Haskell code could be directly translated into Java as
+Every class in Java works like an algebraic product of its member fields. For instance the class 
+\begin{lstlisting}
+class X{
+    A a;
+    B b;
+}
+\end{lstlisting}
+is a Cartesian product of classes $A$ and $B$. Mathematically $X=A\times B$. If $a$ is an instance of $A$ (in other words $a\in A$) and $b$ is an instance of $B$ (mathematically $b\in B$) then the pair $(a,b)$ could become an instance of $X$ (written $(a,b)\in X$). In fact, the notation for constructor $new X(a,b)$ has been inspired by mathematics. Here  $X$ is a function that returns memeber of set $X$ ($X:A \times B \rightarrow X$) and the pair $(a,b)$ is applied to $X$. The brackets $()$ should not be interpreted as syntax for function call but rather as syntax for pairs and tuples. 
+
+Every interface is the algebraic sum of its implementations. For instance in the snippet below
+\begin{lstlisting}
+interface X{}
+class XA{
+    A a;
+}
+class XB{
+    B b;
+}
+\end{lstlisting}
+the type $X$ is a sum of $A$ and $B$ (written as $X=A \cup B$). The classes $XA$ and $XB$ are nothing more than projection functions. Any instance of $a\in A$ can be applied to $XA(a)$ in order to produce instance of $a\in X$. Similarly for $b\in B$ and $XB(b)\in X$.
+
+As a result the previous Haskell code could be directly translated into Java as
 \begin{lstlisting}
 interface Regex{}
 class Union implements Regex{
@@ -227,7 +248,16 @@ class Variable implements Regex{
     java.lang.String identifier;
 }
 \end{lstlisting}
-Another deviation from mathematical definition appears when it comes to braces. It should be pointed out that they do not serve any semantic purpose. They are merely a syntactic construct. In particular, if we used reverse Polish notation, then the brackets would be unnecessary. Their existence is only required by the parser but the abstract syntax tree could function without them. In a sense, every node of the tree works like brackets by itself. Hence we do not need
+Another deviation from mathematical definition appears when it comes to braces. It should be pointed out that they do not serve any semantic purpose. They are merely a syntactic construct. In particular, if we used reverse Polish notation, then the brackets would be unnecessary. For instance
+\[
+((\mbox{'a'}|\mbox{'b'}) \mbox{'c'} )*
+\] 
+would become
+\[
+* \cdot | \mbox{'a'} \mbox{'b'} \mbox{'c'}
+\] 
+where $\cdot$  is an explicit notation of concatenation.
+The existence of braces is only required by the parser but the abstract syntax tree could function without them. In a sense, every node of the tree works like brackets by itself. Hence we do not need
 \begin{lstlisting}
 class Brackets implements Regex{
     Regex a;
@@ -319,7 +349,7 @@ For instance in the following code
 x = 'a' | 'b'
 y = 'a' (x 'b')*
 \end{lstlisting}
-there are two variables \texttt{x} and \texttt{y} where \texttt{y} depends on \texttt{x}. This would translate to dependency graph on two vertices with one edge
+there are two variables \texttt{x} and \texttt{y}, where \texttt{y} depends on \texttt{x}. This would translate to dependency graph on two vertices with one edge
 \begin{center}
      \begin{tikzpicture}[scale=0.2]
           \tikzstyle{every node}+=[inner sep=0pt]
@@ -364,7 +394,7 @@ The dependency graph is implemented using JGraphT library. It comes with a speci
 DirectedAcyclicGraph<String, Object> dependencyOf =
     new DirectedAcyclicGraph<>(null, null, false);
 \end{lstlisting}
-The graph can be build by iterating all the definitions stored in \texttt{shared} map.
+The graph can be built by iterating all the definitions stored in \texttt{shared} map.
 \begin{lstlisting}
 for (Map.Entry<String, SolomonoffWeighted> def : shared.entrySet()) {
     String identifier = def.getKey();
@@ -378,7 +408,7 @@ for (Map.Entry<String, SolomonoffWeighted> def : shared.entrySet()) {
     });
 }
 \end{lstlisting}
-The above code was simple but it requires to first build the syntax tree and then scan it. As a result every node of the tree is visited twice - first time during creation and second time during scanning. It also requires using the 
+The above code is simple but it requires to first build the syntax tree and then scan it. As a result every node of the tree is visited twice - first time during creation and second time during scanning. It also requires using the 
 \texttt{forEachVariable} function. It's possible to make this procedure even simper and more efficient. The dependencies could be collected on the spot as the parsing progresses. Because multiple files are parsed in parallel
 and \texttt{DirectedAcyclicGraph} is not thread-safe, an intermediate temporary storage for edges was necessary. We could first collect all of the edges into a list of pairs.
 \begin{lstlisting}
