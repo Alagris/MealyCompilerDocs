@@ -2,7 +2,7 @@
 % Przeczytaj plik amuthesis-doc.pdf, aby poznać opcje      %
 % klasy `amuthesis`                                        %
 % ======================================================== %
-\documentclass[oneside,polski,logo]{amuthesis}
+\documentclass[oneside,english,logo]{amuthesis}
 
 % Zdefiniuj kodowanie pliku źródłowego (domyślnie utf8)
 \usepackage[utf8]{inputenc}
@@ -10,11 +10,18 @@
 % ======================================================== %
 % Dane autora i pracy                                      %
 % ======================================================== %
-
+\makeatletter
+\newcommand{\chapterauthor}[1]{%
+	{\centering\vspace*{-25pt}%
+		\linespread{1.1}\large\scshape#1%
+		\par\nobreak\vspace*{35pt}}
+	\@afterheading%
+}
+\makeatother
 % --- Autor pracy
 \author{Bohdan Bondar, Marcin Jałoński, Aleksander Mendoza-Drosik}
 % --- Numer albumu
-\album{sS432778,s434701,s434749}
+\album{s432778,s434701,s434749}
 % --- Tytuł pracy (w języku polskim i angielskim)
 \titlePL{Solomonoff - kompilator transduktorów skończenie stanowych}
 \titleEN{Solomonoff - Finite state tranducer compiler}
@@ -39,14 +46,14 @@
 % --- --- IKE   --- Instytut Kultury Europejskiej w Gnieźnie
 \faculty{WMiI}
 % --- Kierunek (w mianowniku)
-\field{informatyka}
+\field{Computer Science}
 % --- Specjalność (w formie mianownikowej)
 % --- (ustaw puste, jeśli bez specjalności)
 \specialty{}
 % --- Promotor (w dopełniaczu)
-\supervisor{dr Bartłomieja Przybylskiego}
+\supervisor{PhD. Bartłomieja Przybylskiego}
 % --- Data złożenia pracy (Miasto, miesiąc rok)
-\date{Poznań, luty 2021}
+\date{Poznań, February 2021}
 
 % --- Płeć autora (M/K)
 \stsex{M/M/M}
@@ -68,54 +75,55 @@
 % ======================================================== %
 
 \begin{document}
-
-% Strona tytułowa
-\maketitle
-% Oświadczenie
-\makestatement
-
-% Blok abstraktu w języku polskim
-\begin{streszczenie}
-
-
-
-\paragraph{Słowa kluczowe:} klasa
-\end{streszczenie}
-
-% Blok abstraktu w języku angielskim
-\begin{abstract}
-\lipsum[2]
-
-\paragraph{Keywords:} klasa
-\end{abstract}
-
-% Opcjonalny blok dedykacji
-\begin{dedykacja}
-Tu możesz umieścić swoją dedykację.
-\end{dedykacja}
-
-% Spis treści
-\tableofcontents
-
-% ======================================================== %
-% Właściwa część pracy                                     %
-% ======================================================== %
-
-
-\chapter{Introduction}
-
-\input{intro.tex}
-
-\chapter{Transducers}
-
-\input{transducers.tex}
-
-\chapter{Build system}
-
-\input{build_system.tex}
-
-\chapter{Web technologies}
-
-\input{web_technologies.tex}
-
+	
+	% Strona tytułowa
+	\maketitle
+	% Oświadczenie
+	\makestatement
+	
+	% Blok abstraktu w języku polskim
+	\begin{abstract}
+		
+		
+		
+		\paragraph{Słowa kluczowe:} klasa
+	\end{abstract}
+	
+	% Blok abstraktu w języku angielskim
+	\begin{abstract}
+		\lipsum[2]
+		
+		\paragraph{Keywords:} klasa
+	\end{abstract}
+	
+	% Opcjonalny blok dedykacji
+	
+	
+	% Spis treści
+	\tableofcontents
+	
+	% ======================================================== %
+	% Właściwa część pracy                                     %
+	% ======================================================== %
+	
+	\chapter{Introduction}
+	
+	\input{intro.tex}
+	
+	\chapter{Transducers}
+	\chapterauthor{Aleksander Mendoza-Drosik}
+	\input{transducers.tex}
+	
+	\chapter{Build system}
+	\chapterauthor{Marcin Jabłoński}	
+	\input{build_system.tex}
+	
+	\chapter{Web technologies}
+	\chapterauthor{Bogdan Bondar}	
+	\input{web_technologies.tex}
+	
+	
+	\bibliographystyle{BibTeXtran}   % (uses file "BibTeXtran.bst")
+	\bibliography{BibTeXrefs}       % (expects the reference in the file "BibTeXrefs.bib")
+	
 \end{document}
