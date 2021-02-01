@@ -1,583 +1,468 @@
-The primary goal of this project was do develop the compiler backend. 
-Initially little attention was paid to structuring larger projects composed of multiple source files and dependencies. While smaller applications can work fine with a single script of regular expressions, in the tasks on natural language processing its common to build large codebases composed of millions of linguistic rules. Being able to manage and organise them efficiently becomes a major issue. 
+Build systems sometimes referred as build automations, are widely
+understood solutions that automates processes related to software
+building, the most important of which are in a narrower sense compiling,
+packing, testing, or in a broader sense also processes included in
+continuous integrations and continuous deployment. The rest of the
+chapter will focus mainly on the first meaning of the concept.
 
-\section{Build system as extension of compiler}
+\hypertarget{advantages-of-using-build-systems}{%
+\section{Advantages of using build
+systems}\label{advantages-of-using-build-systems}}
 
-The compiler builds automata using our special version fo Glushkov's construction, which is capable of compiling subexpressions independently of each other. The results are returned in form of singly linked graph. This format allows one to parallelise compilation and split work across multiple files. For instance user could create two files \texttt{file1.mealy} and \texttt{file2.mealy}, define some variable in the first one and then use it in the second.
-\begin{lstlisting}
-file1.mealy:
-    var1 = 'abc'
-file2.mealy:
-    var2 = ('prefix' var1 'suffix')*
-\end{lstlisting}
-Such a feature is not native to the compiler backend itself (it only parses continuous string of input) and has been delegated to the build system as an independent application instead. 
+The main reasons of using this type of tools includes:
 
-The easiest approach to implementing build system would be by concatenating all source files into one large steam of input and then feed it into the compiler.
-For instance 
-\begin{lstlisting}
-concatenatedFiles.mealy:
-    //from file1.mealy
-    var1 = 'abc'
-    //from file2.mealy
-    var2 = ('prefix' var1 'suffix')*
-\end{lstlisting}
-It could be easily done with a simple Bash script or a couple of Makefiles. Despite being very straightforward, such a solution has multiple flaws. The order of concatenation matters a lot. The compiler requires that every variable is defined before being used. Should the order get mistakenly swapped, the compilation would fail. For instance 
-\begin{lstlisting}
-concatenatedFiles.mealy:
-    //from file2.mealy
-    var2 = ('prefix' var1 'suffix')* 
-    // var1 used before definition!
-    //from file1.mealy
-    var1 = 'abc'
-\end{lstlisting}
-As a result, it would be user's obligation to ensure correct order of concatenation, which might quickly become unmaintainable in large projects. Second problem stems from linear types. The compiler follows the semantics of linear logic and a variable once consumed should not be reused. An explicit copy is always necessary. Hence the order of definition and usage of all variables is even more important than in other general-purpose languages that do not have linear types. For instance this will compile
-\begin{lstlisting}
-X = 'a'
-Y = !!X 'b'
-Z = X 'c'
-\end{lstlisting}
-but this one will fail
-\begin{lstlisting}
-X = 'a'
-Z = X 'c'
-Y = !!X 'b'
-\end{lstlisting}
-Third problem is that managing dependencies and building packages would become impossible. For example we might imagine code, which includes some library 
-\begin{lstlisting}
-include libX
-X = f  // f is defined in libX
-\end{lstlisting}
-If in the future a new version of the library is released, it might happen that variable X is added and suddenly our code becomes invalid because we're trying to redefine X.
+\begin{itemize}
+\tightlist
+\item
+  time saving and resistance to mistakes
+\end{itemize}
 
-Our initial thought was to introduce a special function \texttt{import!('filepath')}, which would load any variable from a precompiled binary file. Then the user would write code as follows
-\begin{lstlisting}
-X = import!('lib/libX/f')
-\end{lstlisting}
-This approach suffers from one logistic problem. If user decided to split their code into several files and then import the necessary automata at will, the build system would need to detect the correct compilation order of all files. For instance if there were two files like these
-\begin{lstlisting}
-file X.mealy:
-    a = 'a'
-file Y.mealy:
-    b = import!('X/a')
-\end{lstlisting}
-then the build system would need to first compile \texttt{X.mealy} and produce binary file \texttt{X} and only then compilation of \texttt{Y.mealy} would become possible. The major problem appears when cyclic dependencies between files arise
-\begin{lstlisting}
-file X.mealy:
-    X = import!('Y/Y')
-file Y.mealy:
-    Y = import!('X/X')
-\end{lstlisting}
-While it's possible to create a built tool capable of detecting such problems and notifying the user, its main disadvantage is that in some cases, there might be cyclic dependency between files, despite not introducing cyclic dependencies between automata themselves. As a result, logically valid regular expressions would be prematurely rejected by build system. For example
-\begin{lstlisting}
-file X.mealy:
-    X1 = import!('Y/Y1')
-    X2 = 'a'
-file Y.mealy:
-    Y1 = 'b'
-    Y2 = import!('X/X2')
-\end{lstlisting}
-The final solution we settled for was to split compilation into three phases. First the build system scans all files (in parallel) and builds abstract syntax trees of all variable definitions. In those trees there would be references to other variables that could be defined anywhere else in the project. Then in the second phase the variables would be scanned and a dependency graph would be built. We used a specialised data structure for efficiently working with directed acyclic graphs. If at any point a cycle was introduced, the build system would throw an error. Finally in the last phase every node in the graph would be compiled in parallel. For optimal performance, multiple threads would take vertices in topological order. If there is a directed edge from vertex $v_1$ to $v_2$ (meaning that variable $v_2$ depends on $v_1$), then $v_1$ will be added to the queue before $v_2$. Threads process queue entries in the FIFO order. 
+The most obvious advantage of automation is time savings. The complexity
+of the build processes could be not only excessively time consuming
+while it is manually operated but also leads to numerous mistakes.
 
-\section{Implementation}
+\begin{itemize}
+\tightlist
+\item
+  consitiency and portability
+\end{itemize}
 
-In the first phase, the parser that scans source files has been reused from the compiler backend. More precisely, the grammar of syntax is taken from the library but the build system has its own implementation of \texttt{SolomonoffGrammarListener}. Parsing is then performed using the standard ANTLR functions
-\begin{lstlisting}
-SolomonoffGrammarLexer lexer =
-  new SolomonoffGrammarLexer(sourceFile);
-SolomonoffGrammarParser parser =
-  new SolomonoffGrammarParser(new CommonTokenStream(lexer));
+Depending on the technology stack used in the project, the result may
+differ depending on the specific environment. Build system can mitigate
+this risk by standardizing some elements of the environment such as
+versions of compilers, runtime systems, dependencies and also
+compilation parameters or environment variables.
 
-parser.addErrorListener(new BaseErrorListener() {
-    public void syntaxError(Recognizer<?, ?> recognizer, 
-            Object offendingSymbol, 
-            int line,
-            int charPositionInLine, 
-            String msg, 
-            RecognitionException e) {
-         System.err.println("line " + line 
-         + ":" + charPositionInLine 
-         + " " + msg + " " + e);
-    }
-});
+\begin{itemize}
+\tightlist
+\item
+  reproducable builds
+\end{itemize}
 
-final SolomonoffWeightedParser listener =
-  new SolomonoffWeightedParser(collector, sourceFile, compiler);
-ParseTreeWalker.DEFAULT.walk(listener, parser.start());
-\end{lstlisting}
-The listener is responsible for building abstract syntax tree for each variable and storing all definitions. Here is a fragment of ANTLR grammar that forms the list of variable definitions 
-\begin{lstlisting}
-funcs :
-    funcs exponential='!!'? ID '=' mealy_union  # FuncDef
-    | 
-;
-\end{lstlisting} 
-Whenever some definition is parsed, the following listener callback is invoked
-\begin{lstlisting}
-@Override
-public void exitFuncDef(FuncDefContext funcDefContext) {
-    String currentVariableID = funcDefContext.ID().getText();
-    SolomonoffWeighted def = stack.pop();
-    collector.define(currentVariable, def);
-}
-\end{lstlisting}
-The integral part of listener is the \texttt{collector} object. It is responsible for storing all defined variables and remembering their respective abstract syntax trees. Initially, it was enough to store a \texttt{HashMap} within the \texttt{SolomonoffWeightedParser} object and register variables using 
-\begin{lstlisting}
-HashMap<String,SolomonoffWeighted> idToAST = 
-    new HashMap<>();
-    
-@Override
-public void exitFuncDef(FuncDefContext funcDefContext) {
-    String currentVariableID = funcDefContext.ID().getText();
-    SolomonoffWeighted def = stack.pop();
-    idToAST.put(currentVariable, def);
-}
-\end{lstlisting}
-Later it was changed to a more complicated implementation, which is
-\begin{lstlisting}
-ConcurrentHashMap<String,SolomonoffWeighted> idToAST;
-SolomonoffWeightedParser(
-    ConcurrentHashMap<String,SolomonoffWeighted> shared){
-    this.idToAST = shared;
-}
-@Override
-public void exitFuncDef(FuncDefContext funcDefContext) {
-    String currentVariableID = funcDefContext.ID().getText();
-    SolomonoffWeighted def = stack.pop();
-    idToAST.put(currentVariable, def);
-}
-\end{lstlisting}
-In such a way, it became possible to create multiple instances of 
-\texttt{SolomonoffWeightedParser} and run all of them in parallel, while the results of parsing could still be collected into one joint map.
-The use of \texttt{ConcurrentHashMap} instead of regular \texttt{HashMap} allows for concurrent insertions, without requiring any locks or synchronization. 
+This feature results from the previous point. Build reproducibility can
+be important to maintaining the credibility of open source projects and
+in some cases it can may help detect compromised build chains leading to
+the next feature.
 
-The abstract syntax tree closely follows the definition of Solomonoff's syntax. Its formal grammar is fairly simple and mimics the mathematical definition of regular expressions
-\begin{lstlisting}
-mealy_union
-:
-    (mealy_concat bar='|') * mealy_concat # MealyUnion
-;
+\begin{itemize}
+\tightlist
+\item
+  security
+\end{itemize}
 
-mealy_concat
-:
-    mealy_concat mealy_Kleene_closure
-    | mealy_Kleene_closure # MealyEndConcat
-;
+Build system can contribute to increased security by the fact that it
+facilitates the separation of the environment in which the application
+is developed and in which it is built.
 
-mealy_Kleene_closure
-:
-    mealy_prod  (star='*' | plus='+' | optional='?') 
-    | mealy_prod # MealyNoKleeneClosure
-;
+\begin{itemize}
+\tightlist
+\item
+  dependency resolving
+\end{itemize}
 
-mealy_prod
-:
-    mealy_atomic colon=':' StringLiteral # MealyProduct
-    | mealy_atomic colon=':' Codepoint # MealyProductCodepoints
-    | mealy_atomic # MealyEpsilonProduct
-;
+Depending on the specific system, it can help to varying degrees in
+managing dependencies from local resources as well as remote ones.
 
-mealy_atomic
-:
-    StringLiteral # MealyAtomicLiteral
-    | Range # MealyAtomicRange
-    | '(' mealy_union ')' # MealyAtomicNested
-;
-\end{lstlisting}
-In more mathematical terms it could be rewritten as
-\begin{lstlisting}
-regex ::= 
-    regex | regex // union
-    regex regex // concatenation
-    regex* // Kleene closure
-    : regex // output/product
-    STRING_LITERAL 
-    ( regex ) 
-\end{lstlisting}
-When presented in such a form, the algebraic data types become apparent.
-A regular expression is either one of those 6 cases. Hence the above grammar could be represented as Haskell-style algebraic data type
-\begin{lstlisting}
-type Regex = 
-    Union Regex Regex 
-    | Concat Regex Regex
-    | Kleene Regex
-    | Output Regex
-    | Brackets Regex
-    | String
-\end{lstlisting}
-Every class in Java works like an algebraic product of its member fields. For instance the class 
-\begin{lstlisting}
-class X{
-    A a;
-    B b;
-}
-\end{lstlisting}
-is a Cartesian product of classes $A$ and $B$. Mathematically $X=A\times B$. If $a$ is an instance of $A$ (in other words $a\in A$) and $b$ is an instance of $B$ (mathematically $b\in B$) then the pair $(a,b)$ could become an instance of $X$ (written $(a,b)\in X$). In fact, the notation for constructor $new X(a,b)$ has been inspired by mathematics. Here  $X$ is a function that returns memeber of set $X$ ($X:A \times B \rightarrow X$) and the pair $(a,b)$ is applied to $X$. The brackets $()$ should not be interpreted as syntax for function call but rather as syntax for pairs and tuples. 
+\begin{itemize}
+\tightlist
+\item
+  better audibility
+\end{itemize}
 
-Every interface is the algebraic sum of its implementations. For instance in the snippet below
-\begin{lstlisting}
-interface X{}
-class XA{
-    A a;
-}
-class XB{
-    B b;
-}
-\end{lstlisting}
-the type $X$ is a sum of $A$ and $B$ (written as $X=A \cup B$). The classes $XA$ and $XB$ are nothing more than projection functions. Any instance of $a\in A$ can be applied to $XA(a)$ in order to produce instance of $a\in X$. Similarly for $b\in B$ and $XB(b)\in X$.
+The more descriptive nature of the configuration makes it easier to
+identify certain characteristics, mostly related to versions of
+environment components or dependencies.
 
-As a result the previous Haskell code could be directly translated into Java as
-\begin{lstlisting}
-interface Regex{}
-class Union implements Regex{
-    Regex a; 
-    Regex b;
-}
-class Concat implements Regex{
-    Regex a;
-    Regex b;
-}
-class Kleene implements Regex{
-    Regex a;
-}
-class Output implements Regex{
-    Regex a;
-}
-class String implements Regex{
-}
-\end{lstlisting}
-While the standard mathematical definition of regular expressions has no place
-for variables, Solomonoff does indeed extend the language of expressions with variable names. As a result we obtain one more class
-\begin{lstlisting}
-class Variable implements Regex{
-    java.lang.String identifier;
-}
-\end{lstlisting}
-Another deviation from mathematical definition appears when it comes to braces. It should be pointed out that they do not serve any semantic purpose. They are merely a syntactic construct. In particular, if we used reverse Polish notation, then the brackets would be unnecessary. For instance
-\[
-((\mbox{'a'}|\mbox{'b'}) \mbox{'c'} )*
-\] 
-would become
-\[
-* \cdot | \mbox{'a'} \mbox{'b'} \mbox{'c'}
-\] 
-where $\cdot$  is an explicit notation of concatenation.
-The existence of braces is only required by the parser but the abstract syntax tree could function without them. In a sense, every node of the tree works like brackets by itself. Hence we do not need
-\begin{lstlisting}
-class Brackets implements Regex{
-    Regex a;
-}
-\end{lstlisting}
-Lastly, a few notes should be made about the \texttt{String} class.
-One of the weak points of Java
- is that it artificially enforces 
- rigid hierarchy of interfaces,
- even thought it would often be
- perfectly reasonable to
- add more interfaces
- for already existing classes, such as
- java.lang.String. 
- Duck typing is a much more powerful and
- mathematically inspired paradigm, than object oriented programming.
- Thankfully, the typeclass pattern can be used to circumvent this issue.
- We can wrap any existing type in a new class and then implement any
- interface of our choice.
- \begin{lstlisting}
- class String implements Regex{
-     java.lang.String str;
- }
- \end{lstlisting}
-It works almost like the \texttt{impl} keyword from Rust
- \begin{lstlisting}
-impl Regex for String{...}
-\end{lstlisting}
-The only downside of the typeclass pattern in Java is the inconvenience of overly verbose notation. It forces us to later wrap every 
-\texttt{java.lang.String} in our own class, before being able to use it like an instance of \texttt{Regex}.
+\begin{itemize}
+\tightlist
+\item
+  tasks parallelization
+\end{itemize}
 
-The abstract syntax tree is a recursive data structure and any algorithm that manipulates them must be inductive. One of the most important  algorithms is the compilation procedure. It mainly uses functions provided by compiler backend, hence it's exact implementation might look uninteresting. 
-\begin{lstlisting}
-interface Regex{
-    G compile();
-}
-class Union implements Regex{
-    Regex a; 
-    Regex b;
-    G compile(){
-        return specs.union(a.compile(),b.compile());
-    }
-}
+Build system can perform multiple tasks in parallel as long as the order
+of dependencies is followed.
 
-... the rest is done analogically...
+\hypertarget{overview-of-selected-build-systems}{%
+\section{Overview of selected build
+systems}\label{overview-of-selected-build-systems}}
 
-class String implements Regex{
-    java.lang.String str;
-    G compile(){
-        return specs.fromStr(str);
-    }
-}
-\end{lstlisting}
-The \texttt{G} class stands for singly-linked graph that encodes structure of the transducer. The above procedure strictly follows Glushkov's construction.
-The exact details are implemented by \texttt{specs}, which holds reference to the compiler backend. 
+This section of the chapter covers some of the building automation
+tools. Due to the enormity of the possibilities of each of them, the
+analysis is focused on presenting the features that are particularly
+important for a given one, and at identifying the differences between
+them.
 
-To sum up, in the first phase, build system reads all source files and collects abstract syntax trees for every definition. The files are parsed in parallel. A pool of threads needs to be initialised and a queue of pending tasks is formed. This could be represented using the following code.
-\begin{lstlisting}
-ExecutorService pool = Executors.newWorkStealingPool();
-Queue<Future<Void>> queue = new LinkedList<>();
-ConcurrentHashMap<String, SolomonoffWeighted> shared = 
-    new ConcurrentHashMap<>();
-for (final File sourceFile : sourceFiles) {
-    queue.add(pool.submit(() -> {
-        SolomonoffGrammarLexer lexer =
-            new SolomonoffGrammarLexer(sourceFile);
-        SolomonoffGrammarParser parser =
-            new SolomonoffGrammarParser(new CommonTokenStream(lexer));
-        
-        parser.addErrorListener(new BaseErrorListener() {...});
-        
-        final SolomonoffWeightedParser listener =
-            new SolomonoffWeightedParser(shared);
-        ParseTreeWalker.DEFAULT.walk(listener, parser.start());
-        return null;
-    }
-}
-\end{lstlisting}
-In the next phase, the build system creates a dependency graph. This requires having access to all variables and their syntax trees. Hence it's necessary to wait for the parsing to complete.
-\begin{lstlisting}
-for (Future<Void> task : queue) {
-    task.get(); // blocks until finished
-}
-\end{lstlisting}
-In the dependency graph, every vertex represents an individual variable with
-unique identifier. A dependency between two variables is formed when one variable appears in the syntax tree in the definition of another.
-For instance in the following code
-\begin{lstlisting}
-x = 'a' | 'b'
-y = 'a' (x 'b')*
-\end{lstlisting}
-there are two variables \texttt{x} and \texttt{y}, where \texttt{y} depends on \texttt{x}. This would translate to dependency graph on two vertices with one edge
-\begin{center}
-     \begin{tikzpicture}[scale=0.2]
-          \tikzstyle{every node}+=[inner sep=0pt]
-          \draw [black] (16.5,-23.2) circle (3);
-          \draw (16.5,-23.2) node {$x$};
-          \draw [black] (28,-23.2) circle (3);
-          \draw (28,-23.2) node {$y$};
-          \draw [black] (19.5,-23.2) -- (25,-23.2);
-          \fill [black] (25,-23.2) -- (24.2,-22.7) -- (24.2,-23.7);
-     \end{tikzpicture}
-\end{center}
-The simplest way to build such a graph would be to scan every syntax tree searching for variables and then add edges accordingly. The inductive procedure could be implemented as follows
-\begin{lstlisting}
-interface Regex{
-    void forEachVariable(Consumer<Variable> callback);
-}
-class Union implements Regex{
-    Regex a; 
-    Regex b;
-    void forEachVariable(Consumer<Variable> callback){
-        a.forEachVariable(callback);
-        b.forEachVariable(callback);
-    }
-}
+\hypertarget{gnu-make}{%
+\subsection{GNU Make}\label{gnu-make}}
 
-... the rest is done analogically...
+The first system described in this chapter is Make, actually its
+implementation from the GNU project. Make, as a utility included in the
+POSIX standard, is a fairly common build system. Its implementations
+differ in terms of specific functionalities, but remain largely
+compatible. For simplicity, Make is hereinafter referred to as GNU Make.
 
-class Variable implements Regex{
-    void forEachVariable(Consumer<Variable> callback){
-         callback.accept(this);
-    }
-}
+Make is language-agnostic and is not limited to building only, but can
+be easily used to automate any related side tasks. It is facilitated by
+the simple syntax of the Makefile file, which define the rules in which
+the declared targets should be executed. Makefiles can be human-written
+or automatically generated by high-level build systems such as CMake,
+GNU Autotools, or Meson. Make comes with an extensive set of tools that
+can simplify the manual creation of makefiles.
 
-class String implements Regex{
-    java.lang.String str;
-    void forEachVariable(Consumer<Variable> callback){
-    }
-}
-\end{lstlisting}
-The dependency graph is implemented using JGraphT library. It comes with a specialised data structure for directed acyclic graphs that guarantees acyclicity and throws exception whenever a newly added edge violates this property.
-\begin{lstlisting}
-DirectedAcyclicGraph<String, Object> dependencyOf =
-    new DirectedAcyclicGraph<>(null, null, false);
-\end{lstlisting}
-The graph can be built by iterating all the definitions stored in \texttt{shared} map.
-\begin{lstlisting}
-for (Map.Entry<String, SolomonoffWeighted> def : shared.entrySet()) {
-    String identifier = def.getKey();
-    SolomonoffWeighted syntaxTree = def.getValue();
-    syntaxTree.forEachVariable(var->{
-        dependencyOf.add(
-            var.identifier, // source vertex
-            identifier, // target vertex
-            new Object() // unique edge
-        );
-    });
-}
-\end{lstlisting}
-The above code is simple but it requires to first build the syntax tree and then scan it. As a result every node of the tree is visited twice - first time during creation and second time during scanning. It also requires using the 
-\texttt{forEachVariable} function. It's possible to make this procedure even simper and more efficient. The dependencies could be collected on the spot as the parsing progresses. Because multiple files are parsed in parallel
-and \texttt{DirectedAcyclicGraph} is not thread-safe, an intermediate temporary storage for edges was necessary. We could first collect all of the edges into a list of pairs.
-\begin{lstlisting}
-List<Pair<String,String>> dependsOn;
-\end{lstlisting}     
-The problem with such approach is that certain edges might be duplicated. For instance consider the regular expression that uses $x$ twice
-\begin{lstlisting}
-x = 'a' | 'b'
-y = 'a' (x 'b' x)*
-\end{lstlisting}
-This would lead to adding edge \texttt{Pair.of("y","x")} twice into \texttt{dependsOn}. To prevent this we use a set instead of list. The constructor of parser listener takes the following form
-\begin{lstlisting}
-Set<Pair<String,String>> dependsOn;
-ConcurrentHashMap<String,SolomonoffWeighted> idToAST;
-Set<Pair<String,String>> dependsOn;
-SolomonoffWeightedParser(
-         ConcurrentHashMap<String,SolomonoffWeighted> shared,
-         Set<Pair<String,String>> dependsOn){
-    this.idToAST = shared;
-    this.dependsOn = dependsOn;
-}
-\end{lstlisting}
-The set can be made thread-safe by using the concurrent implementation from Java standard library.
-\begin{lstlisting}
-ConcurrentHashMap.newKeySet()
-\end{lstlisting}
-The parser listener is a state-based device. When a certain rule of the formal grammar is fully parsed, several of the listener's callbacks are fired. For instance when the following rule \texttt{FuncDef} is recognized
-\begin{lstlisting}
-funcs :
-    funcs exponential='!!'? ID '=' mealy_union  # FuncDef
-    | 
-;
-\end{lstlisting} 
-it will first fire \texttt{enterFuncDef}, then all the events hiding under \texttt{mealy\_union} are recursively executed and at the very end comes the \texttt{exitFuncDef}. If the expression contained a reference to some variable identifier at any point, then the event \texttt{exitMealyAtomicVarID} will be fired at some point during evaluation of \texttt{mealy\_union} callbacks. As a result the following code can be used to collect all dependencies into a set of pairs.
-\begin{lstlisting}
-String currentVariable;
+The basis of makefiles are rules. They have the following syntax.
 
-@Override
-public void enterFuncDef(FuncDefContext funcDefContext) {
-    currentVariable = funcDefContext.ID().getText();
-}
-@Override
-public void exitFuncDef(FuncDefContext funcDefContext) {
-    SolomonoffWeighted def = stack.pop();
-    idToAST.put(currentVariable, def);
-}
-@Override
-public void exitMealyAtomicVarID(MealyAtomicVarIDContext ctx) {
-    final String id = ctx.ID().getText();
-    dependsOn.add(Pair.of(currentVariable,id));
-    stack.push(new Variable(id));
-}
-\end{lstlisting}
-When the parsing finishes, all of the collected dependencies need to be converted into edges of a directed graph:
-\begin{lstlisting}
-for (Pair<String, String> dependency : dependsOn) {
-    dependencyOf.addEdge(
-        dependency.right(), 
-        dependency.left(), 
-        new Object()
-    );
-}
-\end{lstlisting}
-If at any point a cyclic dependency is detected, the method \texttt{addEdge} will throw an exception and build system will exit prematurely.
-This concludes the second phase of build procedure. 
+\begin{verbatim}
+target: dependencies
+    system command(s)
+\end{verbatim}
 
-The third and last phase is to compile all syntax trees is the correct order and parallelise it as much as possible. The compilation procedure presented before was a minimal prototype that could work with a single variable-free syntax tree.
-The challenge appears when we wish to compile multiple trees that reference each other through use of variables. The simplest and most naive solution would be to substitute the variables for their appropriate referenced trees.
-Such substitution could be achieved as follows
-\begin{lstlisting}
-interface Regex{
-     Regex substitute(HashMap<String,Regex> substitution);
-}
-class Union implements Regex{
-     Regex a; 
-     Regex b;
-     Regex substitute(HashMap<String,Regex> substitution){
-          return new Union(
-              a.substitute(substitution),
-              b.substitute(substitution)
-          );
-     }
-}
+The example below shows the contents of a simple makefile. The program
+built by Make in this case will be called edit, like the first target.
+The first target is the default one and will run if you run
+\texttt{make} with no additional parameters. A specific target can be
+called using \texttt{make\ \textless{}target\textgreater{}}.
 
-... the rest is done analogically...
+\begin{verbatim}
+objects = main.o command.o display.o utils.o
 
-class Variable implements Regex{
-     String identifier;
-     Regex substitute(HashMap<String,Regex> substitution){
-          return substitution.get(identifier);
-     }
-}
+edit : $(objects)
+        cc -o edit $(objects)
+main.o : main.c defs.h
+        cc -c main.c
+command.o : command.c defs.h command.h
+        cc -c command.c
+display.o : display.c defs.h buffer.h
+        cc -c display.c
+utils.o : utils.c defs.h
+        cc -c utils.c
+clean :
+        rm edit $(objects)
+\end{verbatim}
 
-class String implements Regex{
-     java.lang.String str;
-     Regex substitute(HashMap<String,Regex> substitution){
-          return this;
-     }
-}
-\end{lstlisting}
- As a result all syntax trees would become variable-free. This comes at the cost of possibly exponential blow-up in size of certain trees. For example consider the expression
- \begin{lstlisting}
-f1 = 'a'
-f2 = !!f1 f1
-f4 = !!f2 f2
-f8 = !!f4 f4
-f16 = !!f8 f8
-f32 = !!f16 f16
- \end{lstlisting}
-The automaton defined by $f32$ would accept string of exponential length 32, which requires as many states.
- The major advantage is that now all trees can be independently compiled in parallel. Despite this, the compilation might in reality get worse than if we serially compiled trees with variables. That's because the overall number of nodes to be compiled could increase exponentially and the number of truly parallel threads (the number of cores in CPU) is usually small. Hence a better approach is needed. 
+The target can be a file like the listed object files and executable, or
+an action like the clean target. If the target is a file, by default
+make will check whether the source file has changed since the target
+file was created and decide on that basis if it should be rebuilt.
+Changing dependencies will also trigger a rebuild for the proper units.
+
+Make's functionality includes:
+
+\begin{itemize}
+\tightlist
+\item
+  echoing
+\item
+  variables (sometimes referred as macros)
+\item
+  build in functions like \texttt{prefix}, \texttt{foreach},
+  \texttt{eval}, \texttt{shell}
+\item
+  conditional expressions
+\end{itemize}
+
+and many more to make makefiles more convenient when read and written by
+users. These features make it very versatile tool.
+
+\hypertarget{ninja}{%
+\subsection{Ninja}\label{ninja}}
+
+Ninja is relatively new software. It was created to speed up the
+building of very large projects consisting of many thousands of files.
+Work on this project started in 2010, when its creator Evan Martin was
+working on the Google Chrome browser. The browser code back then
+consisted of around 40,000 source files, which explains the desire to
+speed up the application building process.
+
+The syntax of the .ninja files that define the build process is trivial
+and is basically limited to rules that allow you to define short names
+for complex commands, variables, and expressions thats works just like
+in Make. If the target on the left is older than the source on the left,
+the target will be rebuilt. Sample .ninja file code below.
+
+\begin{verbatim}
+cflags = -Wall
+
+rule cc
+  command = gcc $cflags -c $in -o $out
+
+build foo.o: cc foo.c
+\end{verbatim}
+
+There are several aspects related to the simplicity of this solution. It
+allowed to create a hand-written and very efficient lexer and parser
+which sped up significantly the parsing process. Removal of redundant
+functionalities not only helped to improve performance, because Ninja do
+not have to call additional subroutines to handle these, but even check
+whether they have been used as if only the simplest Make expression was
+used. It also makes the .ninja file for a large project inconvenient to
+write manually. Therefore it is assumed that Ninja should be used in
+conjunction with another higher level build system such as CMake.
+
+The performance of the Ninja is demonstrated by the benchmark result by
+David Röthlisberger.
+
+\begin{quote}
+For a project with 1,000 programs built from 10,000 C files and 10,000
+header files, there is no significant difference in the duration of a
+fresh build. A no-op build takes less than a second with make (0.87s
+versus 0.13s with Ninja), probably not enough to really matter for
+interactive use.
+\end{quote}
+
+\begin{quote}
+For a much larger project (10,000 programs, 100,000 C files and 100,000
+header files) there is a significant difference in a no-op build: 73s
+for Make versus 1.5s for Ninja. Make spends 98\% of that time processing
+the 100,000 compiler-generated ``.d'' files that are used for tracking
+implicit dependencies on header files.
+\end{quote}
+
+\begin{figure}
+\centering
+\includegraphics{./no-op-build.png}
+\caption{No-op build}
+\end{figure}
+
+\hypertarget{maven}{%
+\subsection{Maven}\label{maven}}
+
+Maven is significantly different from previous systems. It is intended
+for managing Java based projects. Projects are configured by pom.xml
+file, which, unlike the previous configuration files, is more
+declarative. In addition to meta information, it contains a list of
+dependencies, repositories from which the external packages can be
+downloaded and a list of plugins with a configuration. The entire system
+is based on a plugins mechanism that can be attached from external
+sources. Additional configuration or new functionality, e.g.~how to
+build a package or how to deploy application, can be added and
+configured using plugins. Below is an example pom.xml file.
+
+\begin{verbatim}
+<project xmlns="http://maven.apache.org/POM/4.0.0" 
+xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+  xsi:schemaLocation="http://maven.apache.org/POM/4.0.0
+  http://maven.apache.org/xsd/maven-4.0.0.xsd">
+  <modelVersion>4.0.0</modelVersion>
  
- The right solution is to compile all trees in parallel and block on variables that have not yet been processed.
- \begin{lstlisting}
- interface Regex{
-      G compile(Function<String,Regex> blockingSubstitution);
- }
- class Union implements Regex{
-      Regex a; 
-      Regex b;
-      G compile(Function<String,Regex> blockingSubstitution){
-           return specs.union(
-               a.compile(blockingSubstitution),
-               b.compile(blockingSubstitution)
-           );
-      }
- }
+  <groupId>com.mycompany.app</groupId>
+  <artifactId>my-app</artifactId>
+  <version>1.0-SNAPSHOT</version>
  
- ... the rest is done analogically...
+  <name>my-app</name>
+  <url>http://www.example.com</url>
  
- class Variable implements Regex{
-      String identifier;
-      G compile(Function<String,Regex> blockingSubstitution){
-           return blockingSubstitution.apply(identifier);
-      }
- }
+  <properties>
+    <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
+    <maven.compiler.source>1.7</maven.compiler.source>
+    <maven.compiler.target>1.7</maven.compiler.target>
+  </properties>
  
- class String implements Regex{
-      java.lang.String str;
-      G compile(Function<String,Regex> blockingSubstitution){
-           return specs.fromStr(str);
-      }
- }
-\end{lstlisting}
-The \texttt{blockingSubstitution} mimics the \texttt{HashMap.get} function but is more generalised. It allows us to provide lambda implementation 
-that lookups a "lazy" map. Such a feature can be obtained by keeping a map of future promises. 
-\begin{lstlisting}
-ConcurrentHashMap<String, SolomonoffWeighted> shared;
-ConcurrentHashMap<String,Future<G>> compiled;
+  <dependencies>
+    <dependency>
+      <groupId>junit</groupId>
+      <artifactId>junit</artifactId>
+      <version>4.11</version>
+      <scope>test</scope>
+    </dependency>
+  </dependencies>
+ 
+  <build>
+      <plugins>
+        <plugin>
+          <groupId>org.apache.maven.plugins</groupId>
+          <artifactId>maven-compiler-plugin</artifactId>
+          <version>3.3</version>
+          <configuration>
+            <source>1.5</source>
+            <target>1.5</target>
+          </configuration>
+        </plugin>
+      </plugins>
+  </build>
+</project>
+\end{verbatim}
 
-... phase 1 and 2 ...
+Maven uses their own predefined project structure. It can be extended
+depending on the configuration. Below is an example structure.
 
-for(String variable : dependencyOf.vertexSet()){
-	SolomonoffWeighted syntaxTree = shared.get(variable);
-    compiled.put(id, pool.submit(() -> 
-        syntaxTree.compile((referencedVar)->
-            compiled.get(referencedVar).get() // may block
-    );
-}
-\end{lstlisting}
-The above snippet is simple but taking a closer look will reveal that its in fact incorrect. The \texttt{compiled.get(referencedVar)} might return \texttt{null} if
-dependencies are not submitted before all their dependants. To prevent this we need to use topological order on directed acyclic graphs. The JGraphT provides a ready-made \texttt{TopologicalOrderIterator}. 
+\begin{verbatim}
+my-app
+|-- pom.xml
+`-- src
+    |-- main
+    |   |-- java
+    |   |   `-- com
+    |   |       `-- mycompany
+    |   |           `-- app
+    |   |               `-- App.java
+    |   `-- resources
+    |       `-- META-INF
+    |           `-- application.properties
+    `-- test
+        `-- java
+            `-- com
+                `-- mycompany
+                    `-- app
+                        `-- AppTest.java
+\end{verbatim}
 
-Every time we perform \texttt{pool.submit} the task is added to queue of tasks that will be picked up by some available thread in \texttt{ExecutorService}.By submitting those tasks in topological order we also guarantee optimal queue arrangement. The minimal number of threads will block on \texttt{get()} function as a result.
+The most important features of Maven, which distinguish it from previous
+systems, are that it is significantly easier to configure a complex
+process of building, if project is well defined builds are reproducible.
+Also Maven includes a build-in package manager, so any environment setup
+can be recreated without additional solutions.
 
-\section{Command-line interface}
+\hypertarget{solomonoff}{%
+\section{Solomonoff}\label{solomonoff}}
 
+\hypertarget{system-description}{%
+\subsection{System description}\label{system-description}}
 
+Our build system does not resemble any of the previously mentioned, but
+is closer to Maven in some of its concepts. As in the case of Maven, the
+build configuration is declarative. In this case, we are also dealing
+with a specialized build system, which is not suitable for other
+applications. Additionally, Solomonoff has a very simplified package
+manager.
+
+\hypertarget{problem}{%
+\subsection{Problem}\label{problem}}
+
+The task of Solomonoff Build System was not only to create automation
+system, but also to extend the capabilities of the compiler itself, so
+that it could be practical.
+
+The main problems it has to solve was:
+
+\begin{itemize}
+\tightlist
+\item
+  compiler related
+
+  \begin{itemize}
+  \tightlist
+  \item
+    resolve dependencies
+  \item
+    parallel build process
+  \end{itemize}
+\item
+  automation related
+
+  \begin{itemize}
+  \tightlist
+  \item
+    keep the intermediate transducers and builds only what is needed
+  \item
+    import project configuration from file
+  \item
+    download defined packages from remote repository
+  \item
+    export project as package
+  \end{itemize}
+\end{itemize}
+
+Due to the architecture of the library, which provides compiler
+functionality, and its close nature to some of the problems the build
+system had to address, the only reasonable option seemed to be keeping
+both compiler and build system within a single process.
+
+\hypertarget{dependency-resolving}{%
+\subsubsection{Dependency resolving}\label{dependency-resolving}}
+
+The problem is that function definitions can be located in different
+files on any position and functions can be nested (one function can be
+used in a body of another one). Before starting the compilation, it is
+worth checking immediately whether it has a chance to succeed at all. To
+accomplish this, Solomonoff first loads code from repositories and
+user-supplied source code, and then parses it. ANTLR was used to
+generate the parser. During the process a directed acyclic graph is
+generated. The graph represents relations between functions. The system
+uses JGraphT to create this graph and to sort it topologically. This
+sorting algorithm guarantees that if we start compiling functions in
+order reversed to that soring function returned us the necessary
+dependencies for each subsequent element will already be compiled.
+
+\hypertarget{parallel-building}{%
+\subsubsection{Parallel building}\label{parallel-building}}
+
+The next step is compilation. To achieve compilation efficiency, the
+functions are put in the mentioned order in the queue from which they
+will be then downloaded to the Thread pool, if the compilation of their
+dependencies has already finished. In this way, we are to use the full
+potential of the CPU that the operating system will make available to
+us.
+
+\hypertarget{caching-transducers}{%
+\subsubsection{Caching transducers}\label{caching-transducers}}
+
+To achieve this goal, an analogous mechanism was used to that used in
+GNU Make. When parsing the code, we retrieve information about the
+modification date of a given source from the file system. If the user
+did not order otherwise, before the compilation starts, the modification
+dates of previously compiled transducers saved on the disk will be read
+and then both will be quickly compared. If the binary file date is not
+older than the source code date and the same situation repeats for all
+dependencies of the given function, it will not be compiled again at
+this point.
+
+\hypertarget{setting-up-form-a-file}{%
+\subsubsection{Setting up form a file}\label{setting-up-form-a-file}}
+
+Build.toml file which delivers a configuration to the build system
+describes the project metadata, contains the program's configurations
+such as repository paths, and defines the sources from which the system
+loads the code for compilation. An example file is shown below.
+
+\begin{verbatim}
+project_name = "test" # project name (needed during export)
+version = 1.0 # project version (needed during export)
+private_key  = "./private.der" 
+# private key (needed during export utlil sign_pkg equals false) 
+# RSA with SHA256 'der' format
+sign_pkg = true
+
+cache_location = "bin/" # bin is default 
+#local_repo = "" # custom location (default is $USER_HOME/.Solomonoff)
+
+[[source]]
+path = "sample3.mealy"
+
+[[source]]
+path = "sample4.ostia"
+
+[[pkg]]
+public_key  = "pubkey.der" # publickey RSA with SHA256 'der' format
+name = "test" 
+version = "1.0"
+remote_repo = "https://solomonoff.projektstudencki.pl/repo/"
+verify_signature = true
+\end{verbatim}
+
+The system uses TOML markup language as it gives us the greatest
+flexibility.
+
+\hypertarget{package-manager}{%
+\subsubsection{Package manager}\label{package-manager}}
+
+Solomonoff comes with a very simplified package manager. To download a
+package, the build system, using HTTP or HTTPS, queries the remote
+repository for the requested package and downloads it to the local
+repository if it is available. Also, the signature is downloaded if the
+user has not requested otherwise. If the user tries to download the same
+package again in the same version, it will not be downloaded since it is
+already in the local repository. For this reason, the naming convention
+is very important. Our suggestion is to keep project names as
+\texttt{\textless{}developer\_email@example.com\textgreater{}\ \textless{}desired\_project\_name\textgreater{}}
+in order to avoid a collision. Packages and signatures have names in the
+following format
+\texttt{\textless{}project\_name\textgreater{}\ -\ \textless{}version\textgreater{}\ .zip\ {[}.sig{]}}.
+This very simple system allows you to use any web server as a remote
+repository without the need to install special software. Thanks to this,
+you can use, for example, the reales mechanism on GitHub and provide, in
+addition to the code, also the signed package.
+
+Package manager can also export a package. The package is a zip archive
+and signature pair. The archive only contains the code, because
+compilation does not take so long that it makes sense to distribute
+already compiled automatons.
