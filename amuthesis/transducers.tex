@@ -1271,10 +1271,23 @@ As a result union operation is $O(1)$ with respect to size of the graph and its 
 
 
 The next case to consider is the concatenation $G(\psi_0 \psi_1)$. 
-First we need to compute $G(\psi_0)$ to obtain the sets $B_{\psi_0}$ and $E_{\psi_0}$ of its incoming and outgoing partial edges respectively. 
+First we need to compute $G(\psi_0)$ to obtain the sets $B_{\psi_0}$, $E_{\psi_0}$, $L_{\psi_0}$ and $\Lambda_{\psi_0}$ of its incoming, outgoing, full and epsilon edges respectively. 
 Analogically for $G(\psi_1)$. The $L$ function performs product \\
 $\Lambda(\psi_0\psi_1) =\Lambda(\psi_0) \cdot \Lambda(\psi_1)$ \\
-This operation can be redefined in terms of partial edges. If the set of labels $\mathbb{L}$ is a monoid, then multiplication of edges becomes possible.  Outgoing edge $(q_1,l_1,\emptyset)$ multiplied together with incoming edge $(\emptyset,l_2,q_2)$ will give us a full edge $(q_1,l_1 l_2 ,q_2)$. Similarly, multiplication of epsilon edge $(\emptyset,l_3,\emptyset)$ with either outgoing edge $(q_1,l_1,\emptyset)$ or incoming edge $(\emptyset,l_2,q_2)$ yields $(q_1,l_3 l_1,\emptyset)$ or $(\emptyset,l_3 l_2,q_2)$ respectively. In order to concatenate two partial graphs, we need to 
+This operation can be redefined in terms of partial edges. If the set of labels $\mathbb{L}$ is a monoid, then multiplication of edges becomes possible.  Outgoing edge $(q_1,l_1,\emptyset)$ multiplied together with incoming edge $(\emptyset,l_2,q_2)$ will give us a full edge $(q_1,l_1 l_2 ,q_2)$. Similarly, multiplication of epsilon edge $(\emptyset,l_3,\emptyset)$ with either outgoing edge $(q_1,l_1,\emptyset)$ or incoming edge $(\emptyset,l_2,q_2)$ yields $(q_1,l_3 l_1,\emptyset)$ or $(\emptyset,l_3 l_2,q_2)$ respectively. If we extend those operations to work on entire sets of edges \\
+$X \cdot Y = \{ x\cdot y : x\in X \mbox{ and }y\in Y\}$ \\
+then we can introduce multiplication (concatenation) of partial graphs. \\
+$G(\psi_0)\cdot G(\psi_1) = (\overline{B_{\psi_0}},L_{\psi_0}\cup L_{\psi_1} \cup E_{\psi_0} \cdot B_{\psi_1} \cup \Lambda_{\psi_0} \cdot B_{\psi_1} \cup E_{\psi_0} \cdot \Lambda_{\psi_1} \cup   \Lambda_{\psi_0} \cdot \Lambda_{\psi_1})$
+In the context of singly-linked graphs, the operation $E_{\psi_0} \cdot B_{\psi_1}$ for every $(q_0,y_0,w_0,\emptyset)\in E_{\psi_0}$ and $(\emptyset,y_1,w_1,q_1)\in B_{\psi_1}$ computes a full edge $(q_0,y_0 y_1,w_0 w_1,q_2)$ and inserts it to the list $q_0$. Analogically partial edges are computed and inserted to the respective lists as well.
+
+The case of Kleene closure $G(\psi_0 ^*)$ is similar to concatenation. When working with singly linked graphs, Kleen closure behaves like concatenation of graph $G(\psi_0) \cdot G(\psi_0)$ with itself, except that epsilon edges require special handling. 
+
+The remaining cases of $G(\psi:d)$, $G(\psi w)$ and $G(w \psi)$ are achieved by multiplying outgoing edges with $(d,0)$, $(\epsilon,w)$ with incoming edges and outgoing edges with $(\epsilon,w)$ respectively. It should be noted that labels $\mathbb{L}$ can act on partial graphs. Left action $l \cdot G$ multiplies $l\cdot b$ with all incoming edges of $G$ and the epsilon edge $l \cdot \lambda$. Similarly right action $G \cdot l$  multiplies $e \cdot l$ with all outgoing edges of $G$ and the epsilon edge $ \lambda \cdot l$. 
+
+We conclude this construction with a few notes about performance and possible extensions. As it can be noticed, by eliminating the need for computing linearised alphabet $\Omega$, the algorithm became fully parallelisable. Any subexpression of the original regular expression an be compiled independently to the rest. Singly-linked graphs guarantee that no reallocations of states are necessary. The weights and outputs only act on partial edges, hence once a full edge is computed it is never mutated. As a result, the algorithm never has the need to revisit already compiled parts of automaton. In such sense the construction is fully linear and all individual operations are of $O(1)$ complexity. There are exactly as many states as there are input symbols, hence memory consumption is also linear. The produced automata are epsilon-free, except for the only one global partial epsilon edge. The compiled singly-linked graph forms an automaton in and of itself, hence no conversion from 2-factors to automata is necessary, like it was in the case of "standard" Glushkov's construction. Moreover, it's straightforward to extend the compilation with custom "external" functions \\
+$G(F(\psi)) = F_{custom\_implementation}(G(\psi))$ \\
+This allows for adding non-standard operations like subtraction, composition, inversion, powerset and many others.
+
 
 
 
