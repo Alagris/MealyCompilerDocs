@@ -3,12 +3,12 @@
 
 Creation of user-friendly interface was an important part of the project.
 The greatest challenge lied in finding the most intuitive way of presenting a complicated and highly advanced system. The main component was the language of regular expressions itself. User should be able to edit its code with ease. The second key feature was the ability to execute the code. 
-In many Turing-complete languages, every expression can be evaluated into some value, which could the be printed back to the user. For example in python's REPL, typing $2+2$ yields $4$.
+In many Turing-complete languages, every expression can be evaluated into some value, which could then be printed back to the user. For example in python's REPL, typing $2+2$ yields $4$.
 \begin{lstlisting}
 >>> 2 + 2
 4
 \end{lstlisting}
-and after running a regex, user obtains an object containing all matched groups
+In a more complicated case like running a regex, user obtains an object containing all matched groups
 \begin{lstlisting}
 >>> re.compile('a|b*').match('xxaxxbxxbbbx')
 <re.Match object; span=(0, 0), match=''>
@@ -38,10 +38,27 @@ yields set of all bit-strings of length 4. Presenting user with the result in fo
 As a result, our REPL does not evaluate expressions. The results of compilation are not printed in any form. Instead the interface is meant to be silent when compilation is successful. Only errors are printed. 
 
 There are many different approaches to implement user interface for REPL.
-One of them would be having a single editor window with all the code in it and the REPL output printed on the margins next to each respective line. This provides a very immersive user experience for Turing-complete languages. For regular expressions i'ts not as spectacular. Instead we decided to use two windows - one for code editor and the other for REPL console. All interaction with regular expressions is performed via special commands built into the console. Those commands could not be used inside the code editor, as they are not part of the language itself. In order to evaluate a transducer user would type the following line into REPL input
+One of them would be having a single editor window with all the code in it and the REPL output printed on the margins next to each respective line. This provides a very immersive user experience for Turing-complete languages. Such an approach has been chosen by many debuggers, including the one used by IntelliJ.
+\begin{center}
+	\includegraphics[scale=0.85]{java_repl.png}
+\end{center}
+ For regular expressions it's not as spectacular. Instead we decided to use two windows - one for code editor and the other for REPL console. 
+ \begin{center}
+ 	\includegraphics[scale=0.3]{web8.png}
+ \end{center}
+All interaction with regular expressions is performed via special commands built into the console. 
+ \begin{center}
+	\includegraphics[scale=1.13]{commands.png}
+\end{center}
+Those commands could not be used inside the code editor, as they are not part of the language itself. 
+
+In order to evaluate a transducer user would type the following line into REPL input
 \begin{lstlisting}
 :eval NAME 'input string'
 \end{lstlisting}
+ \begin{center}
+	\includegraphics[scale=1.13]{eval.png}
+\end{center}
 Sometimes, user might want to see all the strings that belong to a given language. While there might be infinitely many of them, it's possible to ask user how large sample to generate. To achieve this the following line can be used
 \begin{lstlisting}
 :rand_sample NAME of_size NUMBER
@@ -83,7 +100,113 @@ in the upcoming line, then the previous results of parsing would have to be disc
 
 The division of user interface into editor and console has one more advantage. It closely mimics the layout of command-line interface, where the typical workflow is to edit source code in local files using any text editor of user's choice and the REPL is kept open all the time alongside the editor. Many existing modes for Emacs follow similar convention.
 
-The REPL is implemented on the server-side as a REST API endpoint. 
+\section{Spring backend}
+
+A Spring MVC is a Java framework which is used to build web applications. It follows the Model-View-Controller design pattern. It implements all the basic features of a core spring framework like Inversion of Control, Dependency Injection.
+A Spring MVC provides an elegant solution to use MVC in spring framework by the help of DispatcherServlet. Here, DispatcherServlet is a class that receives the incoming request and maps it to the right resource such as controllers, models, and views.
+
+
+
+\tikzset{every picture/.style={line width=0.75pt}} %set default line width to 0.75pt        
+
+\begin{tikzpicture}[x=0.75pt,y=0.75pt,yscale=-1,xscale=1]
+	%uncomment if require: \path (0,235); %set diagram left start at 0, and has height of 235
+	
+	
+	% Text Node
+	\draw (300,57) node    {$Web\ browser$};
+	% Text Node
+	\draw (109,176) node    {$Frontend\ controller$};
+	% Text Node
+	\draw (516,173) node    {$View$};
+	% Text Node
+	\draw (320,176) node    {$Controller$};
+	% Text Node
+	\draw (721,21) node    {$0$};
+	% Text Node
+	\draw (701,71) node    {$0$};
+	% Connection
+	\draw    (324.11,69.95) -- (494,161.19) ;
+	\draw [shift={(322.34,69)}, rotate = 28.24] [color={rgb, 255:red, 0; green, 0; blue, 0 }  ][line width=0.75]    (10.93,-3.29) .. controls (6.95,-1.4) and (3.31,-0.3) .. (0,0) .. controls (3.31,0.3) and (6.95,1.4) .. (10.93,3.29)   ;
+	% Connection
+	\draw    (280.74,69) -- (129.96,162.94) ;
+	\draw [shift={(128.26,164)}, rotate = 328.08000000000004] [color={rgb, 255:red, 0; green, 0; blue, 0 }  ][line width=0.75]    (10.93,-3.29) .. controls (6.95,-1.4) and (3.31,-0.3) .. (0,0) .. controls (3.31,0.3) and (6.95,1.4) .. (10.93,3.29)   ;
+	% Connection
+	\draw    (180,176) -- (278.5,176) ;
+	\draw [shift={(280.5,176)}, rotate = 180] [color={rgb, 255:red, 0; green, 0; blue, 0 }  ][line width=0.75]    (10.93,-3.29) .. controls (6.95,-1.4) and (3.31,-0.3) .. (0,0) .. controls (3.31,0.3) and (6.95,1.4) .. (10.93,3.29)   ;
+	% Connection
+	\draw    (492,173.37) -- (359.5,175.4) ;
+	\draw [shift={(494,173.34)}, rotate = 179.12] [color={rgb, 255:red, 0; green, 0; blue, 0 }  ][line width=0.75]    (10.93,-3.29) .. controls (6.95,-1.4) and (3.31,-0.3) .. (0,0) .. controls (3.31,0.3) and (6.95,1.4) .. (10.93,3.29)   ;
+	
+\end{tikzpicture}
+Model contains the data of the application. A data can be a single object or a collection of objects. \\
+Controller contains the business logic of an application. Here, the @Controller annotation is used to mark the class as the controller. \\
+View represents the provided information in a particular format. Generally, JSP+JSTL is used to create a view page. Although spring also supports other view technologies such as Apache Velocity, Thymeleaf and FreeMarker. \\
+Frontend controller is implemented in Spring Web MVC in form of the DispatcherServlet class. It is responsible to manage the flow of the Spring MVC application.
+The flow of Spring Web MVC could be presented as follows
+\tikzset{every picture/.style={line width=0.75pt}} %set default line width to 0.75pt        
+
+\begin{tikzpicture}[x=0.75pt,y=0.75pt,yscale=-1,xscale=1]
+	%uncomment if require: \path (0,235); %set diagram left start at 0, and has height of 235
+	
+	%Straight Lines [id:da43796635224753366] 
+	\draw    (301,71) -- (310.79,164.01) ;
+	\draw [shift={(311,166)}, rotate = 263.99] [color={rgb, 255:red, 0; green, 0; blue, 0 }  ][line width=0.75]    (10.93,-3.29) .. controls (6.95,-1.4) and (3.31,-0.3) .. (0,0) .. controls (3.31,0.3) and (6.95,1.4) .. (10.93,3.29)   ;
+	%Straight Lines [id:da8543300973373011] 
+	\draw    (285,69) -- (205.44,145.61) ;
+	\draw [shift={(204,147)}, rotate = 316.08000000000004] [color={rgb, 255:red, 0; green, 0; blue, 0 }  ][line width=0.75]    (10.93,-3.29) .. controls (6.95,-1.4) and (3.31,-0.3) .. (0,0) .. controls (3.31,0.3) and (6.95,1.4) .. (10.93,3.29)   ;
+	%Straight Lines [id:da26721417437109896] 
+	\draw    (237,68) -- (115.88,111.33) ;
+	\draw [shift={(114,112)}, rotate = 340.32] [color={rgb, 255:red, 0; green, 0; blue, 0 }  ][line width=0.75]    (10.93,-3.29) .. controls (6.95,-1.4) and (3.31,-0.3) .. (0,0) .. controls (3.31,0.3) and (6.95,1.4) .. (10.93,3.29)   ;
+	%Straight Lines [id:da24273477514405806] 
+	\draw    (378,61) -- (463.03,75.66) ;
+	\draw [shift={(465,76)}, rotate = 189.78] [color={rgb, 255:red, 0; green, 0; blue, 0 }  ][line width=0.75]    (10.93,-3.29) .. controls (6.95,-1.4) and (3.31,-0.3) .. (0,0) .. controls (3.31,0.3) and (6.95,1.4) .. (10.93,3.29)   ;
+	%Straight Lines [id:da4809109559432261] 
+	\draw    (292,27) -- (292,46) ;
+	\draw [shift={(292,48)}, rotate = 270] [color={rgb, 255:red, 0; green, 0; blue, 0 }  ][line width=0.75]    (10.93,-3.29) .. controls (6.95,-1.4) and (3.31,-0.3) .. (0,0) .. controls (3.31,0.3) and (6.95,1.4) .. (10.93,3.29)   ;
+	
+	% Text Node
+	\draw (300,57) node    {$\text{Dispatcher\ Servlet}$};
+	% Text Node
+	\draw (515,173) node    {$\text{Model\ and\ View}$};
+	% Text Node
+	\draw (320,176) node    {$\text{Controller}$};
+	% Text Node
+	\draw (721,21) node    {$0$};
+	% Text Node
+	\draw (701,71) node    {$0$};
+	% Text Node
+	\draw (174,164) node    {$\text{ViewResolver}$};
+	% Text Node
+	\draw (88,113) node    {$\text{View}$};
+	% Text Node
+	\draw (535,73) node    {$\text{Handler\ Mapping}$};
+	% Text Node
+	\draw (305,15) node    {$\text{Incoming\ request}$};
+	% Connection
+	\draw    (325.85,70.95) -- (490.91,160) ;
+	\draw [shift={(324.09,70)}, rotate = 28.35] [color={rgb, 255:red, 0; green, 0; blue, 0 }  ][line width=0.75]    (10.93,-3.29) .. controls (6.95,-1.4) and (3.31,-0.3) .. (0,0) .. controls (3.31,0.3) and (6.95,1.4) .. (10.93,3.29)   ;
+	% Connection
+	\draw    (448.5,174.02) -- (361,175.37) ;
+	\draw [shift={(450.5,173.99)}, rotate = 179.12] [color={rgb, 255:red, 0; green, 0; blue, 0 }  ][line width=0.75]    (10.93,-3.29) .. controls (6.95,-1.4) and (3.31,-0.3) .. (0,0) .. controls (3.31,0.3) and (6.95,1.4) .. (10.93,3.29)   ;
+	
+\end{tikzpicture}
+As displayed in the figure, all the incoming requests are intercepted by the DispatcherServlet that works as the front controller.
+The DispatcherServlet gets an entry of handler mapping from the XML file and forwards the request to the controller.
+The controller returns an object of ModelAndView.
+The DispatcherServlet checks the entry of view resolver in the XML file and invokes the specified view component.
+
+Using Spring MVC comes with numerous advantages. It allows for separation of roles, where the model object, controller, command object, view resolver, DispatcherServlet, validator, etc. can be fulfilled by a specialized object. It uses light-weight servlet container to develop and deploy your application.
+It provides a robust configuration for both framework and application classes that includes easy referencing across contexts, such as from web controllers to business objects and validators.
+The Spring MVC also facilitates fast and parallel development.
+It promotes reusable business code by using the existing business objects instead of creating new ones.
+Test of JavaBean classes enables injection of test data using the setter methods, which allows for easier testing.
+Flexible Mappings provide the specific annotations that easily redirect the page.
+Overall Spring is a powerful tool used by numerous companies and developers around the world.
+
+
+
+In this project, Spring has been used to facilitate communication between frontend interface and compiler instances. The REPL is implemented on the server-side as a REST API endpoint. 
 \begin{lstlisting}
 @PostMapping("/repl")
 public ReplResponse repl(HttpSession httpSession, 
@@ -249,12 +372,35 @@ Aside from the editor and REPL there is one more window on the webpage. It is de
 
 \section{Design}
 
-The website has seen numerous design changes. Since the beginning we knew there must be a way to interact with the code but the exact best way of presenting it to the user was not so self-evident. There exist numerous different approaches that are highly dependent on the language. For example the online  Java  compiler consists of only two windows - one for code and one for compiler output.
+
+The frontend technologies used for designing our website are based on Bootstrap \cite{bootstrap}. It is an HTML, CSS \& JS Library that focuses on simplifying the development of informative web pages (as opposed to web apps). The primary purpose of adding it to a web project is to apply Bootstrap's choices of color, size, font and layout to that project. As such, the primary factor is whether the developers in charge find those choices to their liking. Once added to a project, Bootstrap provides basic style definitions for all HTML elements. The result is a uniform appearance for prose, tables and form elements across web browsers. In addition, developers can take advantage of CSS classes defined in Bootstrap to further customize the appearance of their contents. For example, Bootstrap has provisioned for light- and dark-colored tables, page headings, more prominent pull quotes, and text with a highlight.
+Bootstrap also comes with several JavaScript components in the form of jQuery plugins. They provide additional user interface elements such as dialog boxes, tooltips, and carousels. Each Bootstrap component consists of an HTML structure, CSS declarations, and in some cases accompanying JavaScript code. They also extend the functionality of some existing interface elements, including for example an auto-complete function for input fields.
+The most prominent components of Bootstrap are its layout components, as they affect an entire web page. The basic layout component is called "Container", as every other element in the page is placed in it. Developers can choose between a fixed-width container and a fluid-width container. While the latter always fills the width of the web page, the former uses one of the four predefined fixed widths, depending on the size of the screen showing the page:
+\begin{itemize}
+	\item Smaller than 576 pixels
+	\item 576–768 pixels
+	\item 768–992 pixels
+	\item 992–1200 pixels
+	\item Larger than 1200 pixels
+\end{itemize}
+Once a container is in place, other Bootstrap layout components implement a CSS Flexbox layout through defining rows and columns.
+A precompiled version of Bootstrap is available in the form of one CSS file and three JavaScript files that can be readily added to any project. The raw form of Bootstrap, however, enables developers to implement further customization and size optimizations. This raw form is modular, meaning that the developer can remove unneeded components, apply a theme and modify the uncompiled Sass files.
+
+Below is an example of navigation bar created with help of Bootstraps \texttt{nav} classes.
+\begin{center}
+	\includegraphics[scale=0.7]{navbar.png}
+\end{center}
+or responsive panes made with \texttt{flex}, \texttt{row} and \texttt{column} classes
+\begin{center}
+	\includegraphics[scale=0.4]{panes.png}
+\end{center}
+
+Our website has seen numerous design changes. Since the beginning we knew there must be a way to interact with the code but the exact best way of presenting it to the user was not so self-evident. There exist numerous different approaches that are highly dependent on the language. For example the online  Java  compiler consists of only two windows - one for code and one for compiler output.
 \begin{center}
 \includegraphics[scale=0.3]{java.png}
 \end{center}
 Java does not have REPL, hence there is no need to implement console input.
-A slightly different has been taken by Haskell mode for emacs. 
+A slightly different approach has been taken by Haskell mode for emacs. 
 \begin{center}
      \includegraphics[scale=0.45]{haskell.png}
 \end{center}
@@ -338,7 +484,7 @@ The editor has been styled using monokai theme
 \begin{lstlisting}
 editor.setTheme("ace/theme/monokai");
 \end{lstlisting}
-because its dark palette of colours gives the website a sharp and modern look. The dark theme is preferred by most users and is very popular nowadays. Moreover it's more relaxing to look at and doesn't irritate the eye. This point is especially important, because Solomonoff is targetted at tech-oriented audiences, so there is a good chance that our users will spend many hours looking at the editor. 
+because its dark palette of colours gives the website a sharp and modern look. The dark theme is preferred by most users and is very popular nowadays. Moreover it's more relaxing to look at and doesn't irritate the eye\cite{syntax_highlighter}. This point is especially important, because Solomonoff is targetted at tech-oriented audiences, so there is a good chance that our users will spend many hours looking at the editor. 
 
 Solomonoff comes with several built-in functions. To make the interface more intuitive and ergonomic the editor needs to provide auto-suggestions with the full range available functions. Below is a list presenting some of the more important options.
 \begin{lstlisting}
@@ -484,11 +630,36 @@ getCompletions: (editor, session, pos, prefix, callback) => {
 }
 \end{lstlisting}
 The structure of arguments for each command was intuitively encoded in form
-of blanks that need to be filled in each snippet. Each blank is specified using the     exttt{\$\{\}} braces.
+of blanks that need to be filled in each snippet. Each blank is specified using the \texttt{\$\{\}} braces.
 
 \section{WebAssembly}
 
-The early versions of compiler were written in C. With help of Emscripten it was possible to then port the code to WebAssembly and call every function directly from JavaScript. Such a solution was preferable, because everything worked on client-side and we could host the website free-of-charge on GitHub
+WebAssembly\cite{webassembly} is a technology 
+that provides a new type of code 
+that can be run in modern web browsers, 
+providing new functionality and significant 
+performance improvements. The code 
+for WebAssembly is not meant to be 
+written by hand, rather it is designed 
+to compile efficiently from low-level 
+source languages
+such as C, C++, 
+Rust, and so on.
+
+WebAssembly allows code
+ written
+  in 
+ different languages
+ to run in web applications 
+ at near natural speed\cite{webassembly_speed}\cite{webassembly_speed2}\cite{webassembly_speed3}. 
+ This is of great importance 
+ for the web platform, as 
+ it previously could not be done.
+
+Moreover, it's not necessary to know how to create WebAssembly code in order to use it. WebAssembly modules can be imported into a web application (or Node.js), and functions can be exported from them for use via JavaScript. JavaScript frameworks can use WebAssembly modules to gain tremendous performance benefits and new features, while making their functionality readily available to web developers.
+
+
+The early versions of Solomonoff compiler were written in C. With help of Emscripten it was possible to then port the code to WebAssembly and call every function directly from JavaScript. Such a solution was preferable, because everything worked on client-side and we could host the website free-of-charge on GitHub
 Pages. The WASM interface exposed two functions
 \begin{lstlisting}
 function compile(){
@@ -520,7 +691,7 @@ The first framework we attempted to use was JWebAssembly. We successfully compil
 
 The next library we attempted was CheerpJ. It was the most promising option. The project compiled successfully and could run in browser. The problem was that support for WASM is still at experimental stage and instead CheerpJ generated JavaScript transcription of our code wrapped in heavyweight runtime. The framework is a commercial product and is primarily targeted at porting Swing/JavaFX applications to browser. There was no documentation explaining how to expose JavaScript API or how to call any Java functions programmatically. There was also no way of manually writing HTML and CSS. Instead the produced applications mimicked typical desktop graphical interface. If we chose to use CheerpJ, we'd be forced to write user interface in Java Swing technology.
 
-The last available option was to use TeaVM. It suffered similar problems to JWebAssembly. Parts of Java standard library were not supported. Parts of compiler code had to be rewritten to use workaround functions. For instance
+The last available option was to use TeaVM\cite{teavm}. It suffered similar problems to JWebAssembly. Parts of Java standard library were not supported. Parts of compiler code had to be rewritten to use workaround functions. For instance
 the
 \begin{lstlisting}
 X x = hashMap.computeIfAbsent(k,key->new X());
@@ -535,7 +706,7 @@ if(hashMap.conatinsKey(k)){
 }
 \end{lstlisting}
 Another problem was with porting all the libraries and dependencies.
-Parts of ANTLR code could not be compiled and we resorted to cloning the original ANTLR repo and manually rewriting parts of its code. Clever workarounds had to be implemented but in some cases, the code could not work in browser in any form and had to be removed.
+Parts of ANTLR\cite{antlr} code could not be compiled and we resorted to cloning the original ANTLR repo and manually rewriting parts of its code. Clever workarounds had to be implemented but in some cases, the code could not work in browser in any form and had to be removed.
 After enough modifications, our code compiled successfully.
 When ran in browser, the execution time was prohibitively slow and even the simplest tasks could not be completed in a satisfying time.
 
