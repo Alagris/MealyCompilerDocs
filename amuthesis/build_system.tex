@@ -12,17 +12,15 @@ systems}\label{advantages-of-using-build-systems}}
 The main reasons of using this type of tools includes:
 
 \begin{itemize}
-\tightlist
 \item
   time saving and resistance to mistakes
 \end{itemize}
 
 The most obvious advantage of automation is time savings. The complexity
-of the build processes could be not only excessively time consuming
+of the build processes could be not only excessively time-consuming
 while it is manually operated but also leads to numerous mistakes.
 
 \begin{itemize}
-\tightlist
 \item
   consitiency and portability
 \end{itemize}
@@ -34,7 +32,6 @@ versions of compilers, runtime systems, dependencies and also
 compilation parameters or environment variables.
 
 \begin{itemize}
-\tightlist
 \item
   reproducable builds
 \end{itemize}
@@ -45,7 +42,6 @@ in some cases it can may help detect compromised build chains leading to
 the next feature.
 
 \begin{itemize}
-\tightlist
 \item
   security
 \end{itemize}
@@ -55,7 +51,6 @@ facilitates the separation of the environment in which the application
 is developed and in which it is built.
 
 \begin{itemize}
-\tightlist
 \item
   dependency resolving
 \end{itemize}
@@ -64,7 +59,6 @@ Depending on the specific system, it can help to varying degrees in
 managing dependencies from local resources as well as remote ones.
 
 \begin{itemize}
-\tightlist
 \item
   better audibility
 \end{itemize}
@@ -74,7 +68,6 @@ identify certain characteristics, mostly related to versions of
 environment components or dependencies.
 
 \begin{itemize}
-\tightlist
 \item
   tasks parallelization
 \end{itemize}
@@ -97,7 +90,7 @@ them.
 
 The first system described in this chapter is Make, actually its
 implementation from the GNU project. Make, as a utility included in the
-POSIX standard, is a fairly common build system. Its implementations
+POSIX standard\cite{MAKEPOSIX}, is a fairly common build system. Its implementations
 differ in terms of specific functionalities, but remain largely
 compatible. For simplicity, Make is hereinafter referred to as GNU Make.
 
@@ -122,7 +115,9 @@ The first target is the default one and will run if you run
 \texttt{make} with no additional parameters. A specific target can be
 called using \texttt{make\ \textless{}target\textgreater{}}.
 
-\begin{verbatim}
+\begin{lstlisting}[frame=single, caption={%
+  Example of simple MakeFile \cite{MAKEFILE}%
+}]
 objects = main.o command.o display.o utils.o
 
 edit : $(objects)
@@ -137,7 +132,7 @@ utils.o : utils.c defs.h
         cc -c utils.c
 clean :
         rm edit $(objects)
-\end{verbatim}
+\end{lstlisting}
 
 The target can be a file like the listed object files and executable, or
 an action like the clean target. If the target is a file, by default
@@ -148,7 +143,6 @@ Changing dependencies will also trigger a rebuild for the proper units.
 Make's functionality includes:
 
 \begin{itemize}
-\tightlist
 \item
   echoing
 \item
@@ -170,23 +164,25 @@ Ninja is relatively new software. It was created to speed up the
 building of very large projects consisting of many thousands of files.
 Work on this project started in 2010, when its creator Evan Martin was
 working on the Google Chrome browser. The browser code back then
-consisted of around 40,000 source files, which explains the desire to
+consisted of around 40,000 source files[\cite{NINJACHROME}], which explains the desire to
 speed up the application building process.
 
 The syntax of the .ninja files that define the build process is trivial
 and is basically limited to rules that allow you to define short names
 for complex commands, variables, and expressions thats works just like
 in Make. If the target on the left is older than the source on the left,
-the target will be rebuilt. Sample .ninja file code below.
+the target will be rebuilt. Sample ".ninja" file code below.
 
-\begin{verbatim}
+\begin{lstlisting}[frame=single, caption={%
+  Example of simple .ninja file \cite{NINJAFILE}%
+}]
 cflags = -Wall
 
 rule cc
   command = gcc $cflags -c $in -o $out
 
 build foo.o: cc foo.c
-\end{verbatim}
+\end{lstlisting}
 
 There are several aspects related to the simplicity of this solution. It
 allowed to create a hand-written and very efficient lexer and parser
@@ -194,12 +190,12 @@ which sped up significantly the parsing process. Removal of redundant
 functionalities not only helped to improve performance, because Ninja do
 not have to call additional subroutines to handle these, but even check
 whether they have been used as if only the simplest Make expression was
-used. It also makes the .ninja file for a large project inconvenient to
+used. It also makes the ".ninja" file for a large project inconvenient to
 write manually. Therefore it is assumed that Ninja should be used in
 conjunction with another higher level build system such as CMake.
 
 The performance of the Ninja is demonstrated by the benchmark result by
-David Röthlisberger.
+David Röthlisberger\cite{BENCHMARK}.
 
 \begin{quote}
 For a project with 1,000 programs built from 10,000 C files and 10,000
@@ -232,12 +228,14 @@ file, which, unlike the previous configuration files, is more
 declarative. In addition to meta information, it contains a list of
 dependencies, repositories from which the external packages can be
 downloaded and a list of plugins with a configuration. The entire system
-is based on a plugins mechanism that can be attached from external
+is based on a plugin mechanism that can be attached from external
 sources. Additional configuration or new functionality, e.g.~how to
 build a package or how to deploy application, can be added and
 configured using plugins. Below is an example pom.xml file.
 
-\begin{verbatim}
+\begin{lstlisting}[frame=single, caption={%
+  Example of simple pom.xml file \cite{POMFILE}%
+}]
 <project xmlns="http://maven.apache.org/POM/4.0.0" 
 xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
   xsi:schemaLocation="http://maven.apache.org/POM/4.0.0
@@ -280,7 +278,7 @@ xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
       </plugins>
   </build>
 </project>
-\end{verbatim}
+\end{lstlisting}
 
 Maven uses their own predefined project structure. It can be extended
 depending on the configuration. Below is an example structure.
@@ -308,8 +306,8 @@ my-app
 
 The most important features of Maven, which distinguish it from previous
 systems, are that it is significantly easier to configure a complex
-process of building, if project is well defined builds are reproducible.
-Also Maven includes a build-in package manager, so any environment setup
+process of building, if project is well-defined, builds are reproducible.
+Also, Maven includes a build-in package manager, so any environment setup
 can be recreated without additional solutions.
 
 \hypertarget{solomonoff}{%
@@ -335,12 +333,10 @@ that it could be practical.
 The main problems it has to solve was:
 
 \begin{itemize}
-\tightlist
 \item
   compiler related
 
   \begin{itemize}
-  \tightlist
   \item
     resolve dependencies
   \item
@@ -350,7 +346,6 @@ The main problems it has to solve was:
   automation related
 
   \begin{itemize}
-  \tightlist
   \item
     keep the intermediate transducers and builds only what is needed
   \item
@@ -367,6 +362,46 @@ functionality, and its close nature to some of the problems the build
 system had to address, the only reasonable option seemed to be keeping
 both compiler and build system within a single process.
 
+\hypertarget{simple-approach}{%
+\subsubsection{Simple approach}\label{simple-approach}}
+The easiest way would be not to build the system at all,
+but only to wrap the library with a simple file-loading interface and
+implement for some kind of "include" macro. Files could then be
+concatenated and parsed
+to extract the function definitions. Then compile them one by one. This
+approach would force users to take care of the proper order of function definitions
+in the source code. Also, in the case of our compiler it would not be possible to
+compile in parallel. The tasks described in this model would
+be handled by a compiler in more traditional approaches, but due
+to the specifics of our compiler architecture, the aforementioned drawbacks
+and the potential associated with such a solution, made us decide to adopt
+the following architect. 
+
+
+\hypertarget{system-architecture}{%
+\subsubsection{System architecture}\label{system-architecture}}
+
+The following diagram \ref{buildsystem:diagram} shows the build process.
+
+\begin{figure}
+\centering
+\includegraphics{./diagram.png}
+\caption{Build process}
+\label{buildsystem:diagram}
+\end{figure}
+
+\hypertarget{parsing-sources}{%
+\subsubsection{Parsing sources}\label{dependency-resolving}}
+
+Before starting the compilation, it is necessary to find a list of all
+function definitions at the beginning, which will then allow the cache
+to be loaded and the dependency graph to be mapped to make the process
+convenient and efficient. To do this it is necessary to pre-parse all
+source files. 
+For this purpose, we use ANTLR and the grammar identical to that used
+in the library. However, the parser itself is very simplified. It works
+down to writing down the names of functions, their types and their bodies. 
+
 \hypertarget{dependency-resolving}{%
 \subsubsection{Dependency resolving}\label{dependency-resolving}}
 
@@ -377,11 +412,76 @@ worth checking immediately whether it has a chance to succeed at all. To
 accomplish this, Solomonoff first loads code from repositories and
 user-supplied source code, and then parses it. ANTLR was used to
 generate the parser. During the process a directed acyclic graph is
-generated. The graph represents relations between functions. The system
-uses JGraphT to create this graph and to sort it topologically. This
-sorting algorithm guarantees that if we start compiling functions in
-order reversed to that soring function returned us the necessary
-dependencies for each subsequent element will already be compiled.
+generated. The graph represents relations of being a dependency of a
+another node which represent functions. The system uses JGraphT to
+create this graph and to sort it topologically. This sorting algorithm
+guarantees that if we start compiling functions in order that sorting
+function returned us the necessary dependencies for each subsequent
+element will already be compiled.
+
+Topological sort is based on the Kahn's algorithm.
+
+In the constructor fragment cited below, a list of source nodes is
+created.
+
+\begin{lstlisting}[language=Java, frame=single]
+...
+this.inDegreeMap = new HashMap<>();
+for (V v : graph.vertexSet()) {
+    int d = 0;
+    for (E e : graph.incomingEdgesOf(v)) {
+        V u = Graphs.getOppositeVertex(graph, e, v);
+        if (v.equals(u)) {
+            throw new IllegalArgumentException(GRAPH_IS_NOT_A_DAG);
+        }
+        d++;
+    }
+    inDegreeMap.put(v, new ModifiableInteger(d));
+    if (d == 0) {
+        queue.offer(v);
+    }
+}
+
+this.remainingVertices = graph.vertexSet().size();
+...
+\end{lstlisting}
+
+The advance method called, for each iteration, will initially return the
+existing sources nodes and then the new ones which appears after
+removing the previous ones, and so on to the last vertex.
+
+\begin{lstlisting}[language=Java, frame=single]
+private V advance()
+{
+    V result = queue.poll();
+
+    if (result != null) {
+        for (E e : graph.outgoingEdgesOf(result)) {
+            V other = Graphs.getOppositeVertex(graph, e, result);
+
+            ModifiableInteger inDegree = inDegreeMap.get(other);
+            if (inDegree.value > 0) {
+                inDegree.value--;
+
+                if (inDegree.value == 0) {
+                    queue.offer(other);
+                }
+            }
+        }
+
+        --remainingVertices;
+    } else {
+        /*
+         * Still expecting some vertices, but no vertex has zero degree.
+         */
+        if (remainingVertices > 0) {
+            throw new IllegalArgumentException(GRAPH_IS_NOT_A_DAG);
+        }
+    }
+
+    return result;
+}
+\end{lstlisting}
 
 \hypertarget{parallel-building}{%
 \subsubsection{Parallel building}\label{parallel-building}}
@@ -392,6 +492,66 @@ will be then downloaded to the Thread pool, if the compilation of their
 dependencies has already finished. In this way, we are to use the full
 potential of the CPU that the operating system will make available to
 us.
+
+The code below shows how the parallel compilation problem is solved.
+
+\begin{lstlisting}[language=Java, frame=single]
+...
+// already sorted dependencies
+while (dependencyOrder.hasNext()) {
+
+    final String id = dependencyOrder.next();
+    final VarDef<G> varDef = definitions.get(id);
+
+    if (varDef == null) {//This may only be true for built-in variables
+        assert compiler.specs.borrowVariable(id) != null : id;
+
+    } else if (varDef instanceof VarDefAST) {
+        VarDefAST<G> var = (VarDefAST<G>) varDef;
+        assert var.def != null : id;
+
+        compiled.put(id, pool.submit(() -> {
+            if (var.needsRecompilation) {
+                final G compiledGraph = var.def.compile(compiler.specs, i -> {
+                    try {
+                        final Future<G> f = compiled.get(i);
+                        if (f == null) {//this can only be true for built-in variables
+                            final LexUnicodeSpecification.Var<N, G> v = compiler.specs.copyVariable(i);
+                            assert v != null;
+                            final G graph = compiler.specs.getGraph(v);
+                            return graph;
+                        } else {
+                            final G graph = compiler.specs.deepClone(f.get());
+                            return graph;
+                        }
+                    } catch (InterruptedException | ExecutionException e) {
+                        throw new RuntimeException(e);
+                    }
+                });
+
+                System.err.println("Compiled " + id);
+
+                if (buildBin) {
+                    try (FileOutputStream f = new FileOutputStream(var.cacheFilePath.toFile())) {
+                        compiler.specs.compressBinary(compiledGraph, new DataOutputStream(f));
+                    } catch (IOException e) {
+                        e.printStackTrace();
+                        var.cacheFilePath.toFile().deleteOnExit();
+                    }
+                }
+                return compiledGraph;
+            } else {
+                System.err.println("Loaded from cache " + id);
+                try (DataInputStream dis =
+                             new DataInputStream(new FileInputStream(var.cacheFilePath.toFile()))) {
+                    return compiler.specs.decompressBinary(Pos.NONE, dis);
+                }
+            }
+        }));
+    }
+}
+...
+\end{lstlisting}
 
 \hypertarget{caching-transducers}{%
 \subsubsection{Caching transducers}\label{caching-transducers}}
@@ -406,6 +566,73 @@ older than the source code date and the same situation repeats for all
 dependencies of the given function, it will not be compiled again at
 this point.
 
+The code below shows how to check if the compiled transducer is
+up-to-date with the source code.
+
+\begin{lstlisting}[language=Java, frame=single]
+protected VarDef(String id, String sourceFile, Config config) throws IOException {
+    ...
+    if (sourceFile == null) {
+        this.needsRecompilation = false;
+        return;
+    }
+    final Path sourceFilePath = Paths.get(sourceFile);
+    final FileTime sourceFileModificationTime =
+            (FileTime) Files.getAttribute(sourceFilePath, "lastModifiedTime");
+    final boolean needsRecompilation;
+    if (!config.caching_read && config.caching_write) {
+        needsRecompilation = true;
+    } else if (Files.exists(cacheFilePath)) {
+        final FileTime cacheModificationTime =
+                (FileTime) Files.getAttribute(cacheFilePath, "lastModifiedTime");
+        final int diff = cacheModificationTime.compareTo(sourceFileModificationTime);
+        needsRecompilation = diff < 0;
+    } else {
+        needsRecompilation = true;
+    }
+    this.needsRecompilation = needsRecompilation;
+}
+\end{lstlisting}
+
+Here we go through the dependency tree to check if any of the
+dependencies out of date will force a cascading recompilation. 
+
+\begin{lstlisting}[language=Java, frame=single]
+...
+//Resolve which dependencies need to be recompiled
+final Stack<VarDef<G>> toCheckIfNeedsRecompilation = new Stack<>();
+for (VarDef<G> def : definitions.values()) {
+    if (!def.needsRecompilation) {
+        toCheckIfNeedsRecompilation.add(def);
+    }
+}
+while (!toCheckIfNeedsRecompilation.isEmpty()) {
+    final VarDef<G> definition = toCheckIfNeedsRecompilation.pop();
+    assert !definition.needsRecompilation;
+    boolean actuallyShouldBeRecompiled = false;
+    for (Object dependencyEdge : dependencyOf.incomingEdgesOf(definition.id)) {
+        final String dependencyOfVertex = dependencyOf.getEdgeSource(dependencyEdge);
+        final VarDef<G> definitionOfDependency = definitions.get(dependencyOfVertex);
+        if (definitionOfDependency != null/*built-in variables don't need to recompiled*/
+                && definitionOfDependency.needsRecompilation) {
+            actuallyShouldBeRecompiled = true;
+            break;
+        }
+    }
+    if (actuallyShouldBeRecompiled) {
+        definition.needsRecompilation = true;
+        for (Object dependedEdge : dependencyOf.outgoingEdgesOf(definition.id)) {
+            final String idToReconsider = dependencyOf.getEdgeTarget(dependedEdge);
+            final VarDef<G> definitionToReconsider = definitions.get(idToReconsider);
+            if (!toCheckIfNeedsRecompilation.contains(definitionToReconsider)) {
+                toCheckIfNeedsRecompilation.add(definitionToReconsider);
+            }
+        }
+    }
+}
+...
+\end{lstlisting}
+
 \hypertarget{setting-up-form-a-file}{%
 \subsubsection{Setting up form a file}\label{setting-up-form-a-file}}
 
@@ -418,7 +645,7 @@ loads the code for compilation. An example file is shown below.
 project_name = "test" # project name (needed during export)
 version = 1.0 # project version (needed during export)
 private_key  = "./private.der" 
-# private key (needed during export utlil sign_pkg equals false) 
+# private key (needed during export until sign_pkg equals false) 
 # RSA with SHA256 'der' format
 sign_pkg = true
 
@@ -458,11 +685,9 @@ in order to avoid a collision. Packages and signatures have names in the
 following format
 \texttt{\textless{}project\_name\textgreater{}\ -\ \textless{}version\textgreater{}\ .zip\ {[}.sig{]}}.
 This very simple system allows you to use any web server as a remote
-repository without the need to install special software. Thanks to this,
-you can use, for example, the reales mechanism on GitHub and provide, in
-addition to the code, also the signed package.
+repository without the need to install special software. 
 
-Package manager can also export a package. The package is a zip archive
-and signature pair. The archive only contains the code, because
+Package manager can also export a package. The package is a pair of zip archive
+and its signature. The archive only contains the code, because
 compilation does not take so long that it makes sense to distribute
 already compiled automatons.
