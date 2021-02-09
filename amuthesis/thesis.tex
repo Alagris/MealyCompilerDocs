@@ -21,10 +21,10 @@
 % --- Autor pracy
 \author{Bohdan Bondar, Marcin Jałoński, Aleksander Mendoza-Drosik}
 % --- Numer albumu
-\album{s432778,s434701,s434749}
+\album{432778, 434701, 434749}
 % --- Tytuł pracy (w języku polskim i angielskim)
-\titlePL{Solomonoff - kompilator transduktorów skończenie stanowych}
-\titleEN{Solomonoff - Finite state tranducer compiler}
+\titlePL{Solomonoff --- kompilator transduktorów skończenie stanowych}
+\titleEN{Solomonoff --- Finite state tranducer compiler}
 % --- Typ pracy (inżynierska, licencjacka, magisterska)
 \type{inżynierska}
 % --- Wydział (wykaz skrótów):
@@ -51,9 +51,9 @@
 % --- (ustaw puste, jeśli bez specjalności)
 \specialty{}
 % --- Promotor (w dopełniaczu)
-\supervisor{PhD. Bartłomieja Przybylskiego}
+\supervisor{dra. Bartłomieja Przybylskiego}
 % --- Data złożenia pracy (Miasto, miesiąc rok)
-\date{Poznań, February 2021}
+\date{Poznań, Luty 2021}
 
 % --- Płeć autora (M/K)
 \stsex{M/M/M}
@@ -62,7 +62,7 @@
 % --- Zgoda na udostępnienie pracy w zakresie ochrony (TAK/NIE)
 \stprotect{TAK/TAK/TAK}
 % --- Data podpisania oświadczenia (Miasto, data)
-\stdate{Poznań, \today{} r.}
+\stdate{Poznań, Luty 9, 2021 r.}
 
 % ======================================================== %
 % Dodatkowe pakiety wykorzystywane w pracy                 %
@@ -82,18 +82,17 @@
 	\makestatement
 	
 	% Blok abstraktu w języku polskim
-	\begin{abstract}
+	\begin{streszczenie}
 		Solomonoff jest wyspecjalizowanym kompilatorem transduktorów skończonych. Użytkownik jest w stanie budować i manipulować automatami przy pomocy specjalnego języka wyrażeń regularnych. 
 		Implementacja bazuje na rozszerzeniu konstrukcji Głuszkowa. Projekt ten 
-		stara się zaadresować wiele problemów w uprzednio istniejących bibliotekach, takich jak OpenFST i RE2, lecz również poszerzyć ich 
+		stara się zaadresować wiele problemów w~ uprzednio istniejących bibliotekach, takich jak OpenFST i RE2, lecz również poszerzyć ich 
 		zdolności o kilka innowacyjnych i niespotykanych wcześniej rozwiązań. 
-		Jednym z głównych celów Solomonoff'a jest łatwość i przystępność
-		nawet dla lingwistów i innych nietechniczych użytkowników. Wszystko 
-		można osiągnąć bez konieczności pisania w Javie. Kompilator współdziała ze zintegrowanym systemem do budowania i zarządzania kodem oraz jego demo jest dostępne na interaktywnej stronie internetowej, z której można korzystać bez konieczności posiadania lokalnej instalacji kompilatora. Solomonoff wspiera programowanie z poziomu interaktywnej konsoli REPL, dostępnej zarówno z lokalnego wiersza poleceń jak i izolowanej wersji przedlądarkowej. 
-		
+		Jednym z głównych celów Solomonoffa jest łatwość i przystępność
+		nawet dla~ lingwistów i innych nietechniczych użytkowników. Z kompilatora można korzystać w całości z poziomu wyrażeń regularnych, bez~ konieczności pisania własnego kodu w Javie. Kompilator współdziała ze zintegrowanym systemem do budowania i zarządzania kodem oraz jego demo jest dostępne na interaktywnej stronie internetowej, z której można korzystać bez konieczności posiadania lokalnej instalacji kompilatora. Solomonoff wspiera programowanie z poziomu interaktywnej konsoli REPL, dostępnej zarówno z lokalnego wiersza poleceń jak i izolowanej wersji przedlądarkowej. W interfejsie wiersza polecień możliwa jest praca z kodem zawartym w wielu plikach źródłowych.  Zamiast wykorzystywać gotowe rozwiązanie, takie jake GNU Make, Ninja lub Maven, zarządzanie projektem jest oparte na systemie specjalnie przystosowanym do Solomonoffa. Wspierana jest kompilacja równoległa, odnajdowanie zaleźności i budowanie paczek.
+		Mniej zaawansowani użytkownicy mogą korzystać z uproszczonego i bardziej ergonomicznego środowiska w przeglądarce. Dostępny jest tam graficzny interfejs użytkownika zaprojketowany z myślą o estetyce i oparty na technologii edytora Ace działający wraz z serwerem Spring.
 		
 		\paragraph{Słowa kluczowe:} kompilator, automaty, transduktory, java, build system, REPL, strona internetowa
-	\end{abstract}
+	\end{streszczenie}
 	
 	% Blok abstraktu w języku angielskim
 	\begin{abstract}
@@ -105,9 +104,8 @@
 		OpenFST and RE2 but it also	comes with several innovative features not seen before. One of the main goals of Solomonoff is to be easily accessible to linguists and non-technical users. Anything could be done
 		without writing a single line of Java code, the compiler comes with a well integrated build system and a convenient online playground can be accessed from browser without any need for local installation. 
 		Solomonoff supports development in interactive REPL environment, which has
-		both local command-line version as well as its sandboxed browser-based equivalent.
-		
-		
+		both local command-line version and its sandboxed browser-based equivalent. The terminal interface allows for modularised programming and storing code across multiple files. Instead of using an existing tool like GNU Make, Ninja or Maven, the build system is specially designed for Solomonoff. It supports parallel compilation, dependency resolving and package management. Less experienced users may opt to use simpler and more ergonomic programming environment from their browser. 
+		It provides graphical user interface designed with care for aesthetics. Its implementation is based on Ace editor and communicates with Spring backend.
 		
 		\paragraph{Keywords:} compiler, automata, transducers, java, build system, REPL, website
 	\end{abstract}
