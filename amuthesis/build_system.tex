@@ -394,7 +394,7 @@ The following diagram \ref{buildsystem:diagram} shows the build process.
 
 \begin{figure}
 \centering
-\includegraphics[width=391px, scale=1]{./diagram.png}
+\includegraphics[scale=0.40]{./diagram.png}
 \caption{Build process}
 \label{buildsystem:diagram}
 \end{figure}
@@ -439,18 +439,18 @@ created.
 ...
 this.inDegreeMap = new HashMap<>();
 for (V v : graph.vertexSet()) {
-    int d = 0;
-    for (E e : graph.incomingEdgesOf(v)) {
-        V u = Graphs.getOppositeVertex(graph, e, v);
-        if (v.equals(u)) {
-            throw new IllegalArgumentException(GRAPH_IS_NOT_A_DAG);
-        }
-        d++;
+  int d = 0;
+  for (E e : graph.incomingEdgesOf(v)) {
+    V u = Graphs.getOppositeVertex(graph, e, v);
+    if (v.equals(u)) {
+      throw new IllegalArgumentException(GRAPH_IS_NOT_A_DAG);
     }
-    inDegreeMap.put(v, new ModifiableInteger(d));
-    if (d == 0) {
-        queue.offer(v);
-    }
+    d++;
+  }
+  inDegreeMap.put(v, new ModifiableInteger(d));
+  if (d == 0) {
+    queue.offer(v);
+  }
 }
 
 this.remainingVertices = graph.vertexSet().size();
@@ -464,33 +464,33 @@ removing the previous ones, and so on to the last vertex.
 \begin{lstlisting}[language=Java, frame=single]
 private V advance()
 {
-    V result = queue.poll();
+  V result = queue.poll();
 
-    if (result != null) {
-        for (E e : graph.outgoingEdgesOf(result)) {
-            V other = Graphs.getOppositeVertex(graph, e, result);
+  if (result != null) {
+    for (E e : graph.outgoingEdgesOf(result)) {
+      V other = Graphs.getOppositeVertex(graph, e, result);
 
-            ModifiableInteger inDegree = inDegreeMap.get(other);
-            if (inDegree.value > 0) {
-                inDegree.value--;
+      ModifiableInteger inDegree = inDegreeMap.get(other);
+      if (inDegree.value > 0) {
+        inDegree.value--;
 
-                if (inDegree.value == 0) {
-                    queue.offer(other);
-                }
-            }
+        if (inDegree.value == 0) {
+          queue.offer(other);
         }
-
-        --remainingVertices;
-    } else {
-        /*
-         * Still expecting some vertices, but no vertex has zero degree.
-         */
-        if (remainingVertices > 0) {
-            throw new IllegalArgumentException(GRAPH_IS_NOT_A_DAG);
-        }
+      }
     }
 
-    return result;
+    --remainingVertices;
+  } else {
+    /*
+     * Still expecting some vertices, but no vertex has zero degree.
+     */
+    if (remainingVertices > 0) {
+      throw new IllegalArgumentException(GRAPH_IS_NOT_A_DAG);
+    }
+  }
+
+  return result;
 }
 \end{lstlisting}
 
@@ -511,55 +511,55 @@ The code below shows how the parallel compilation problem is solved.
 // already sorted dependencies
 while (dependencyOrder.hasNext()) {
 
-    final String id = dependencyOrder.next();
-    final VarDef<G> varDef = definitions.get(id);
+  final String id = dependencyOrder.next();
+  final VarDef<G> varDef = definitions.get(id);
 
-    if (varDef == null) {//This may only be true for built-in variables
-        assert compiler.specs.borrowVariable(id) != null : id;
+  if (varDef == null) {//This may only be true for built-in variables
+    assert compiler.specs.borrowVariable(id) != null : id;
 
-    } else if (varDef instanceof VarDefAST) {
-        VarDefAST<G> var = (VarDefAST<G>) varDef;
-        assert var.def != null : id;
+  } else if (varDef instanceof VarDefAST) {
+    VarDefAST<G> var = (VarDefAST<G>) varDef;
+    assert var.def != null : id;
 
-        compiled.put(id, pool.submit(() -> {
-            if (var.needsRecompilation) {
-                final G compiledGraph = var.def.compile(compiler.specs, i -> {
-                    try {
-                        final Future<G> f = compiled.get(i);
-                        if (f == null) {//this can only be true for built-in variables
-                            final LexUnicodeSpecification.Var<N, G> v = compiler.specs.copyVariable(i);
-                            assert v != null;
-                            final G graph = compiler.specs.getGraph(v);
-                            return graph;
-                        } else {
-                            final G graph = compiler.specs.deepClone(f.get());
-                            return graph;
-                        }
-                    } catch (InterruptedException | ExecutionException e) {
-                        throw new RuntimeException(e);
-                    }
-                });
-
-                System.err.println("Compiled " + id);
-
-                if (buildBin) {
-                    try (FileOutputStream f = new FileOutputStream(var.cacheFilePath.toFile())) {
-                        compiler.specs.compressBinary(compiledGraph, new DataOutputStream(f));
-                    } catch (IOException e) {
-                        e.printStackTrace();
-                        var.cacheFilePath.toFile().deleteOnExit();
-                    }
-                }
-                return compiledGraph;
+    compiled.put(id, pool.submit(() -> {
+      if (var.needsRecompilation) {
+        final G compiledGraph = var.def.compile(compiler.specs, i -> {
+          try {
+            final Future<G> f = compiled.get(i);
+            if (f == null) {//this can only be true for built-in variables
+              final LexUnicodeSpecification.Var<N, G> v = compiler.specs.copyVariable(i);
+              assert v != null;
+              final G graph = compiler.specs.getGraph(v);
+              return graph;
             } else {
-                System.err.println("Loaded from cache " + id);
-                try (DataInputStream dis =
-                             new DataInputStream(new FileInputStream(var.cacheFilePath.toFile()))) {
-                    return compiler.specs.decompressBinary(Pos.NONE, dis);
-                }
+              final G graph = compiler.specs.deepClone(f.get());
+              return graph;
             }
-        }));
-    }
+          } catch (InterruptedException | ExecutionException e) {
+            throw new RuntimeException(e);
+          }
+        });
+
+        System.err.println("Compiled " + id);
+
+        if (buildBin) {
+          try (FileOutputStream f = new FileOutputStream(var.cacheFilePath.toFile())) {
+            compiler.specs.compressBinary(compiledGraph, new DataOutputStream(f));
+          } catch (IOException e) {
+            e.printStackTrace();
+            var.cacheFilePath.toFile().deleteOnExit();
+          }
+        }
+        return compiledGraph;
+      } else {
+        System.err.println("Loaded from cache " + id);
+        try (DataInputStream dis =
+               new DataInputStream(new FileInputStream(var.cacheFilePath.toFile()))) {
+          return compiler.specs.decompressBinary(Pos.NONE, dis);
+        }
+      }
+    }));
+  }
 }
 ...
 \end{lstlisting}
@@ -582,26 +582,26 @@ up-to-date with the source code.
 
 \begin{lstlisting}[language=Java, frame=single]
 protected VarDef(String id, String sourceFile, Config config) throws IOException {
-    ...
-    if (sourceFile == null) {
-        this.needsRecompilation = false;
-        return;
-    }
-    final Path sourceFilePath = Paths.get(sourceFile);
-    final FileTime sourceFileModificationTime =
-            (FileTime) Files.getAttribute(sourceFilePath, "lastModifiedTime");
-    final boolean needsRecompilation;
-    if (!config.caching_read && config.caching_write) {
-        needsRecompilation = true;
-    } else if (Files.exists(cacheFilePath)) {
-        final FileTime cacheModificationTime =
-                (FileTime) Files.getAttribute(cacheFilePath, "lastModifiedTime");
-        final int diff = cacheModificationTime.compareTo(sourceFileModificationTime);
-        needsRecompilation = diff < 0;
-    } else {
-        needsRecompilation = true;
-    }
-    this.needsRecompilation = needsRecompilation;
+  ...
+  if (sourceFile == null) {
+    this.needsRecompilation = false;
+    return;
+  }
+  final Path sourceFilePath = Paths.get(sourceFile);
+  final FileTime sourceFileModificationTime =
+      (FileTime) Files.getAttribute(sourceFilePath, "lastModifiedTime");
+  final boolean needsRecompilation;
+  if (!config.caching_read && config.caching_write) {
+    needsRecompilation = true;
+  } else if (Files.exists(cacheFilePath)) {
+    final FileTime cacheModificationTime =
+        (FileTime) Files.getAttribute(cacheFilePath, "lastModifiedTime");
+    final int diff = cacheModificationTime.compareTo(sourceFileModificationTime);
+    needsRecompilation = diff < 0;
+  } else {
+    needsRecompilation = true;
+  }
+  this.needsRecompilation = needsRecompilation;
 }
 \end{lstlisting}
 
@@ -613,33 +613,33 @@ dependencies out of date will force a cascading recompilation.
 //Resolve which dependencies need to be recompiled
 final Stack<VarDef<G>> toCheckIfNeedsRecompilation = new Stack<>();
 for (VarDef<G> def : definitions.values()) {
-    if (!def.needsRecompilation) {
-        toCheckIfNeedsRecompilation.add(def);
-    }
+  if (!def.needsRecompilation) {
+    toCheckIfNeedsRecompilation.add(def);
+  }
 }
 while (!toCheckIfNeedsRecompilation.isEmpty()) {
-    final VarDef<G> definition = toCheckIfNeedsRecompilation.pop();
-    assert !definition.needsRecompilation;
-    boolean actuallyShouldBeRecompiled = false;
-    for (Object dependencyEdge : dependencyOf.incomingEdgesOf(definition.id)) {
-        final String dependencyOfVertex = dependencyOf.getEdgeSource(dependencyEdge);
-        final VarDef<G> definitionOfDependency = definitions.get(dependencyOfVertex);
-        if (definitionOfDependency != null/*built-in variables don't need to recompiled*/
-                && definitionOfDependency.needsRecompilation) {
-            actuallyShouldBeRecompiled = true;
-            break;
-        }
+  final VarDef<G> definition = toCheckIfNeedsRecompilation.pop();
+  assert !definition.needsRecompilation;
+  boolean actuallyShouldBeRecompiled = false;
+  for (Object dependencyEdge : dependencyOf.incomingEdgesOf(definition.id)) {
+    final String dependencyOfVertex = dependencyOf.getEdgeSource(dependencyEdge);
+    final VarDef<G> definitionOfDependency = definitions.get(dependencyOfVertex);
+    if (definitionOfDependency != null/*built-in variables don't need to recompiled*/
+        && definitionOfDependency.needsRecompilation) {
+      actuallyShouldBeRecompiled = true;
+      break;
     }
-    if (actuallyShouldBeRecompiled) {
-        definition.needsRecompilation = true;
-        for (Object dependedEdge : dependencyOf.outgoingEdgesOf(definition.id)) {
-            final String idToReconsider = dependencyOf.getEdgeTarget(dependedEdge);
-            final VarDef<G> definitionToReconsider = definitions.get(idToReconsider);
-            if (!toCheckIfNeedsRecompilation.contains(definitionToReconsider)) {
-                toCheckIfNeedsRecompilation.add(definitionToReconsider);
-            }
-        }
+  }
+  if (actuallyShouldBeRecompiled) {
+    definition.needsRecompilation = true;
+    for (Object dependedEdge : dependencyOf.outgoingEdgesOf(definition.id)) {
+      final String idToReconsider = dependencyOf.getEdgeTarget(dependedEdge);
+      final VarDef<G> definitionToReconsider = definitions.get(idToReconsider);
+      if (!toCheckIfNeedsRecompilation.contains(definitionToReconsider)) {
+        toCheckIfNeedsRecompilation.add(definitionToReconsider);
+      }
     }
+  }
 }
 ...
 \end{lstlisting}
