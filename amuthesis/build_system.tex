@@ -121,7 +121,7 @@ The first target is the default one and will run if you run
 \texttt{make} with no additional parameters. A specific target can be
 called using \texttt{make\ \textless{}target\textgreater{}}.
 
-\begin{lstlisting}[frame=single, caption={%
+\begin{lstlisting}[caption={%
   Example of simple MakeFile \cite{MAKEFILE}%
 }]
 objects = main.o command.o display.o utils.o
@@ -177,9 +177,12 @@ The syntax of the \texttt{.ninja} files that define the build process is trivial
 and is limited almost only to rules that allow you to define short names
 for complex commands, variables, and expressions that work just like
 in Make. If the target on the left is older than the source on the left,
-the target will be rebuilt. Sample \texttt{ninja} file code below.
+the target will be rebuilt.
+The example \ref{buildsystem:ninja-example} defines the \texttt{CC} rule with the command property.
+In this case, this rule specifies how to execute builds with GCC.
+It is then used in the \texttt{build} target.
 
-\begin{lstlisting}[frame=single, caption={%
+\begin{lstlisting}[caption={Example of \texttt{.ninja}}, label={buildsystem:ninja-example}, caption={%
   Example of simple \texttt{.ninja} file \cite{NINJAFILE}%
 }]
 cflags = -Wall
@@ -238,8 +241,12 @@ is based on a plugin mechanism that can be attached from external
 sources. Additional configuration or new functionality, e.g. how to
 build a package or how to deploy an application, can be added and
 configured using plugins. Below is an example pom.xml file.
+The example defines the name, version, unique identifier of the project,
+the name of the compiled file, dependencies, in this case --- \texttt{JUnit},
+version of the runtime environment, and plugins --- \texttt{maven-compiler-plugin}
+which handles the compilation process.
 
-\begin{lstlisting}[frame=single, caption={%
+\begin{lstlisting}[caption={Example of \texttt{pom.xml}}, label={buildsystem:pom-example}, caption={%
   Example of simple pom.xml file \cite{POMFILE}%
 }]
 <project xmlns="http://maven.apache.org/POM/4.0.0" 
@@ -435,7 +442,12 @@ The topological sort is based on the Kahn's algorithm.
 In the constructor fragment cited below, a list of source nodes is
 created.
 
-\begin{lstlisting}[language=Java, frame=single]
+For each vertex in a graph, we check how many incoming edges it has.
+If zero then it is a source vertex.
+
+\begin{lstlisting}[language=Java, caption={Kahn's algorithm 1}, label={buildsystem:listing1}, caption={%
+  Implementation of the algorithm from the JGraphT library pt. 1 \cite{JGRAPHT}%
+}]
 ...
 this.inDegreeMap = new HashMap<>();
 for (V v : graph.vertexSet()) {
@@ -457,11 +469,18 @@ this.remainingVertices = graph.vertexSet().size();
 ...
 \end{lstlisting}
 
-The advance method called, for each iteration, will initially return the
-existing sources nodes and then the new ones which appear after
+The \texttt{advance} method \ref{buildsystem:listing2} called, for each iteration, will initially return the
+existing sources vertex and then the new ones which appear after
 removing the previous ones, and so on to the last vertex.
 
-\begin{lstlisting}[language=Java, frame=single]
+We find all adjacent vertices for each vertex taken from the queue.
+Then we decrease the counter of adjacent vertices for each of them.
+If a given vertex's counter equals zero, it is added to the queue of the source vertexes.
+
+
+\begin{lstlisting}[language=Java, caption={Kahn's algorithm 2}, label={buildsystem:listing2}, caption={%
+  Implementation of the algorithm from the JGraphT library pt. 2 \cite{JGRAPHT}%
+}]
 private V advance()
 {
   V result = queue.poll();
@@ -505,8 +524,12 @@ potential of the CPU that the operating system will make available to
 us.
 
 The code below shows how the parallel compilation problem is solved.
+We take out successive sorted nodes of the dependency graph.
+For each subsequent node, we assign threads from the pool to the 
+\texttt{Future} which run compilations of a given subgraph
+or load its copies from the cache.
 
-\begin{lstlisting}[language=Java, frame=single]
+\begin{lstlisting}[language=Java]
 ...
 // already sorted dependencies
 while (dependencyOrder.hasNext()) {
@@ -514,7 +537,7 @@ while (dependencyOrder.hasNext()) {
   final String id = dependencyOrder.next();
   final VarDef<G> varDef = definitions.get(id);
 
-  if (varDef == null) {//This may only be true for built-in variables
+  if (varDef == null) {
     assert compiler.specs.borrowVariable(id) != null : id;
 
   } else if (varDef instanceof VarDefAST) {
@@ -523,11 +546,13 @@ while (dependencyOrder.hasNext()) {
 
     compiled.put(id, pool.submit(() -> {
       if (var.needsRecompilation) {
-        final G compiledGraph = var.def.compile(compiler.specs, i -> {
+        final G compiledGraph =
+         var.def.compile(compiler.specs, i -> {
           try {
             final Future<G> f = compiled.get(i);
-            if (f == null) {//this can only be true for built-in variables
-              final LexUnicodeSpecification.Var<N, G> v = compiler.specs.copyVariable(i);
+            if (f == null) {
+              final LexUnicodeSpecification.Var<N, G> v =
+               compiler.specs.copyVariable(i);
               assert v != null;
               final G graph = compiler.specs.getGraph(v);
               return graph;
@@ -535,7 +560,8 @@ while (dependencyOrder.hasNext()) {
               final G graph = compiler.specs.deepClone(f.get());
               return graph;
             }
-          } catch (InterruptedException | ExecutionException e) {
+          } catch (InterruptedException 
+          | ExecutionException e) {
             throw new RuntimeException(e);
           }
         });
@@ -543,8 +569,10 @@ while (dependencyOrder.hasNext()) {
         System.err.println("Compiled " + id);
 
         if (buildBin) {
-          try (FileOutputStream f = new FileOutputStream(var.cacheFilePath.toFile())) {
-            compiler.specs.compressBinary(compiledGraph, new DataOutputStream(f));
+          try (FileOutputStream f =
+           new FileOutputStream(var.cacheFilePath.toFile())) {
+            compiler.specs.compressBinary(compiledGraph,
+             new DataOutputStream(f));
           } catch (IOException e) {
             e.printStackTrace();
             var.cacheFilePath.toFile().deleteOnExit();
@@ -554,7 +582,8 @@ while (dependencyOrder.hasNext()) {
       } else {
         System.err.println("Loaded from cache " + id);
         try (DataInputStream dis =
-               new DataInputStream(new FileInputStream(var.cacheFilePath.toFile()))) {
+               new DataInputStream(new FileInputStream(
+                 var.cacheFilePath.toFile()))) {
           return compiler.specs.decompressBinary(Pos.NONE, dis);
         }
       }
@@ -572,7 +601,7 @@ GNU Make. When parsing the code, we retrieve information about the
 modification date of a given source from the file system. If the user
 did not order otherwise before the compilation starts, the modification
 dates of previously compiled transducers saved on the disk will be read
-and then both will be quickly compared. If the binary file date is not
+and then both will be compared. If the binary file date is not
 older than the source code date and the same situation repeats for all
 dependencies of the given function, it will not be compiled again at
 this point.
@@ -580,8 +609,9 @@ this point.
 The code below shows how to check if the compiled transducer is
 up-to-date with the source code.
 
-\begin{lstlisting}[language=Java, frame=single]
-protected VarDef(String id, String sourceFile, Config config) throws IOException {
+\begin{lstlisting}[language=Java]
+protected VarDef(String id, String sourceFile, Config config)
+ throws IOException {
   ...
   if (sourceFile == null) {
     this.needsRecompilation = false;
@@ -589,14 +619,15 @@ protected VarDef(String id, String sourceFile, Config config) throws IOException
   }
   final Path sourceFilePath = Paths.get(sourceFile);
   final FileTime sourceFileModificationTime =
-      (FileTime) Files.getAttribute(sourceFilePath, "lastModifiedTime");
+    (FileTime) Files.getAttribute(sourceFilePath, "lastModifiedTime");
   final boolean needsRecompilation;
   if (!config.caching_read && config.caching_write) {
     needsRecompilation = true;
   } else if (Files.exists(cacheFilePath)) {
     final FileTime cacheModificationTime =
-        (FileTime) Files.getAttribute(cacheFilePath, "lastModifiedTime");
-    final int diff = cacheModificationTime.compareTo(sourceFileModificationTime);
+      (FileTime) Files.getAttribute(cacheFilePath, "lastModifiedTime");
+    final int diff =
+     cacheModificationTime.compareTo(sourceFileModificationTime);
     needsRecompilation = diff < 0;
   } else {
     needsRecompilation = true;
@@ -607,8 +638,10 @@ protected VarDef(String id, String sourceFile, Config config) throws IOException
 
 Here we go through the dependency tree to check if any of the
 dependencies out of date will force a cascading recompilation. 
-
-\begin{lstlisting}[language=Java, frame=single]
+For each function under test, we find all incoming edges for
+the corresponding vertex in the dependency graph and then check
+to see if any of their dependencies need recompilation.
+\begin{lstlisting}[language=Java]
 ...
 //Resolve which dependencies need to be recompiled
 final Stack<VarDef<G>> toCheckIfNeedsRecompilation = new Stack<>();
@@ -624,7 +657,7 @@ while (!toCheckIfNeedsRecompilation.isEmpty()) {
   for (Object dependencyEdge : dependencyOf.incomingEdgesOf(definition.id)) {
     final String dependencyOfVertex = dependencyOf.getEdgeSource(dependencyEdge);
     final VarDef<G> definitionOfDependency = definitions.get(dependencyOfVertex);
-    if (definitionOfDependency != null/*built-in variables don't need to recompiled*/
+    if (definitionOfDependency != null
         && definitionOfDependency.needsRecompilation) {
       actuallyShouldBeRecompiled = true;
       break;
@@ -652,7 +685,7 @@ describes the project metadata, contains the program's configurations
 such as repository paths, and defines the sources from which the system
 loads the code for compilation. An example file is shown below.
 
-\begin{lstlisting}[language=Java, frame=single]
+\begin{lstlisting}[language=Java]
 project_name = "test" # project name (needed during export)
 version = 1.0 # project version (needed during export)
 private_key  = "./private.der" 
