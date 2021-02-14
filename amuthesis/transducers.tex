@@ -77,7 +77,7 @@ A Mealy machine \cite{mealy} extends the above definition with output  $(Q,I,\de
 \end{center}
 produces output $1000$ for input $aabb$. Some articles do not include the set $F$ in definition of Mealy machines and instead assume that all states are accepting. Automata with all states final are called prefix-closed. Here we do not assume Mealy machines to be prefix-closed.
 
-The ability to produce output along each transition allows for modelling reactive systems. Any program or phenomenon that reads input from it's environment and ``reacts'' to it by producing output in one form or another is a reactive system. It is frequently used in the field of formal methods. Many complex state-based systems can be modelled and simplified using Mealy machines \cite{de_la_higuera}. As an example consider a black-box computer program whose logs can be observed \cite{register_automata_learning}. The current snapshot of the program's memory determines its state. Depending on subsequent user input, we might observe different log traces. There are many existing machine learning and inference algorithms that can build an equivalent model of Mealy machine only by interacting with such a black-box system and reading its logs. 
+The ability to produce output along each transition allows for modelling reactive systems. Any program or phenomenon that reads input from its environment and ``reacts'' to it by producing output in one form or another is a reactive system. It is frequently used in the field of formal methods. Many complex state-based systems can be modelled and simplified using Mealy machines \cite{de_la_higuera}. As an example consider a black-box computer program whose logs can be observed \cite{register_automata_learning}. The current snapshot of the program's memory determines its state. Depending on subsequent user input, we might observe different log traces. There are many existing machine learning and inference algorithms that can build an equivalent model of Mealy machine only by interacting with such a black-box system and reading its logs. 
 
 It can be proved that the expressive power of deterministic automata with output is strictly less than that of their nondeterministic counterparts \cite{MendozaDrosik2020MultitapeAA}. It is known as the prefix-preserving  property \cite{de_la_higuera}. If a deterministic automaton reads input string $\sigma_1\sigma_2\sigma_1$ and prints $\gamma_1\gamma_1\gamma_2$, then at the next step it is only allowed to append one more symbol to the previously generated output. For instance we could not suddenly change the output to $\gamma_2\gamma_2\gamma_2\gamma_1$ after reading one more input symbol $\sigma_1\sigma_2\sigma_1\sigma_2$. The prefix $\gamma_1\gamma_1\gamma_2$ must be preserved. 
 
@@ -510,7 +510,7 @@ that could be minimised down to only two states
 \end{center}
 Interestingly, the regular expression could not be minimised any further. Hence we observe that our procedure does more than a simple syntactic manipulation could achieve.
 
-Glushkov's construction has one more advantage. Because every symbol becomes a state, it's very easy for the user to predict the exact placement of transitions between them. This way, it's easy to embed any property of the transition directly inside the regular expression. For example, suppose that we want to assign come colours to all transitions. Let $B$ stand for blue and $R$ for red. Then it's possible to embed these colours in a expression like follows
+Glushkov's construction has one more advantage. Because every symbol becomes a state, it's very easy for the user to predict the exact placement of transitions between them. This way, it's possible to embed any property of the transition directly inside the regular expression. For example, suppose that we want to assign come colours to all transitions. Let $B$ stand for blue and $R$ for red. Then we can embed these colours in an expression like below
 \[
 aRa(Bb+Rc)R*
 \]
@@ -951,7 +951,7 @@ This algorithm has been made even more efficient by using techniques from graph 
 	\end{tabular}
 \end{table}
 
-Sparse graphs can be optimised and instead of using matrix it's possible to only store the list of adjacent vertices. 
+Sparse graphs can be optimised and instead of using matrix, it's possible to only store the list of adjacent vertices. 
 \[
 (q_1,b:x,q_1), (q_1,a:y,q_2), (q_1,a:x,q_3), (q_2,a:x,q_2), (q_3,b:y,q_3), ...
 \]
