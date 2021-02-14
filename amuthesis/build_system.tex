@@ -96,9 +96,9 @@ them.
 
 The first system described in this chapter is Make, actually its
 implementation from the GNU project. Make, as a utility included in the
-POSIX standard\cite{MAKEPOSIX}, is a fairly common build system. Its implementations
+POSIX standard \cite{MAKEPOSIX}, is a fairly common build system. Its implementations
 differ in terms of specific functionalities but remain largely
-compatible. For simplicity, Make is hereinafter referred to as GNU Make.
+compatible. For simplicity, GNU Make is hereinafter referred to as Make.
 
 Make is language-agnostic and is not limited to building only, but can
 be easily used to automate any related side tasks. It is facilitated by
@@ -178,7 +178,7 @@ and is limited almost only to rules that allow you to define short names
 for complex commands, variables, and expressions that work just like
 in Make. If the target on the left is older than the source on the left,
 the target will be rebuilt.
-The example \ref{buildsystem:ninja-example} defines the \texttt{CC} rule with the command property.
+The example \ref{buildsystem:ninja-example} defines the \texttt{cc} rule with the command property.
 In this case, this rule specifies how to execute builds with GCC.
 It is then used in the \texttt{build} target.
 
@@ -224,7 +224,7 @@ implicit dependencies on header files.
 
 \begin{figure}
 \centering
-\includegraphics[scale=0.70]{./no-op-build.png}
+\includegraphics[scale=0.48]{./no-op-build.png}
 \caption{Benchmark results for no-op build \cite{BENCHMARK}}
 \end{figure}
 
@@ -232,22 +232,22 @@ implicit dependencies on header files.
 \subsection{Maven}\label{maven}}
 
 Maven is significantly different from previous systems. It is intended
-for managing Java-based projects. Projects are configured by pom.xml
+for managing Java-based projects. Projects are configured by \texttt{pom.xml}
 file, which, unlike the previous configuration files, is more
 declarative. In addition to meta information, it contains a list of
 dependencies, repositories from which the external packages can be
 downloaded, and a list of plugins with a configuration. The entire system
-is based on a plugin mechanism that can be attached from external
+is based on a plugin mechanism that can be loaded from external
 sources. Additional configuration or new functionality, e.g. how to
 build a package or how to deploy an application, can be added and
-configured using plugins. Below is an example pom.xml file.
+configured using plugins. Below is an example \texttt{pom.xml} file.
 The example defines the name, version, unique identifier of the project,
 the name of the compiled file, dependencies, in this case --- \texttt{JUnit},
 version of the runtime environment, and plugins --- \texttt{maven-compiler-plugin}
 which handles the compilation process.
 
 \begin{lstlisting}[caption={Example of \texttt{pom.xml}}, label={buildsystem:pom-example}, caption={%
-  Example of simple pom.xml file \cite{POMFILE}%
+  Example of simple \texttt{pom.xm}l file \cite{POMFILE}%
 }]
 <project xmlns="http://maven.apache.org/POM/4.0.0" 
 xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
@@ -339,7 +339,7 @@ manager.
 \hypertarget{problem}{%
 \subsection{Problem}\label{problem}}
 
-The task of Solomonoff Build System was not only to create an automation
+The objective of Solomonoff Build System was not only to create an automation
 system but also to extend the capabilities of the compiler itself, so
 that it could be practical.
 
@@ -401,7 +401,7 @@ The following diagram \ref{buildsystem:diagram} shows the build process.
 
 \begin{figure}
 \centering
-\includegraphics[scale=0.40]{./diagram.png}
+\includegraphics[scale=0.53]{./diagram.png}
 \caption{Build process}
 \label{buildsystem:diagram}
 \end{figure}
@@ -409,10 +409,10 @@ The following diagram \ref{buildsystem:diagram} shows the build process.
 \hypertarget{parsing-sources}{%
 \subsubsection{Parsing sources}\label{dependency-resolving}}
 
-Before starting the compilation, it is necessary to find a list of all
+Before the start of the compilation, it is necessary to find a list of all
 function definitions at the beginning, which will then allow the cache
 to be loaded and the dependency graph to be mapped to make the process
-convenient and efficient. To do this it is necessary to pre-parse all
+convenient and efficient. To that end it is necessary to pre-parse all
 source files. 
 For this purpose, we use a parser generated with ANTLR and more specifically
 ANTLR4. ANTLR is LL parser generator, which means that input is processed
@@ -424,25 +424,24 @@ comes down to writing down the names of functions, their types, and their bodies
 \subsubsection{Dependency resolving}\label{dependency-resolving}}
 
 The problem is that function definitions can be located in different
-files on any position and functions can be nested (one function can be
+files on any position and can be nested (one function can be
 used in the body of another one). Before starting the compilation, it is
-worth checking immediately whether it has a chance to succeed at all. To
+advantageous to check immediately whether it has a chance to succeed at all. To
 accomplish this, Solomonoff first loads code from repositories and
 user-supplied source code, and then parses it. During the process,
 a directed acyclic graph is
 generated. The graph represents relations of being a dependency of
-another node that represent functions. The system uses JGraphT to
+another node that represent functions. The system uses JGraphT to create
+this graph and to sort it topologically.
 This sorting algorithm guarantees that if we start compiling functions
 in order in which they were returned by the sorting function,
 the necessary dependencies for each subsequent element will already
 be compiled.
 
 The topological sort is based on the Kahn's algorithm.
-
 In the constructor fragment cited below, a list of source nodes is
 created.
-
-For each vertex in a graph, we check how many incoming edges it has.
+In order to create the list, for each vertex in a graph, we check how many incoming edges it has.
 If zero then it is a source vertex.
 
 \begin{lstlisting}[language=Java, caption={Kahn's algorithm 1}, label={buildsystem:listing1}, caption={%
@@ -518,7 +517,7 @@ private V advance()
 
 The next step is a compilation. To achieve compilation efficiency, the
 functions are put in the mentioned order in the queue from which they
-will be then downloaded to the Thread pool, if the compilation of their
+will be then taken and proceeded by an available thread from the pool, if the compilation of their
 dependencies have already finished. In this way, we are to use the full
 potential of the CPU that the operating system will make available to
 us.
@@ -596,8 +595,8 @@ while (dependencyOrder.hasNext()) {
 \hypertarget{caching-transducers}{%
 \subsubsection{Caching transducers}\label{caching-transducers}}
 
-To achieve this goal, an analogous mechanism was used to that used in
-GNU Make. When parsing the code, we retrieve information about the
+To achieve this goal, an analogous mechanism to that used in
+GNU Make was used. When parsing the code, we retrieve information about the
 modification date of a given source from the file system. If the user
 did not order otherwise before the compilation starts, the modification
 dates of previously compiled transducers saved on the disk will be read
@@ -717,15 +716,15 @@ flexibility.
 \subsubsection{Package manager}\label{package-manager}}
 
 Solomonoff comes with a very simplified package manager. To download a
-package, the build system, using HTTP or HTTPS, queries the remote
+package, the build system use HTTP or HTTPS to queries the remote
 repository for the requested package and downloads it to the local
-repository if it is available. Also, the signature is downloaded if the
+repository if it is available. Also, its signature is downloaded if the
 user has not requested otherwise. If the user tries to download the same
 package again in the same version, it will not be downloaded since it is
 already in the local repository. For this reason, the naming convention
 is very important. Our suggestion is to keep project names as
 \texttt{\textless{}developer\_email@example.com\textgreater{}\ \textless{}desired\_project\_name\textgreater{}}
-in order to avoid a collision. Packages and signatures have names in the
+in order to avoid collisions. Packages and signatures have names in the
 following format
 \texttt{\textless{}project\_name\textgreater{}\ -\ \textless{}version\textgreater{}\ .zip\ {[}.sig{]}}.
 This very simple system allows you to use any web server as a remote
